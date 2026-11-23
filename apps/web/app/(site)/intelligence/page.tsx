@@ -4,6 +4,7 @@ import FeedWorkspace from "@/components/site/feed-workspace";
 import SignalInspector from "@/components/site/signal-inspector";
 import OpportunityBrief from "@/components/site/opportunity-brief";
 import MarketBriefingCard from "@/components/site/market-briefing";
+import DeferredDetails from "@/components/site/deferred-details";
 import "../landing.css";
 import "../rarebird.css";
 import "../rarebird-polish.css";
@@ -27,18 +28,9 @@ export default async function IntelligencePage({ searchParams }: {
   return <WorkspaceShell active="/intelligence">
     <FeedWorkspace key={asset?.beat_id ?? market} asset={asset} market={market} unknownAsset={Boolean(query.beat && !asset)}>
       <div className="rb-feed-tools rb-market-workspace" aria-label="More market tools">
-        <details>
-          <summary>Market briefing</summary>
-          <div className="rb-feed-tool-content"><MarketBriefingCard /></div>
-        </details>
-        <details id="opportunities">
-          <summary>Reviews and filings</summary>
-          <div className="rb-feed-tool-content"><OpportunityBrief /></div>
-        </details>
-        <details id="real-signal">
-          <summary>Asset inspector</summary>
-          <div className="rb-feed-tool-content ni-quant-workspace"><SignalInspector /></div>
-        </details>
+        <DeferredDetails title="Market briefing"><MarketBriefingCard showForecasts={false} /></DeferredDetails>
+        <DeferredDetails id="opportunities" title="Reviews and filings"><OpportunityBrief /></DeferredDetails>
+        <DeferredDetails id="real-signal" title="Asset inspector"><div className="ni-quant-workspace"><SignalInspector /></div></DeferredDetails>
       </div>
     </FeedWorkspace>
   </WorkspaceShell>;

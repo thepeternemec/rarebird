@@ -10,7 +10,7 @@ export const metadata = {
 export default async function CoinPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!/^[a-z0-9][a-z0-9-]{0,99}$/.test(id)) notFound();
-  return <WorkspaceShell active="/app">
+  return <WorkspaceShell active="/app/crypto-prices">
     <CryptoCoinDetail id={id} />
   </WorkspaceShell>;
 }

@@ -64,7 +64,7 @@ export function ForecastWorkspace({ compact = false }: { compact?: boolean }) {
   </div>;
 }
 
-export default function MarketBriefingCard({ compact = false }: { compact?: boolean }) {
+export default function MarketBriefingCard({ compact = false, showForecasts = true }: { compact?: boolean; showForecasts?: boolean }) {
   const { snapshot: brief, failed, now } = useMarketSnapshot<MarketBriefing>("/v2/briefing");
   const market = brief?.market;
   const reporting = brief?.reporting;
@@ -75,7 +75,7 @@ export default function MarketBriefingCard({ compact = false }: { compact?: bool
   const measured = current ? current.up + current.down + current.flat : 0;
   const latest = reporting?.lead && now - Date.parse(reporting.lead.source.observed_at) <= 86400000 ? reporting.lead : null;
   return <section className="rb-brief" aria-labelledby="rb-market-brief-title">
-    <MarketForecastPanel outlook={brief?.forecasts} now={now} unavailable={failed || !!brief} />
+    {showForecasts && <MarketForecastPanel outlook={brief?.forecasts} now={now} unavailable={failed || !!brief} />}
     <header aria-live="polite">
       <p>Live market briefing</p>
       <h2 id="rb-market-brief-title">{activeWatch

@@ -23,25 +23,25 @@ export default function MobileNavigation({ links, active, variant = "site" }: {
     const panel = dialog.current;
     if (!open || !panel) return;
     const desktop = window.matchMedia("(min-width: 901px)");
-    if (desktop.matches) { setOpen(false); return; }
+    if (!workspace && desktop.matches) { setOpen(false); return; }
     const previousOverflow = document.body.style.overflow;
     panel.showModal();
     document.body.style.overflow = "hidden";
-    const onResize = () => { if (desktop.matches) setOpen(false); };
+    const onResize = () => { if (!workspace && desktop.matches) setOpen(false); };
     desktop.addEventListener("change", onResize);
     return () => {
       desktop.removeEventListener("change", onResize);
       document.body.style.overflow = previousOverflow;
       panel.close();
-      if (!desktop.matches) trigger.current?.focus({ preventScroll: true });
+      if (workspace || !desktop.matches) trigger.current?.focus({ preventScroll: true });
     };
-  }, [open]);
+  }, [open, workspace]);
 
   return (
     <>
       <button ref={trigger} type="button" className={workspace ? "rb-app-more-toggle" : "nav-menu-toggle"}
         aria-label={workspace ? "Open workspace tools" : "Open navigation menu"} aria-haspopup="dialog" aria-expanded={open} aria-controls={id}
-        onClick={() => setOpen(true)}><Menu size={20} aria-hidden="true" />{workspace && <span>More</span>}</button>
+        onClick={() => setOpen(true)}><Menu size={20} aria-hidden="true" />{workspace && <span>Tools</span>}</button>
       <dialog ref={dialog} id={id} className="mobile-nav-dialog" aria-labelledby={id + "-title"} data-lenis-prevent onCancel={() => setOpen(false)} onClose={() => setOpen(false)} onClick={event => { if (event.target === event.currentTarget) setOpen(false); }}>
         <div className="mobile-nav-panel">
           <div className="mobile-nav-heading">
@@ -53,7 +53,7 @@ export default function MobileNavigation({ links, active, variant = "site" }: {
           </div>
           <nav className="mobile-nav-links" aria-label="Mobile navigation">
             {links.map(link => (
-              <a key={link.href} href={link.href} aria-current={active === link.href ? "page" : undefined} onClick={() => setOpen(false)}>
+              <a key={link.href} href={link.href} aria-current={active === link.href.split("#")[0] ? "page" : undefined} onClick={() => setOpen(false)}>
                 <span><strong>{link.label}</strong><span>{link.description}</span></span><ArrowRight size={16} aria-hidden="true" />
               </a>
             ))}
