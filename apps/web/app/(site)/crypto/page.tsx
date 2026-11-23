@@ -1,25 +1,27 @@
-import WorkspaceShell, { WorkspaceEvidence } from "@/components/site/workspace-shell";
+import WorkspaceShell from "@/components/site/workspace-shell";
 import MarketBriefingCard from "@/components/site/market-briefing";
 import CryptoOverview from "@/components/site/crypto-overview";
+import MarketDiscovery from "@/components/site/market-discovery";
+import DeferredDetails from "@/components/site/deferred-details";
 import "./crypto.css";
 
 export const metadata = {
-  title: "Crypto market overview | Rarebird",
-  description: "See crypto market breadth, 24-hour moves, DEX activity, perpetual funding, and the source-linked headlines behind the day.",
+  title: "Crypto news and indicators | Rarebird",
+  description: "Follow crypto news and prices, then open funding, DEX activity, sentiment and breadth when needed.",
   alternates: { canonical: "/crypto" },
 };
 
 export default function CryptoPage() {
-  return <WorkspaceShell active="/crypto" title="Crypto market indicators"
-    description="See how widely crypto is moving, where trading is active and what’s being reported.">
-    <WorkspaceEvidence title="Where the market readings come from">
-      <p>Breadth counts the current readings in the tracked basket. DEX activity, funding and sentiment carry their own source and update time.</p>
-      <p>Expand or follow the source under each reading to see where it came from and how recently it was checked.</p>
-      <a href="/app/forecasts">See the hourly BTC and ETH forecast results</a>
-    </WorkspaceEvidence>
-    <div className="crypto-overview">
-      <MarketBriefingCard />
-      <CryptoOverview />
+  return <WorkspaceShell active="/crypto">
+    <div className="rb-news-home">
+      <MarketDiscovery initialMarket="crypto" showControls={false} />
+      <DeferredDetails id="indicators" title="Funding, volume, sentiment and market breadth">
+        <div className="crypto-overview">
+          <MarketBriefingCard showForecasts={false} />
+          <CryptoOverview />
+          <a href="/app/forecasts">See hourly BTC and ETH forecast results</a>
+        </div>
+      </DeferredDetails>
     </div>
   </WorkspaceShell>;
 }

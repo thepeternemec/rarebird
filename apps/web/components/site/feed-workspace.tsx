@@ -79,7 +79,7 @@ export default function FeedWorkspace({ asset, market, unknownAsset, children }:
         <header className="rb-feed-head">
           <div className="rb-feed-title">
             <button className="rb-feed-mobile-toggle" type="button" popoverTarget={sidebarId} aria-label="Open your feeds"><Menu size={20} aria-hidden="true" /></button>
-            <div><h1>Market checks</h1><p>{asset ? asset.label + " · " + asset.ticker : markets.find(item => item.id === market)?.label}</p></div>
+            <div><h1>Ask Rarebird</h1><p>{asset ? asset.label + " · " + asset.ticker : markets.find(item => item.id === market)?.label}</p></div>
           </div>
           <CatalogSearch id={searchId} onSelect={item => router.push(feedHref(item.beat_id), { scroll: false })} />
         </header>

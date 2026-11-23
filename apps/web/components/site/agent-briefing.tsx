@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { AgentRequest, AgentResponse } from "@rarebird/contracts";
 import type { LookupAsset } from "./landing-lookup-data";
 import AgentAnswer from "./agent-answer";
+import { AssetSignalPrice } from "./signal-prices";
 import { API_BASE } from "./content";
 
 export default function AgentBriefing({ asset, market, disabled, onAsk, onFollow, followedIds, onResult }: {
@@ -49,6 +50,7 @@ export default function AgentBriefing({ asset, market, disabled, onAsk, onFollow
     };
   }, [asset?.beat_id, market, attempt, onResult]);
   return <section className="rb-agent-briefing" id="discovery" aria-label="Your proactive market briefing">
+    {asset && <AssetSignalPrice asset={asset} />}
     {failed && <p role="status">{snapshot ? "Refresh interrupted. The last briefing below may be out of date." : "The current briefing is unavailable."} <button className="rb-feed-button" type="button" onClick={() => setAttempt(value => value + 1)}>Retry briefing</button></p>}
     {!snapshot && !failed && <p role="status" className="rb-agent-checking">Checking current reviews, reporting and market conditions…</p>}
     {snapshot && <AgentAnswer result={snapshot} disabled={disabled} proactive onAsk={onAsk} onFollow={onFollow} followedIds={followedIds} />}

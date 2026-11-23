@@ -1,46 +1,29 @@
 import type { ReactNode } from "react";
-import {
-  Activity, ArrowUpRight, ChartNoAxesCombined, ChevronDown, Coins,
-  LayoutDashboard, ListFilter, MessageSquareText, Newspaper, Search, Unplug,
-} from "lucide-react";
-import SiteNav from "./site-nav";
+import { ChevronDown, MessageSquareText, Newspaper } from "lucide-react";
 import SiteFooter from "./site-footer";
-import BrandMark from "./brand-mark";
+import { BrandWordmark } from "./brand-mark";
 import MobileNavigation from "./mobile-navigation";
+import ThemeToggle from "./theme-toggle";
+import "./mobile-navigation.css";
 import "./workspace-shell.css";
 
-const GROUPS = [
-  {
-    label: "Markets",
-    links: [
-      { href: "/app", label: "Markets", description: "Browse stock and crypto developments", icon: LayoutDashboard },
-      { href: "/intelligence", label: "Market checks", description: "Inspect evidence and review candidates", icon: ListFilter },
-      { href: "/app/forecasts", label: "Forecasts", description: "Compare forecasts with recorded outcomes", icon: ChartNoAxesCombined },
-      { href: "/crypto", label: "Indicators", description: "Check crypto market conditions", icon: Activity },
-    ],
-  },
-  {
-    label: "Research",
-    links: [
-      { href: "/ask", label: "Ticker research", description: "Get a sourced brief on a stock or token", icon: Search },
-      { href: "/app/research", label: "Ask a question", description: "Investigate a market question or comparison", icon: MessageSquareText },
-      { href: "/tokens", label: "Token contracts", description: "Look up an asset by chain and contract", icon: Coins },
-      { href: "/dashboard", label: "News map", description: "Explore reporting across the asset catalog", icon: Newspaper },
-    ],
-  },
+const PRIMARY = [
+  { href: "/app", label: "News signals", icon: Newspaper },
+  { href: "/intelligence", label: "Ask Rarebird", icon: MessageSquareText },
 ] as const;
 
-const MOBILE_PRIMARY = [
-  { ...GROUPS[0].links[0], label: "Markets" },
-  { ...GROUPS[0].links[1], label: "Checks" },
-  { ...GROUPS[1].links[0], label: "Research" },
-];
-const ALL_TOOLS = [
-  ...GROUPS.flatMap(group => group.links.map(({ href, label, description }) => ({ href, label, description }))),
+const TOOLS = [
+  { href: "/ask", label: "Ticker research", description: "Research a stock or token" },
+  { href: "/app/research", label: "Compare assets", description: "Investigate a question or comparison" },
+  { href: "/dashboard", label: "News map", description: "Explore reporting across the catalog" },
+  { href: "/app/crypto-prices", label: "Crypto prices", description: "Open the full crypto price board" },
+  { href: "/crypto", label: "Crypto indicators", description: "See funding, volume, sentiment and breadth" },
+  { href: "/app/forecasts", label: "Forecasts", description: "Compare BTC and ETH forecasts with recorded outcomes" },
+  { href: "/tokens", label: "Token contracts", description: "Look up an asset by chain and contract" },
   { href: "/docs/quickstart", label: "Connect an agent", description: "Use Rarebird through your AI assistant" },
-];
+] as const;
 
-type WorkspacePath = (typeof GROUPS)[number]["links"][number]["href"];
+type WorkspacePath = (typeof PRIMARY)[number]["href"] | (typeof TOOLS)[number]["href"];
 
 export default function WorkspaceShell({ active, title, description, children }: {
   active: WorkspacePath;
@@ -49,27 +32,20 @@ export default function WorkspaceShell({ active, title, description, children }:
   children: ReactNode;
 }) {
   return <>
-    <SiteNav active={active} />
     <div className="rb-app">
       <a className="rb-app-skip" href="#workspace-content">Skip to workspace content</a>
-      <nav className="rb-app-nav" aria-label="Rarebird workspace">
-        <a className="rb-app-symbol" href="/app" aria-label="Rarebird markets"><BrandMark size={26} /></a>
-        {GROUPS.map(group => (
-          <div key={group.label} className="rb-app-nav-group" role="group" aria-label={group.label}>
-            {group.links.map(({ href, label, icon: Icon }) => (
-              <a key={href} href={href} aria-current={href === active ? "page" : undefined}>
-                <Icon size={15} aria-hidden="true" />
-                {label}
-              </a>
-            ))}
-          </div>
-        ))}
-        <a className="rb-app-agent-link" href="/docs/quickstart">
-          <Unplug size={15} aria-hidden="true" />
-          Connect an agent
-          <ArrowUpRight size={12} aria-hidden="true" />
-        </a>
-      </nav>
+      <header className="rb-workspace-header">
+        <a className="nav-logo" href="/" aria-label="Rarebird home"><BrandWordmark className="brand-wordmark" /></a>
+        <nav className="rb-app-nav" aria-label="Rarebird workspace" data-tool-active={TOOLS.some(tool => tool.href === active)}>
+          {PRIMARY.map(({ href, label, icon: Icon }) => (
+            <a key={href} href={href} aria-current={href === active ? "page" : undefined}>
+              <Icon size={18} aria-hidden="true" /><span>{label}</span>
+            </a>
+          ))}
+          <MobileNavigation links={TOOLS.map(tool => tool.href === "/crypto" ? { ...tool, href: "/crypto#indicators" } : tool)} active={active} variant="workspace" />
+        </nav>
+        <ThemeToggle />
+      </header>
       <main className="rb-app-main" id="workspace-content">
         {title && <header className="rb-app-heading">
           <h1>{title}</h1>
@@ -77,13 +53,6 @@ export default function WorkspaceShell({ active, title, description, children }:
         </header>}
         {children}
       </main>
-      <nav className="rb-app-mobile-nav" aria-label="Mobile workspace"
-        data-more-active={!MOBILE_PRIMARY.some(link => link.href === active)}>
-        {MOBILE_PRIMARY.map(({ href, label, icon: Icon }) => <a key={href} href={href} aria-current={href === active ? "page" : undefined}>
-          <Icon size={20} aria-hidden="true" /><span>{label}</span>
-        </a>)}
-        <MobileNavigation links={ALL_TOOLS} active={active} variant="workspace" />
-      </nav>
     </div>
     <SiteFooter />
   </>;

@@ -70,7 +70,7 @@ function observedAnswer(question: string, evidence: ResearchEvidence[], limitati
 
 async function execute(input: AgentRequest, oidcToken: string | null | undefined, dependencies: typeof services, proactive: boolean): Promise<AgentResponse> {
   const plan = proactive ? { question: input.question, context: "fundamentals" as const,
-    tools: (input.beat_ids?.length ? ["research", "reporting"] : ["opportunities", "discovery", "forecasts", "market"]) as AgentTool[] }
+    tools: (input.beat_ids?.length ? ["research", "reporting"] : ["opportunities", "discovery"]) as AgentTool[] }
     : await dependencies.plan(input, oidcToken);
   const resolved = agentAssets(input, plan);
   const output: AgentResponse = {
@@ -108,7 +108,6 @@ async function execute(input: AgentRequest, oidcToken: string | null | undefined
       tools.push("opportunities", "discovery", "market");
     }
   }
-  if (proactive && resolved.assets.some(asset => asset.asset === "crypto" && ["BTC", "ETH"].includes(asset.ticker))) tools.push("forecasts");
   if (input.market === "equity" && !resolved.assets.length) tools = tools.filter(tool => tool !== "forecasts" && tool !== "market");
   tools = [...new Set(tools)].slice(0, 4);
   const readings = await Promise.allSettled(tools.map(async tool => {
@@ -175,7 +174,7 @@ async function execute(input: AgentRequest, oidcToken: string | null | undefined
         : output.limitations.join(" ") || "Current sources are unavailable. Try this check again.";
   }
   output.status = !usable.length ? "unavailable" : output.tools.every(tool => tool.status === "complete") ? "ready" : "partial";
-  output.suggestions = [...new Set([...output.suggestions, "What deserves attention right now?", "What are the main risks?", "Show the latest forecasts and their results."])].slice(0, 4);
+  output.suggestions = [...new Set([...output.suggestions, "What deserves attention right now?", "What are the main risks?", "What is the latest price move?"])].slice(0, 4);
   return output;
 }
 

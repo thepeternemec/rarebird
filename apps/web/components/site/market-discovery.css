@@ -1,81 +1,66 @@
-.rb-discovery {
-  min-width: 0;
-  padding: clamp(18px, 3vw, 28px);
-  border: 1px solid var(--border-default);
-  border-radius: 20px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-.rb-discovery h2 { margin: 0 0 7px; font-size: clamp(23px, 3.5vw, 33px); line-height: 1.1; letter-spacing: -.035em; }
-.rb-discovery-meta { margin: 6px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
-.rb-discovery-list { list-style: none; padding: 0; margin: 13px 0 0; }
-.rb-discovery-list li { padding: 13px 0; border-top: 1px solid var(--border-default); }
-.rb-discovery-tags, .rb-discovery-times { display: flex; gap: 4px 12px; flex-wrap: wrap; }
-.rb-discovery-tags { font-size: 11px; color: var(--text-secondary); }
-.rb-discovery-tags > :first-child { color: var(--text-primary); font-family: var(--font-mono); font-weight: 600; }
-.rb-discovery-new { border: 1px solid var(--border-default); border-radius: 5px; padding-inline: 4px; }
-.rb-discovery-list h3 { margin: 5px 0; font-size: 15px; line-height: 1.36; font-weight: 620; overflow-wrap: anywhere; }
-.rb-discovery-source, .rb-discovery-more, .rb-discovery details a {
-  font-size: 12px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.rb-discovery a svg { display: inline; vertical-align: -.12em; }
-.rb-discovery-times { margin-top: 5px; color: var(--text-secondary); font-size: 11px; }
-.rb-discovery details { margin-top: 6px; font-size: 12px; }
-.rb-discovery summary { cursor: pointer; width: fit-content; padding-block: 4px; }
-.rb-discovery details p { margin: 3px 0; line-height: 1.45; }
-.rb-discovery-more { display: inline-block; margin-top: 8px; font-weight: 600; }
-.rb-discovery-controls {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px 12px;
-  margin: 14px 0 10px;
-}
-.rb-discovery-search {
-  width: min(100%, 330px);
-  --catalog-background: var(--bg-input);
-}
-.rb-discovery-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
-.rb-discovery-tabs button, .rb-discovery-selection button {
-  min-height: 42px;
-  padding-inline: 12px;
-  border: 1px solid var(--border-strong);
+.rb-discovery { min-width: 0; color: var(--text-primary); margin-bottom: 22px; }
+.rb-discovery h1 { margin: 0 0 6px; font-size: clamp(30px, 5vw, 44px); line-height: 1.08; letter-spacing: -.045em; font-weight: 600; }
+.rb-discovery-intro { margin: 0 0 18px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.rb-discovery-meta { margin: 10px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.rb-discovery-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px 14px; margin: 12px 0; }
+.rb-discovery-search { width: 100%; --catalog-background: var(--bg-input); }
+.rb-discovery-search input { font-size: 16px; }
+.rb-discovery-tabs { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--border-default); border-radius: 11px; background: var(--bg-base); }
+.rb-discovery-tabs button, .rb-discovery-selection button, .rb-discovery-more {
+  min-height: 44px;
+  padding: 5px 13px;
+  border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 13px;
+  font: 500 13px/1.4 var(--font-sans);
   cursor: pointer;
 }
-.rb-discovery-tabs button[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--text-primary) 10%, var(--bg-base));
-  color: var(--text-primary);
-  border-color: var(--text-secondary);
-}
-.rb-discovery-tabs button:focus-visible,
-.rb-discovery-selection :is(a, button):focus-visible {
-  outline: 2px solid var(--text-primary);
-  outline-offset: 2px;
-}
-.rb-discovery-selection {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  width: fit-content;
-  max-width: 100%;
-  padding: 5px 8px 5px 11px;
-  margin-bottom: 11px;
+.rb-discovery-tabs button[aria-pressed="true"] { background: var(--bg-raised); border-color: var(--border-default); color: var(--text-primary); }
+.rb-discovery :is(a, button, summary):focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+.rb-discovery-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 12px 0; }
+.rb-discovery-list > li, .rb-signal-selected {
+  min-width: 0;
+  padding: clamp(13px, 2.5vw, 20px);
   border: 1px solid var(--border-default);
-  border-radius: 8px;
-  color: var(--text-secondary);
-  font-size: 12px;
+  border-radius: 13px;
+  background: var(--bg-base);
 }
-.rb-discovery-selection-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
-.rb-discovery-selection-name strong { font-family: var(--font-mono); color: var(--text-primary); }
-.rb-discovery-selection a { text-decoration: underline; text-underline-offset: 3px; color: var(--text-primary); }
-.rb-discovery-selection button { display: grid; place-items: center; min-height: 34px; min-width: 34px; padding: 0; }
+.rb-discovery-tags, .rb-discovery-times { display: flex; align-items: baseline; gap: 4px 8px; flex-wrap: wrap; }
+.rb-discovery-tags { font-size: 12px; color: var(--text-secondary); }
+.rb-discovery-tags > a { display: inline-flex; align-items: center; min-height: 34px; padding: 4px 7px; color: var(--text-primary); border: 1px solid var(--border-default); border-radius: 6px; font-family: var(--font-mono); font-weight: 600; }
+.rb-discovery-new { margin-left: auto; font-size: 11px; }
+.rb-discovery-list h3 { margin: 8px 0 5px; font-size: clamp(16px, 2.5vw, 20px); line-height: 1.38; font-weight: 600; overflow-wrap: anywhere; }
+.rb-discovery h3 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.rb-discovery-times { margin: 5px 0 0; color: var(--text-secondary); font-size: 12px; }
+.rb-discovery a svg, .rb-signal-quote a svg, .rb-signal-price-note a svg { display: inline; vertical-align: -.12em; }
+.rb-discovery details { margin-top: 8px; font-size: 13px; }
+.rb-discovery details > summary { display: flex; align-items: center; gap: 6px; cursor: pointer; width: fit-content; min-height: 44px; color: var(--text-secondary); list-style: none; }
+.rb-discovery details > summary::-webkit-details-marker { display: none; }
+.rb-discovery details[open] > summary svg { transform: rotate(180deg); }
+.rb-discovery details p { margin: 0 0 6px; line-height: 1.5; }
+.rb-discovery a:hover, .rb-signal-quote a:hover { color: var(--text-primary); }
+.rb-discovery-more { width: 100%; border-color: var(--border-default); color: var(--text-primary); }
+.rb-discovery-more:hover { background: var(--bg-raised); }
+.rb-discovery-reporting h2 { margin: 12px 0 0; font-size: 16px; }
+.rb-signal-selected { margin-bottom: 12px; }
+.rb-discovery-selection { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+.rb-discovery-selection p { flex: 1; margin: 0; font-size: 14px; }
+.rb-discovery-selection strong { font-family: var(--font-mono); }
+.rb-discovery-selection a { padding: 10px 0; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+.rb-discovery-selection button { padding: 0; width: 44px; display: grid; place-items: center; }
+.rb-signal-quote, .rb-signal-price-note { margin-top: 10px; padding: 9px 0 0; border-top: 1px solid var(--border-default); color: var(--text-secondary); font-size: 12px; }
+.rb-signal-quote iframe { display: block; border: 0; width: 100%; max-width: 420px; height: 86px; }
+.rb-signal-quote a, .rb-signal-price-note a { display: inline-block; color: var(--text-secondary); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.rb-signal-crypto > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.rb-signal-crypto strong { font-size: 18px; color: var(--text-primary); }
+.rb-signal-crypto [data-direction] { font-size: 14px; font-weight: 600; }
+.rb-signal-crypto [data-direction="up"] { color: #7bd6a7; }
+.rb-signal-crypto [data-direction="down"] { color: #f9989e; }
+[data-theme="light"] .rb-signal-crypto [data-direction="up"] { color: #176944; }
+[data-theme="light"] .rb-signal-crypto [data-direction="down"] { color: #a83440; }
+.rb-signal-crypto small { color: var(--text-secondary); font-size: 11px; font-weight: 400; }
 @media (max-width: 600px) {
-  .rb-discovery-search { width: 100%; }
+  .rb-discovery-controls { grid-template-columns: minmax(0, 1fr); }
+  .rb-discovery-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
