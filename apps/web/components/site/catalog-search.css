@@ -57,8 +57,15 @@
   box-shadow: 0 16px 32px #0005;
 }
 .catalog-search-menu ul { list-style: none; margin: 0; padding: 0; }
-.catalog-search-menu li {
+.catalog-search-option {
   display: flex;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  touch-action: pan-y;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
@@ -68,13 +75,13 @@
   font-size: 14px;
   line-height: 1.3;
 }
-.catalog-search-menu li:hover, .catalog-search-menu li[aria-selected="true"] {
+.catalog-search-option:hover, .catalog-search-option[aria-selected="true"] {
   background: color-mix(in srgb, var(--text-primary) 10%, transparent);
 }
-.catalog-search-menu li > span:first-child { display: grid; gap: 2px; min-width: 0; }
+.catalog-search-option > span:first-child { display: grid; gap: 2px; min-width: 0; }
 .catalog-search-menu strong { overflow-wrap: anywhere; font-weight: 600; }
 .catalog-search-menu small { font-size: 11px; color: var(--text-secondary); }
-.catalog-search-menu li > span:last-child {
+.catalog-search-option > span:last-child {
   display: flex;
   flex: none;
   align-items: center;
@@ -87,6 +94,6 @@
   .catalog-search-field { min-height: 50px; }
   .catalog-search-clear { min-width: 44px; min-height: 44px; }
   .catalog-search-menu { max-height: min(340px, 45dvh); overflow-y: auto; overscroll-behavior: contain; }
-  .catalog-search-menu li { min-height: 56px; padding: 10px; }
-  .catalog-search-menu small, .catalog-search-menu li > span:last-child { font-size: 12px; }
+  .catalog-search-option { min-height: 56px; padding: 10px; }
+  .catalog-search-menu small, .catalog-search-option > span:last-child { font-size: 12px; }
 }

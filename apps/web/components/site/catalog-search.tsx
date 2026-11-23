@@ -14,6 +14,7 @@ export default function CatalogSearch({ id, className, onSelect }: {
   onSelect: (asset: LookupAsset) => void;
 }) {
   const menu = useId();
+  const form = useRef<HTMLFormElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -46,6 +47,25 @@ export default function CatalogSearch({ id, className, onSelect }: {
     };
   }, [open, term, retry]);
 
+  useEffect(() => {
+    if (!expanded) return;
+
+    // A touch can blur the input without a next focus target. Close on an
+    // outside interaction so the option stays mounted until its click.
+    function closeOutside(event: Event) {
+      if (!(event.target instanceof Node) || form.current?.contains(event.target)) return;
+      setOpen(false);
+      setIndex(-1);
+    }
+
+    document.addEventListener("pointerdown", closeOutside, true);
+    document.addEventListener("focusin", closeOutside, true);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside, true);
+      document.removeEventListener("focusin", closeOutside, true);
+    };
+  }, [expanded]);
+
   function choose(topic: LookupAsset) {
     if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) input.current?.blur();
     else input.current?.focus();
@@ -55,13 +75,8 @@ export default function CatalogSearch({ id, className, onSelect }: {
     onSelect(topic);
   }
 
-  return <form className={"rb-catalog-search" + (className ? " " + className : "")} role="search"
+  return <form ref={form} className={"rb-catalog-search" + (className ? " " + className : "")} role="search"
     aria-label="Search by ticker or company"
-    onBlur={event => {
-      if (event.currentTarget.contains(event.relatedTarget)) return;
-      setOpen(false);
-      setIndex(-1);
-    }}
     onSubmit={event => {
       event.preventDefault();
       const topic = chooseSearchResult(topics, term, expanded ? index : -1);
@@ -99,10 +114,13 @@ export default function CatalogSearch({ id, className, onSelect }: {
     </div>
     {expanded && <div className="catalog-search-menu" data-lenis-prevent>
       <ul id={menu} role="listbox" aria-label="Matching stocks and crypto">
-        {topics.map((topic, position) => <li key={topic.beat_id} id={optionId(topic)} role="option" aria-selected={position === index}
-          onPointerDown={event => event.preventDefault()} onClick={() => choose(topic)}>
-          <span><strong>{topic.label}</strong><small>{topic.asset === "crypto" ? "Crypto" : "Stock"}</small></span>
-          <span>{topic.ticker}<ArrowRight size={14} aria-hidden="true" /></span>
+        {topics.map((topic, position) => <li key={topic.beat_id} role="presentation">
+          <button type="button" className="catalog-search-option" id={optionId(topic)} role="option"
+            tabIndex={-1} aria-selected={position === index}
+            onMouseDown={event => event.preventDefault()} onClick={() => choose(topic)}>
+            <span><strong>{topic.label}</strong><small>{topic.asset === "crypto" ? "Crypto" : "Stock"}</small></span>
+            <span>{topic.ticker}<ArrowRight size={14} aria-hidden="true" /></span>
+          </button>
         </li>)}
       </ul>
       {!topics.length && <p role="status">
