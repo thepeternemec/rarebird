@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { QUANT_POLICY_VERSION, type IntelligenceResponse } from "@rarebird/contracts";
-import { buildOpportunityBrief } from "./opportunities.js";
+import { buildOpportunityBrief, readOpportunities } from "./opportunities.js";
 import { discoverMarket } from "./quant-anomaly.js";
 import { buildMarketContext } from "./quant-engine.js";
 import { quantitativeFixture } from "./quant-fixtures.js";
@@ -54,4 +54,14 @@ test("forward scorecard counts missing observations and excludes overlapping out
   assert.equal(scored.mean_adjusted_return_bps, 15);
   assert.equal(scored.positive_fraction, 0.5);
   assert.equal(scoreReviewCosts(rows.slice(0, -1)).mean_adjusted_return_bps, null);
+});
+
+test("scoped review queries do not fall back to unrelated pilot assets", async () => {
+  const beat_id = "b_000000000000";
+  const response = await readOpportunities({ beat_id });
+  assert.deepEqual(response.coverage, []);
+  assert.deepEqual(response.review, []);
+  assert.deepEqual(response.watch, []);
+  assert.deepEqual(response.catalysts.items, []);
+  assert.deepEqual(response.catalysts.coverage.map(item => item.beat_id), [beat_id]);
 });

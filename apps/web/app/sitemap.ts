@@ -6,12 +6,7 @@ const ORIGIN = "https://www.rarebird.network";
 const PAGES = [
   "/",
   "/app",
-  "/app/forecasts",
-  "/app/research",
-  "/app/asset-inspector",
   "/connect",
-  "/ask",
-  "/crypto",
   "/tokens",
   "/market-checks",
   "/for-agents",

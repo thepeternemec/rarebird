@@ -114,6 +114,7 @@ newsRoutes.get("/opportunities", async c => {
     return c.json(await readOpportunities({
         context: c.req.query("context"),
         limit: limit === undefined ? undefined : Number(limit),
+        beat_id: c.req.query("beat_id"),
     }));
 });
 newsRoutes.get("/catalysts", async c => {

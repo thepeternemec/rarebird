@@ -30,6 +30,7 @@
 .opportunity-refresh:disabled { opacity: .6; cursor: default; }
 .opportunity-lanes, .opportunity-asset-grid { display: grid; gap: 12px; }
 .opportunity-lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.opportunity-lanes[data-filings="false"] { grid-template-columns: minmax(0, 1fr); }
 .opportunity-lane, .opportunity-asset-grid > li {
   min-width: 0;
   border: 1px solid var(--border-default);

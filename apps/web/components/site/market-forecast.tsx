@@ -18,19 +18,21 @@ function Scorecard({ title, data }: { title: string; data: ForecastScorecard }) 
   </div>;
 }
 
-export function MarketForecastPanel({ outlook, now, unavailable, compact = false }: {
+export function MarketForecastPanel({ outlook, now, unavailable, compact = false, ticker: selectedTicker }: {
   outlook?: MarketForecasts;
   now: number;
   unavailable: boolean;
   compact?: boolean;
+  ticker?: "BTC" | "ETH";
 }) {
+  const forecasts = outlook?.assets.filter(asset => !selectedTicker || asset.ticker === selectedTicker) ?? [];
   return <section className="rb-forecast" aria-label="Hourly crypto forecasts">
     <header>
-      <p>BTC and ETH · Experimental</p>
+      <p>{selectedTicker ?? "BTC and ETH"} · Experimental</p>
       <h2>{compact ? "Next-hour move risk" : "How likely is a 1% move?"}</h2>
     </header>
-    {outlook && outlook.status !== "unavailable" ? <div className="rb-forecast-assets">
-      {outlook.assets.map(({ ticker, pair, forecast, move_risk, scorecard, recent }) => {
+    {outlook && outlook.status !== "unavailable" && forecasts.length ? <div className="rb-forecast-assets" data-single={Boolean(selectedTicker)}>
+      {forecasts.map(({ ticker, pair, forecast, move_risk, scorecard, recent }) => {
         const active = forecast && Date.parse(forecast.target_at) > now ? forecast : null;
         const risk = move_risk?.forecast && Date.parse(move_risk.forecast.target_at) > now ? move_risk.forecast : null;
         return <article key={ticker} className="rb-forecast-asset">
@@ -75,7 +77,7 @@ export function MarketForecastPanel({ outlook, now, unavailable, compact = false
           </details>}
         </article>;
       })}
-    </div> : <p className="rb-forecast-meta">{unavailable || outlook?.status === "unavailable" ? "Forecasts temporarily unavailable." : "Checking the latest forecasts…"}</p>}
+    </div> : <p className="rb-forecast-meta">{unavailable || outlook ? "Forecasts temporarily unavailable." : "Checking the latest forecasts…"}</p>}
     {compact ? <a className="rb-brief-detail" href="/app/forecasts">Forecast evidence and results <ArrowUpRight size={13} aria-hidden="true" /></a>
       : <a className="rb-brief-source" href="https://github.com/thepeternemec/rarebird/blob/main/docs/QUANTITATIVE.md#historical-replay">Method and historical results <ArrowUpRight size={12} aria-hidden="true" /></a>}
   </section>;

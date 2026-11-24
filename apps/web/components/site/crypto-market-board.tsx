@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowDownUp, ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight, RefreshCw, Search, Star } from "lucide-react";
+import Link from "next/link";
+import { ArrowDown, ArrowDownUp, ArrowRight, ArrowUp, ArrowUpRight, RefreshCw, Search, Star } from "lucide-react";
 import type { CryptoMarketRow, CryptoMarketsPayload, Sourced } from "@rarebird/contracts";
 import { API_BASE } from "./content";
-import { findAssets, readCoverage, type LookupAsset, type LookupNews } from "./landing-lookup-data";
+import { coinIdPattern, workspaceCoinHref } from "@/lib/workspace-links";
 import "./crypto-market-board.css";
 
 type Markets = Sourced<CryptoMarketsPayload>;
@@ -12,12 +13,12 @@ type MarketState = { snapshot: Markets | null; loading: boolean; failed: boolean
 const refreshMs = 120_000;
 const freshnessMs = 10 * 60_000;
 const watchlistKey = "rarebird:crypto-watchlist";
-const coinIdPattern = /^[a-z0-9][a-z0-9-]{0,99}$/;
 
-function useCryptoMarkets() {
+export function useCryptoMarkets(enabled: boolean) {
   const [revision, setRevision] = useState(0);
   const [state, setState] = useState<MarketState>({ snapshot: null, loading: true, failed: false, now: 0 });
   useEffect(() => {
+    if (!enabled) return;
     let current: AbortController | undefined;
     async function refresh() {
       if (document.visibilityState === "hidden" || current) return;
@@ -48,7 +49,7 @@ function useCryptoMarkets() {
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [revision]);
+  }, [enabled, revision]);
   return { ...state, refresh: () => setRevision(previous => previous + 1) };
 }
 
@@ -86,7 +87,6 @@ const compact = new Intl.NumberFormat("en-US", { style: "currency", currency: "U
 const percent = new Intl.NumberFormat("en-US", { style: "percent", signDisplay: "exceptZero", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const stamp = (value: string) => new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 const value = (number: number | null, formatter: Intl.NumberFormat) => number === null ? "—" : formatter.format(number);
-const coinLink = (id: string) => "/app/coins/" + encodeURIComponent(id);
 
 function recent(coin: CryptoMarketRow, now: number) {
   const age = now - Date.parse(coin.observed_at ?? "");
@@ -170,8 +170,7 @@ function sortedCoins(assets: CryptoMarketRow[], sort: Sort) {
   });
 }
 
-export default function CryptoMarketBoard() {
-  const market = useCryptoMarkets();
+export default function CryptoMarketBoard({ market }: { market: ReturnType<typeof useCryptoMarkets> }) {
   const { saved, toggle } = useWatchlist();
   const [view, setView] = useState<View>("All coins");
   const [sort, setSort] = useState<Sort>(defaultSort);
@@ -227,7 +226,7 @@ export default function CryptoMarketBoard() {
       </article>
       <article>
         <h2>Highest 24h gain</h2>
-        {top ? <><a className="rb-coin-top" href={coinLink(top.id)}><CoinIcon coin={top} />{top.symbol} <Change change={top.change_24h} /></a><p>{top.name}</p></>
+        {top ? <><Link className="rb-coin-top" href={workspaceCoinHref(top.id)} prefetch={false}><CoinIcon coin={top} />{top.symbol} <Change change={top.change_24h} /></Link><p>{top.name}</p></>
           : <><strong>—</strong><p>No current gains in this snapshot</p></>}
       </article>
       <article>
@@ -266,7 +265,7 @@ export default function CryptoMarketBoard() {
       {market.snapshot && view === "Watchlist" && <p className="rb-coin-watch-note">Saved in this browser{unavailableSaved > 0 && " · " + unavailableSaved + " saved outside the current snapshot"}</p>}
       {market.snapshot && rows.length === 0 && <p className="rb-coin-empty" role="status">{view === "Watchlist" && saved.length === 0
         ? <>Save coins with the star next to their name. <button type="button" onClick={() => selectView("All coins")}>Browse all coins</button></>
-        : term ? <>No coins in this view match the search. <a href="/app">Search the Rarebird news catalog</a></>
+        : term ? "No coins in this view match the search."
           : "No coins in this view right now."}</p>}
       {rows.length > 0 && <>
         <div className="rb-coin-table-scroll"><table className="rb-coin-table">
@@ -281,7 +280,7 @@ export default function CryptoMarketBoard() {
             <td><WatchButton coin={coin} saved={saved.includes(coin.id)} toggle={() => toggle(coin.id)} /></td>
             <td data-priority="rank" className="rb-coin-rank">{coin.rank ?? "—"}</td>
             <th scope="row" className="rb-coin-name">
-              <a href={coinLink(coin.id)}><CoinIcon coin={coin} /><span><strong>{coin.name}</strong><small>{coin.symbol}</small></span></a>
+              <Link href={workspaceCoinHref(coin.id)} prefetch={false}><CoinIcon coin={coin} /><span><strong>{coin.name}</strong><small>{coin.symbol}</small></span></Link>
             </th>
             <td className="rb-coin-quote">{value(coin.price_usd, money)}{!recent(coin, market.now) && <small>Stale</small>}</td>
             <td data-priority="detail"><Change change={coin.change_1h} /></td>
@@ -301,91 +300,37 @@ export default function CryptoMarketBoard() {
   </section>;
 }
 
-type Evidence = { topic: LookupAsset | null; coverage: LookupNews | null; failed: boolean };
-function CoinEvidence({ coin }: { coin: CryptoMarketRow }) {
-  const [evidence, setEvidence] = useState<Evidence | null>(null);
-  useEffect(() => {
-    const request = new AbortController();
-    let active = true;
-    const timeout = window.setTimeout(() => request.abort(), 16_000);
-    const name = (value: string) => value.normalize("NFKC").trim().toLowerCase();
-    async function read() {
-      let topic: LookupAsset | null = null;
-      try {
-        const topics = await findAssets(API_BASE, coin.symbol, request.signal);
-        const matched = topics.filter(entry => entry.asset === "crypto" && name(entry.ticker) === name(coin.symbol) && name(entry.label) === name(coin.name));
-        topic = matched.length === 1 ? matched[0]! : null;
-        const coverage = topic ? await readCoverage(API_BASE, topic.beat_id, request.signal) : null;
-        if (active) setEvidence({ topic, coverage, failed: false });
-      } catch {
-        if (active) setEvidence({ topic, coverage: null, failed: true });
-      } finally { window.clearTimeout(timeout); }
-    }
-    void read();
-    return () => { active = false; window.clearTimeout(timeout); request.abort(); };
-  }, [coin.name, coin.symbol]);
-  const coverage = evidence?.coverage;
-  const research = evidence?.topic && "/ask?" + new URLSearchParams({ ticker: evidence.topic.ticker, beat_id: evidence.topic.beat_id });
-  return <section className="rb-coin-evidence">
-    <div className="rb-coin-evidence-heading"><h2>Rarebird evidence</h2>
-      {research && <a href={research}>Research {coin.symbol} <ArrowUpRight size={14} aria-hidden="true" /></a>}
-    </div>
-    {!evidence && <p role="status">Finding matching coverage…</p>}
-    {evidence?.failed && <p>Recent coverage is temporarily unavailable.</p>}
-    {evidence && !evidence.failed && !evidence.topic && <p>Rarebird couldn’t confirm a news match for this coin by name and ticker.</p>}
-    {coverage && <p>{coverage.freshness.last_success_at
-      ? <>{coverage.freshness.status === "fresh" ? "Collection checked" : "Last successful collection"} <time dateTime={coverage.freshness.last_success_at}>{stamp(coverage.freshness.last_success_at)}</time></>
-      : "Collection freshness is unavailable."}</p>}
-    {coverage && coverage.items.length === 0 && <p>No recent headlines in this snapshot.</p>}
-    {coverage && coverage.items.length > 0 && <ul>{coverage.items.slice(0, 5).map(item => <li key={item.id}>
-      <a href={item.url} target="_blank" rel="noreferrer">{item.title} <ArrowUpRight size={13} aria-hidden="true" /></a>
-      <span>{item.source} · <time dateTime={item.published_at}>{stamp(item.published_at)}</time></span>
-    </li>)}</ul>}
-  </section>;
+export function CryptoCoinHeading({ coin }: { coin: CryptoMarketRow }) {
+  const { saved, toggle } = useWatchlist();
+  return <div className="rb-coin-page-heading">
+    <CoinIcon coin={coin} />
+    <h1>{coin.name} <small>{coin.symbol}</small></h1>
+    <WatchButton coin={coin} saved={saved.includes(coin.id)} toggle={() => toggle(coin.id)} />
+  </div>;
 }
 
-export function CryptoCoinDetail({ id }: { id: string }) {
-  const market = useCryptoMarkets();
-  const { saved, toggle } = useWatchlist();
-  const coin = market.snapshot?.data.assets.find(asset => asset.id === id);
-  return <div className="rb-coin-page">
-    <a className="rb-coin-back" href="/app"><ArrowLeft size={15} aria-hidden="true" /> All coins</a>
-    {!coin ? <>
-      <h1>Coin markets</h1>
-      <p role="status">{market.loading ? "Loading the market snapshot…" : market.failed
-        ? "Market prices are temporarily unavailable." : "This coin is outside the current market snapshot."}</p>
-      {market.failed && <button type="button" className="rb-coin-refresh" onClick={market.refresh}>Try again</button>}
-    </> : <>
-      <div className="rb-coin-page-heading">
-        <CoinIcon coin={coin} />
-        <h1>{coin.name} <small>{coin.symbol}</small></h1>
-        <WatchButton coin={coin} saved={saved.includes(coin.id)} toggle={() => toggle(coin.id)} />
-      </div>
-      <div className="rb-coin-detail-grid">
-        <section className="rb-coin-price">
-          <h2>Price</h2>
-          <p className="rb-coin-large-price">{value(coin.price_usd, money)} <Change change={coin.change_24h} /></p>
-          <p className="rb-coin-observed">{coin.observed_at
-            ? <>{recent(coin, market.now) ? "Observed" : "Stale observation"} · <time dateTime={coin.observed_at}>{stamp(coin.observed_at)}</time></>
-            : "Observation time unavailable"}</p>
-          <h3>Last 7 days</h3>
-          <Sparkline points={coin.sparkline_7d} large />
-          {market.snapshot && <MarketSource snapshot={market.snapshot} now={market.now} />}
-        </section>
-        <section className="rb-coin-stat">
-          <h2>Market data</h2>
-          <dl>
-            <div><dt>Market cap rank</dt><dd>{coin.rank ?? "—"}</dd></div>
-            <div><dt>Market cap</dt><dd>{value(coin.market_cap_usd, compact)}</dd></div>
-            <div><dt>Volume (24h)</dt><dd>{value(coin.volume_24h_usd, compact)}</dd></div>
-            <div><dt>1h change</dt><dd><Change change={coin.change_1h} /></dd></div>
-            <div><dt>24h change</dt><dd><Change change={coin.change_24h} /></dd></div>
-            <div><dt>7d change</dt><dd><Change change={coin.change_7d} /></dd></div>
-          </dl>
-          {(coin.id === "bitcoin" || coin.id === "ethereum") && <a href="/app/forecasts">Hourly forecast and scorecard <ArrowUpRight size={14} aria-hidden="true" /></a>}
-        </section>
-      </div>
-      <CoinEvidence key={coin.id} coin={coin} />
-    </>}
+export function CryptoPricePanels({ coin, snapshot, now }: { coin: CryptoMarketRow; snapshot: Markets; now: number }) {
+  return <div className="rb-coin-detail-grid">
+    <section className="rb-coin-price">
+      <h2>Price</h2>
+      <p className="rb-coin-large-price">{value(coin.price_usd, money)} <Change change={coin.change_24h} /></p>
+      <p className="rb-coin-observed">{coin.observed_at
+        ? <>{recent(coin, now) ? "Observed" : "Stale observation"} · <time dateTime={coin.observed_at}>{stamp(coin.observed_at)}</time></>
+        : "Observation time unavailable"}</p>
+      <h3>Last 7 days</h3>
+      <Sparkline points={coin.sparkline_7d} large />
+      <MarketSource snapshot={snapshot} now={now} />
+    </section>
+    <section className="rb-coin-stat">
+      <h2>Market data</h2>
+      <dl>
+        <div><dt>Market cap rank</dt><dd>{coin.rank ?? "—"}</dd></div>
+        <div><dt>Market cap</dt><dd>{value(coin.market_cap_usd, compact)}</dd></div>
+        <div><dt>Volume (24h)</dt><dd>{value(coin.volume_24h_usd, compact)}</dd></div>
+        <div><dt>1h change</dt><dd><Change change={coin.change_1h} /></dd></div>
+        <div><dt>24h change</dt><dd><Change change={coin.change_24h} /></dd></div>
+        <div><dt>7d change</dt><dd><Change change={coin.change_7d} /></dd></div>
+      </dl>
+    </section>
   </div>;
 }

@@ -9,7 +9,7 @@ const module = { exports: {} };
 let response;
 const calls = [];
 new Function("exports", "fetch", outputText)(module.exports, async (url, options) => { calls.push({ url, options }); return { ok: true, json: async () => response }; });
-const { findAssets, chooseSearchResult, readCoverage, coverageLabel } = module.exports;
+const { findAssets, chooseSearchResult, readCoverage, coverageLabel, workspaceSuggestions, matchesCatalogCoin } = module.exports;
 const signal = new AbortController().signal;
 const id = "b_bb964843350e";
 const fresh = { status: "fresh", last_success_at: "2026-11-05T20:00:00Z" };
@@ -52,4 +52,19 @@ test("a stale page or unavailable collection cannot claim to be up to date", () 
   assert.equal(coverageLabel({ freshness: { ...fresh, status: "stale" } }, readAt, readAt), "Collection delayed");
   assert.equal(coverageLabel({ freshness: { ...fresh, status: "unavailable" } }, readAt, readAt), "Collection unconfirmed");
   assert.equal(coverageLabel({ freshness: { ...fresh, last_success_at: null } }, readAt, readAt), "Collection unconfirmed");
+});
+
+test("market suggestions preserve shared ticker identities and merge the same coin", () => {
+  const stock = { beat_id: "b_012345678901", ticker: "SUI", label: "Sun Communities", asset: "equity" };
+  const sui = { id: "sui", symbol: "SUI", name: "Sui" };
+  const catalogCoin = { beat_id: "b_012345678902", ticker: "SUI", label: "Sui", asset: "crypto" };
+  assert.equal(matchesCatalogCoin(stock, sui), false);
+  assert.equal(matchesCatalogCoin({ ...catalogCoin, label: "A different coin" }, sui), false);
+  assert.equal(matchesCatalogCoin(catalogCoin, sui), true);
+
+  const mixed = workspaceSuggestions([stock], [sui], "$SUI");
+  assert.deepEqual(mixed.map(item => item.asset), ["equity", "crypto"]);
+  assert.equal(chooseSearchResult(mixed, "$SUI", -1), undefined);
+  assert.equal(chooseSearchResult(mixed, "$SUI", 1)?.coin_id, "sui");
+  assert.deepEqual(workspaceSuggestions([stock, catalogCoin], [sui], "sui"), [stock, catalogCoin]);
 });

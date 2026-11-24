@@ -46,11 +46,14 @@ const COLUMNS = [
 ] as const;
 
 // Contact already sits beside the brand on mobile, so keep it out of the grid.
-const MOBILE_LINKS = COLUMNS.flatMap(
-  (column): Array<{ href: string; label: string }> => [...column.links],
-).filter((link) => link.href !== "mailto:contact@rarebird.network");
+const workspaceProductLinks = new Set(["/app", "/tokens", "/pricing", "/status"]);
 
-export default function SiteFooter() {
+export default function SiteFooter({ workspace = false }: { workspace?: boolean } = {}) {
+  const columns = COLUMNS.map(column => ({
+    head: column.head,
+    links: [...column.links].filter(link => !workspace || column.head !== "Product" || workspaceProductLinks.has(link.href)),
+  }));
+  const mobileLinks = columns.flatMap(column => column.links).filter(link => link.href !== "mailto:contact@rarebird.network");
   return (
     <footer className="site">
       <div className="wrap">
@@ -70,7 +73,7 @@ export default function SiteFooter() {
               <p className="footer-tag">Know what’s worth watching.</p>
             </div>
 
-            {COLUMNS.map((column) => (
+            {columns.map((column) => (
               <nav className="footer-col footer-desktop-col" key={column.head} aria-label={column.head}>
                 <span className="footer-head">{column.head}</span>
                 {column.links.map((link) => (
@@ -89,7 +92,7 @@ export default function SiteFooter() {
           </div>
 
           <nav className="footer-mobile-links" aria-label="Footer links">
-            {MOBILE_LINKS.map((link) => (
+            {mobileLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}

@@ -57,10 +57,10 @@ function useMarketSnapshot<T>(path: string) {
   return { snapshot, failed, now };
 }
 
-export function ForecastWorkspace({ compact = false }: { compact?: boolean }) {
+export function ForecastWorkspace({ compact = false, ticker }: { compact?: boolean; ticker?: "BTC" | "ETH" }) {
   const { snapshot, failed, now } = useMarketSnapshot<MarketForecasts>("/v2/forecasts");
   return <div className="rb-brief rb-brief-forecast">
-    <MarketForecastPanel outlook={snapshot ?? undefined} now={now} unavailable={failed} compact={compact} />
+    <MarketForecastPanel outlook={snapshot ?? undefined} now={now} unavailable={failed} compact={compact} ticker={ticker} />
   </div>;
 }
 
