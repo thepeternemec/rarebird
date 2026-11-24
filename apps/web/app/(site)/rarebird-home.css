@@ -58,34 +58,17 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
 .rb-perspective-tabs button + button { border-left: 1px solid var(--border-subtle); }
 .rb-perspective-tabs button[aria-selected="true"] { color: var(--text-primary); border-bottom-color: var(--text-primary); background: color-mix(in srgb, var(--text-primary) 5%, transparent); }
 .rb-perspective-tabs button:focus-visible { outline-offset: -6px; }
-.rb-perspective-body { display: grid; grid-template-columns: 1fr 1.15fr; min-height: 460px; }
+.rb-perspective-body { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); min-height: 460px; }
 .rb-perspective-visual {
   display: grid;
-  justify-items: center;
   align-content: center;
+  justify-items: center;
   min-width: 0;
-  gap: 12px;
-  padding: 22px clamp(12px, 2.5vw, 32px) 33px;
+  padding: clamp(22px, 3vw, 38px);
   border-right: 1px solid var(--border-subtle);
-  background: radial-gradient(ellipse at 53% 39%, #1e2024 0%, transparent 68%), #0b0c0e;
-  color: #f0f1f3;
+  background: linear-gradient(145deg, var(--bg-raised), var(--bg-base) 84%);
+  color: var(--text-primary);
 }
-.rb-market-chart { display: block; width: 100%; height: auto; max-width: 560px; }
-.rb-market-chart-grid { fill: none; stroke: #bdc7d8; stroke-opacity: .075; stroke-width: .7; }
-.rb-market-chart-floor { fill: none; stroke: #a4afc0; stroke-opacity: .12; stroke-width: .7; }
-.rb-market-chart-floor path:first-child { stroke-opacity: .38; }
-.rb-market-bar-enter, .rb-market-bar { transform-box: fill-box; transform-origin: center bottom; }
-.rb-market-bar-front { stroke: #b6c1d2; stroke-opacity: .16; stroke-width: .7; }
-.rb-market-bar-side { fill: #3a424e; fill-opacity: .65; stroke: #9aa7bb; stroke-opacity: .17; stroke-width: .6; }
-.rb-market-bar-top { fill: #a8b4c8; fill-opacity: .58; stroke: #dce4f0; stroke-opacity: .26; stroke-width: .6; }
-.rb-market-curve, .rb-market-curve-sheen { fill: none; stroke: #dce2ec; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
-.rb-market-curve-sheen { stroke: #fff; stroke-width: 2.8; stroke-dasharray: .14 .86; filter: drop-shadow(0 0 5px #e3ebff80); }
-.rb-market-end-guide { fill: none; stroke: #c2cbd9; stroke-width: .8; stroke-opacity: .28; stroke-dasharray: 2 6; }
-.rb-market-end-ring { fill: #dae2f0; fill-opacity: .1; stroke: #dae2f0; stroke-opacity: .22; transform-box: fill-box; transform-origin: center; }
-.rb-market-end-dot { fill: #f1f4fa; filter: drop-shadow(0 0 6px #e3ebff80); }
-.rb-direction-caption { display: grid; gap: 5px; text-align: center; }
-.rb-direction-caption span { font-size: clamp(30px, 3vw, 42px); letter-spacing: -.04em; line-height: 1.2; }
-.rb-direction-caption small { color: #c3c5cb; font-size: 12px; }
 .rb-perspective-copy { padding: 42px; }
 .rb-perspective-copy h3 { margin-top: 18px; font-size: 28px; line-height: 1.2; letter-spacing: -.035em; font-weight: 500; max-width: 420px; }
 .rb-perspective-copy > p:not(.rb-home-eyebrow) { margin-top: 16px; font-size: 14px; line-height: 1.75; color: var(--text-secondary); }
@@ -115,20 +98,10 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
   .rb-home-path-down { animation: rb-home-flow 12s -6s linear infinite; }
   .rb-home-emblem { animation: rb-home-float 8s ease-in-out infinite; }
   .rb-perspective-body { animation: rb-home-arrive .3s ease-out both; }
-  .rb-market-bar-enter { animation: rb-market-bar-rise .85s cubic-bezier(.22, 1, .36, 1) var(--bar-delay) both; }
-  .rb-market-bar { animation: rb-market-bar-breathe 5.8s ease-in-out var(--bar-phase) infinite; }
-  .rb-market-curve { stroke-dasharray: 1; animation: rb-market-curve-draw 1.8s .15s ease-out both; }
-  .rb-market-curve-sheen { animation: rb-market-curve-flow 5s 1.8s linear infinite; }
-  .rb-market-end-ring { animation: rb-market-end-pulse 3s ease-out infinite; }
 }
 @keyframes rb-home-flow { to { stroke-dashoffset: -1; } }
 @keyframes rb-home-float { 50% { transform: translateY(-9px) rotate(-5deg); } }
 @keyframes rb-home-arrive { from { opacity: .4; transform: translateY(5px); } to { opacity: 1; transform: none; } }
-@keyframes rb-market-bar-rise { from { opacity: 0; transform: scaleY(.05); } to { opacity: 1; transform: scaleY(1); } }
-@keyframes rb-market-bar-breathe { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.96); } }
-@keyframes rb-market-curve-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes rb-market-curve-flow { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes rb-market-end-pulse { 0% { opacity: .8; transform: scale(1); } 85%, 100% { opacity: 0; transform: scale(2.3); } }
 @media (max-width: 1000px) {
   .rb-home .rb-home-width { padding-inline: 32px; }
   .rb-home .rb-home-hero { min-height: 740px; padding-top: 140px; padding-bottom: 75px; }
@@ -160,12 +133,8 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
   .rb-perspective { margin-top: 26px; overflow: clip; }
   .rb-perspective-tabs { position: sticky; top: calc(64px + env(safe-area-inset-top)); z-index: 3; background: var(--bg-raised); }
   .rb-perspective-tabs button { font-size: 12px; line-height: 1.4; min-height: 64px; flex-direction: column; gap: 4px; padding: 8px 3px; }
-  .rb-perspective-body { grid-template-columns: 1fr; }
-  .rb-perspective-visual { gap: 8px; padding: 18px 16px 8px; border-right: 0; border-bottom: 1px solid var(--border-subtle); }
-  .rb-market-chart { max-width: 380px; }
-  .rb-direction-caption { grid-row: 1; display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 12px; text-align: left; }
-  .rb-direction-caption span { font-size: clamp(24px, 7vw, 28px); }
-  .rb-direction-caption small { max-width: 16ch; font-size: 12px; line-height: 1.5; text-align: right; }
+  .rb-perspective-body { grid-template-columns: minmax(0, 1fr); }
+  .rb-perspective-visual { padding: 18px 16px 14px; border-right: 0; border-bottom: 1px solid var(--border-subtle); }
   .rb-perspective-copy { padding: 22px 20px; }
   .rb-perspective-copy h3 { margin-top: 12px; font-size: 25px; }
   .rb-perspective-copy > p:not(.rb-home-eyebrow) { font-size: 15px; line-height: 1.65; }
