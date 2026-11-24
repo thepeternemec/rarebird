@@ -93,7 +93,7 @@ for (let attempt = 0; attempt < 32; attempt++) {
       assert.ok(!/event.intelligence/i.test(home)); assert.ok(home.includes('id="agent-workflow"'));
       assert.ok(home.includes('href="/app"') && home.includes('href="/for-agents"'), "app and agent are both accessible from the homepage");
       const app = await fetch(origin + "/app?verify=discovery").then(result => result.text());
-      assert.ok(app.includes("Filter market developments"), "the workspace offers stock and crypto discovery");
+      assert.ok(app.includes('aria-label="Market"') && app.includes('href="/app?market=crypto"'), "the workspace offers stock and crypto discovery");
       assert.ok(home.includes('href="/ask"'), "visitors can open the ticker lookup");
       const pilots = [["NVDA", "b_bb964843350e"], ["AAPL", "b_7d5acdda6186"], ["MSFT", "b_a723a1d2787f"],
         ["GOOGL", "b_c0c3f9282a94"], ["BTC", "b_06c91290de1c"], ["ETH", "b_edbc5b5af755"]];
@@ -107,9 +107,9 @@ for (let attempt = 0; attempt < 32; attempt++) {
         assert.equal(pilot.analysis.error, null, ticker + " analysis must recover");
         assert.ok(Date.now() - Date.parse(pilot.analysis.last_success_at) < 90 * 60000, ticker + " needs a recent successful analysis");
       }
-      const workspace = await fetch(origin + "/intelligence?verify=readiness").then(result => result.text());
-      assert.ok(workspace.includes("Reading the stored signal."), "the readable readiness update is deployed");
-      assert.ok(workspace.includes("What to investigate now"), "the opportunity brief is rendered");
+      const workspace = await fetch(origin + "/app?beat=b_bb964843350e").then(result => result.text());
+      assert.ok(workspace.includes("Latest news") && workspace.includes("Market evidence"), "the selected ticker shows news and evidence");
+      assert.ok(workspace.includes("Reviews and filings"), "the selected ticker offers its filings");
       const brief = await read("/api/v2/opportunities");
       assert.equal(brief.coverage.length, 6);
       assert.ok(brief.coverage.every(asset => Array.isArray(asset.holds)));
