@@ -67,7 +67,6 @@
   stroke-width: 2.6;
   stroke-linecap: round;
   stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
 }
 .rb-market-volume rect {
   fill: var(--chart-volume);
@@ -141,6 +140,7 @@
 @media (max-width: 760px) {
   .rb-market-readout strong { font-size: 36px; }
   .rb-market-grid text { font-size: 16px; }
+  .rb-market-price-line { stroke-width: 3.2; }
   .rb-market-replay { min-height: 44px; }
   .rb-market-annotation { display: block; padding-bottom: 4px; }
   .rb-market-annotation > span { display: block; }
@@ -149,8 +149,7 @@
 @media (prefers-reduced-motion: no-preference) {
   .rb-market-chart [data-animate="true"] .rb-market-area { animation: rb-chart-fill .95s .22s ease-out both; }
   .rb-market-chart [data-animate="true"] .rb-market-price-line {
-    stroke-dasharray: 1;
-    animation: rb-chart-draw 1.4s cubic-bezier(.22, .78, .32, 1) both;
+    animation: rb-chart-draw 1.4s cubic-bezier(.22, .78, .32, 1);
   }
   .rb-market-chart [data-animate="true"] .rb-market-volume rect {
     animation: rb-chart-bar .56s cubic-bezier(.2, .8, .28, 1) var(--bar-delay) both;
@@ -159,6 +158,9 @@
   .rb-market-chart [data-animate="true"] .rb-market-cursor { animation: rb-chart-fill .34s .96s ease-out both; }
 }
 
-@keyframes rb-chart-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes rb-chart-draw {
+  from { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  to { stroke-dasharray: 1; stroke-dashoffset: 0; }
+}
 @keyframes rb-chart-bar { from { transform: scaleY(.04); opacity: .2; } to { transform: scaleY(1); opacity: 1; } }
 @keyframes rb-chart-fill { from { opacity: 0; } to { opacity: 1; } }

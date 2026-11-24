@@ -86,13 +86,17 @@ export default function SignalGraphScene({
           <stop offset="1" stopColor="var(--rb-scene-line)" stopOpacity=".03" />
         </linearGradient>
         <radialGradient id={orbId} cx="31%" cy="23%" r="82%">
-          <stop offset="0" stopColor="#4d5057" /><stop offset=".6" stopColor="#1d2026" /><stop offset="1" stopColor="#0d0f13" />
+          <stop offset="0" stopColor="var(--rb-scene-orb-highlight)" />
+          <stop offset=".6" stopColor="color-mix(in srgb, var(--rb-scene-orb-highlight) 26%, var(--rb-scene-orb-shadow))" />
+          <stop offset="1" stopColor="var(--rb-scene-orb-shadow)" />
         </radialGradient>
         <radialGradient id={activeOrbId} cx="30%" cy="21%" r="92%">
-          <stop offset="0" stopColor="#737780" /><stop offset=".54" stopColor="#34383f" /><stop offset="1" stopColor="#111318" />
+          <stop offset="0" stopColor="var(--rb-scene-active-orb-highlight)" />
+          <stop offset=".54" stopColor="color-mix(in srgb, var(--rb-scene-active-orb-highlight) 35%, var(--rb-scene-active-orb-shadow))" />
+          <stop offset="1" stopColor="var(--rb-scene-active-orb-shadow)" />
         </radialGradient>
         <radialGradient id={glowId}>
-          <stop offset="0" stopColor="#dae0eb" stopOpacity=".16" /><stop offset="1" stopColor="#dae0eb" stopOpacity="0" />
+          <stop offset="0" stopColor="var(--rb-scene-ink)" stopOpacity=".16" /><stop offset="1" stopColor="var(--rb-scene-ink)" stopOpacity="0" />
         </radialGradient>
       </defs>
 
