@@ -7,5 +7,3 @@ The agent selects up to four existing capabilities: research, catalog developmen
 History identifies the subject and task. It never supplies current evidence. A named new asset replaces the previous scope; comparisons can retain it. Every turn checks current sources. When the planning gateway is unavailable, deterministic routing retains bounded subject and tool context. Unvalidated interpretation falls back to attributed source observations.
 
 `GET /api/v2/agent` returns a cached, proactive briefing; optional `beat_id` and `market` narrow it. This GET performs only existing reads and never invokes planning or answer generation. The browser refreshes this briefing while the page is visible. It does not start collection, send notifications, connect wallets, or trade.
-
-For browser-based research, use [Ask Rarebird](https://www.rarebird.network/app/research).

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ChevronDown, MessageSquareText, Newspaper } from "lucide-react";
+import { ChevronDown, FileText, Newspaper } from "lucide-react";
 import SiteFooter from "./site-footer";
 import { BrandWordmark } from "./brand-mark";
 import MobileNavigation from "./mobile-navigation";
@@ -9,11 +9,12 @@ import "./workspace-shell.css";
 
 const PRIMARY = [
   { href: "/app", label: "News signals", icon: Newspaper },
-  { href: "/app/research", label: "Ask Rarebird", icon: MessageSquareText },
+  { href: "/app/research", label: "Reviews and filings", icon: FileText },
 ] as const;
 
 const TOOLS = [
   { href: "/ask", label: "Ticker research", description: "Research a stock or token" },
+  { href: "/app/asset-inspector", label: "Asset inspector", description: "Inspect evidence for a pilot asset" },
   { href: "/dashboard", label: "News map", description: "Explore reporting across the catalog" },
   { href: "/app/crypto-prices", label: "Crypto prices", description: "Open the full crypto price board" },
   { href: "/crypto", label: "Crypto indicators", description: "See funding, volume, sentiment and breadth" },

@@ -13,7 +13,6 @@
   gap: 12px;
 }
 .opportunity-brief-header { flex-wrap: wrap; }
-.opportunity-brief-header h2 { margin: 0; font-size: clamp(24px, 4vw, 36px); letter-spacing: -.035em; }
 .opportunity-brief p { margin: 8px 0 0; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
 .opportunity-brief .opportunity-status { margin: 12px 0 16px; font-size: 12px; }
 .opportunity-refresh {
@@ -30,7 +29,7 @@
 }
 .opportunity-refresh:disabled { opacity: .6; cursor: default; }
 .opportunity-lanes, .opportunity-asset-grid { display: grid; gap: 12px; }
-.opportunity-lanes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.opportunity-lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .opportunity-lane, .opportunity-asset-grid > li {
   min-width: 0;
   border: 1px solid var(--border-default);
@@ -38,7 +37,7 @@
   padding: 16px;
   background: var(--bg-raised);
 }
-.opportunity-lane h3, .opportunity-asset-grid h3 { margin: 0; font-size: 16px; }
+.opportunity-lane h2, .opportunity-asset-grid h3 { margin: 0; font-size: 16px; }
 .opportunity-lane ul, .opportunity-asset-grid, .opportunity-figures { margin: 12px 0 0; padding: 0; list-style: none; }
 .opportunity-lane li + li { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-default); }
 .opportunity-lane time, .opportunity-lane li > span { display: block; margin-top: 8px; color: var(--text-secondary); font-size: 12px; }
