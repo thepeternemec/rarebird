@@ -7,7 +7,7 @@ Start with the guide that matches what you want to do.
 | Goal | Guide |
 | --- | --- |
 | Try company or crypto news | [Homepage search](https://www.rarebird.network/#company-news) |
-| See what a signal adds | [Live intelligence explorer](https://www.rarebird.network/intelligence) |
+| See what a signal adds | [News signals](https://www.rarebird.network/app) |
 | Connect an AI assistant | [MCP quickstart](https://www.rarebird.network/docs/quickstart) |
 | Make an API request | [Integration examples](../examples/README.md) |
 | Request one-minute news collection | [Collection frequency and opt-in sessions](COLLECTION.md) |

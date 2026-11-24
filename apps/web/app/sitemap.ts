@@ -9,7 +9,6 @@ const PAGES = [
   "/app/forecasts",
   "/app/research",
   "/connect",
-  "/intelligence",
   "/ask",
   "/crypto",
   "/tokens",

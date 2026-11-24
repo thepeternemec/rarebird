@@ -16,7 +16,7 @@ Rarebird brings market developments, source evidence and risk context into one w
 
 | | What Rarebird gives you |
 | --- | --- |
-| **Find what moved** | Follow market developments across 2,030 stock and crypto topics. Open the original source and see when it was published and recorded. [Market checks](https://www.rarebird.network/intelligence#discovery) |
+| **Find what moved** | Follow market developments across 2,030 stock and crypto topics. Open the original source and see when it was published and recorded. [News signals](https://www.rarebird.network/app) |
 | **Investigate the risk** | Look up a ticker and get a brief with supporting evidence, downside risks and what to check next. A six-asset pilot measures unusual moves, volume and liquidity. [Ticker research](https://www.rarebird.network/ask) |
 | **Check the track record** | Inspect experimental hourly BTC and ETH forecasts and compare their outcomes with a historical baseline. [Forecast scorecard](https://www.rarebird.network/app/forecasts) |
 

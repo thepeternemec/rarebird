@@ -7,10 +7,14 @@ export const metadata = {
   alternates: { canonical: "/app" },
 };
 
-export default function WorkspacePage() {
+export default async function WorkspacePage({ searchParams }: {
+  searchParams: Promise<{ market?: string }>;
+}) {
+  const { market } = await searchParams;
+  const initialMarket = market === "crypto" || market === "equity" ? market : "all";
   return <WorkspaceShell active="/app">
     <div className="rb-news-home">
-      <MarketDiscovery />
+      <MarketDiscovery initialMarket={initialMarket} />
       <div id="how-it-works">
         <WorkspaceEvidence title="How Rarebird checks a signal">
           <p>Rarebird groups related reporting and records when the evidence arrived. Each signal links to its sources and suggests what to verify next.</p>

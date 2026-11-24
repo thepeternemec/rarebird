@@ -1,4 +1,4 @@
-# Market checks conversation
+# Agent conversations
 
 `POST /api/v2/agent` accepts a `question` (3–600 characters), optional `beat_ids` (up to three catalog identities), optional `market` (`equity` or `crypto`), and up to four recent `history` turns. Each turn carries `question`, `beat_ids`, and optional `answer`, `tools`, `context`, and `token_asset`.
 
@@ -8,4 +8,4 @@ History identifies the subject and task. It never supplies current evidence. A n
 
 `GET /api/v2/agent` returns a cached, proactive briefing; optional `beat_id` and `market` narrow it. This GET performs only existing reads and never invokes planning or answer generation. The browser refreshes this briefing while the page is visible. It does not start collection, send notifications, connect wallets, or trade.
 
-Market checks at `/intelligence` uses this interface for its conversation, follow-up context, relevant result cards, and suggested next questions. Existing dedicated app pages and manual inspectors remain available.
+For browser-based research, use [Ask Rarebird](https://www.rarebird.network/app/research).

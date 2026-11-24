@@ -69,7 +69,7 @@ export default function LandingNewsLookup() {
     <CatalogSearch id="landing-company-query" className="landing-lookup-search" onSelect={setAsset} />
     <div className="landing-lookup-suggestions" role="group" aria-label="Try a company or asset"><span>Try</span>{SUGGESTIONS.map(item => <button type="button" key={item.beat_id} aria-pressed={item.beat_id === asset.beat_id} onClick={() => setAsset(item)}>{item.label}</button>)}</div>
     <Coverage key={asset.beat_id} asset={asset} />
-    <div className="landing-lookup-bridge"><span>Start with the reporting.<br /><strong>Find the context behind it.</strong></span><a href="/intelligence">Explore signals <ArrowRight size={15} aria-hidden="true" /></a></div>
+    <div className="landing-lookup-bridge"><span>Start with the reporting.<br /><strong>Find the context behind it.</strong></span><a href="/app">Explore signals <ArrowRight size={15} aria-hidden="true" /></a></div>
     <noscript><p>Enable JavaScript to search live coverage, or <a href="/docs/quickstart">connect your agent</a>.</p></noscript>
   </aside>;
 }

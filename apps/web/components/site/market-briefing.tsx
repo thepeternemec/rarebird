@@ -108,6 +108,6 @@ export default function MarketBriefingCard({ compact = false, showForecasts = tr
       </>}
     </dl>}
     {watch && <p className="rb-brief-note">{watch.checked} of {watch.total} pilot markets current at briefing.</p>}
-    {compact && <a className="rb-brief-detail" href="/intelligence#opportunities">See all market checks <ArrowUpRight size={14} aria-hidden="true" /></a>}
+    {compact && <a className="rb-brief-detail" href="/app/research#opportunities">See reviews and filings <ArrowUpRight size={14} aria-hidden="true" /></a>}
   </section>;
 }

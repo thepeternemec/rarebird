@@ -27,7 +27,7 @@ export default function DocsOverview() {
         <div className="docs-free-note"><Check size={14} aria-hidden="true" /> Free public access <span>·</span> No account, key or card</div>
       </header>
 
-      <div className="docs-callout"><strong>From reporting to meaningful signals.</strong><p>Explore a reported change, why it could matter and what your agent should check next. The pilot adds measured market checks while keeping detailed calculations optional. <a href="/intelligence">See a real signal.</a> <a href="/docs/intelligence">Understand the measurements.</a></p></div>
+      <div className="docs-callout"><strong>From reporting to meaningful signals.</strong><p>Explore a reported change, why it could matter and what your agent should check next. The pilot adds measured market checks while keeping detailed calculations optional. <a href="/app">See a real signal.</a> <a href="/docs/intelligence">Understand the measurements.</a></p></div>
 
       <section className="docs-section" aria-labelledby="developer-quickstart">
         <h2 id="developer-quickstart">Your first request.</h2>

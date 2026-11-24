@@ -266,7 +266,7 @@ export default function CryptoMarketBoard() {
       {market.snapshot && view === "Watchlist" && <p className="rb-coin-watch-note">Saved in this browser{unavailableSaved > 0 && " · " + unavailableSaved + " saved outside the current snapshot"}</p>}
       {market.snapshot && rows.length === 0 && <p className="rb-coin-empty" role="status">{view === "Watchlist" && saved.length === 0
         ? <>Save coins with the star next to their name. <button type="button" onClick={() => selectView("All coins")}>Browse all coins</button></>
-        : term ? <>No coins in this view match the search. <a href="/intelligence#discovery">Search the Rarebird news catalog</a></>
+        : term ? <>No coins in this view match the search. <a href="/app">Search the Rarebird news catalog</a></>
           : "No coins in this view right now."}</p>}
       {rows.length > 0 && <>
         <div className="rb-coin-table-scroll"><table className="rb-coin-table">

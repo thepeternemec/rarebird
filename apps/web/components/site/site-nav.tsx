@@ -7,17 +7,16 @@ import MobileNavigation from "./mobile-navigation";
 import "./mobile-navigation.css";
 
 const LINKS = [
-  { href: "/intelligence", label: "Market checks", description: "See which developments passed the market checks" },
   { href: "/for-agents", label: "Agent", description: "Connect Rarebird to your AI assistant" },
   { href: "/pricing", label: "Pricing", description: "See the Rarebird Pro membership" },
   { href: "/docs", label: "Developers", description: "Connect with MCP and REST" },
 ];
 
 const MOBILE_LINKS = [
-  LINKS[0],
+  { href: "/app", label: "News signals", description: "Follow news and price moves for stocks and crypto" },
   { href: "/ask", label: "Ticker research", description: "Research a stock or crypto asset" },
   { href: "/app/forecasts", label: "Forecasts", description: "Explore forecasts and recorded outcomes" },
-  ...LINKS.slice(1),
+  ...LINKS,
 ];
 
 export default function SiteNav({ active }: { active?: string }) {
