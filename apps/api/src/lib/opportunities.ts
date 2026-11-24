@@ -1,5 +1,5 @@
 import {
-  QUANT_POLICY_VERSION, SignalContextIdSchema,
+  BEAT_ID_PATTERN, QUANT_POLICY_VERSION, SignalContextIdSchema,
   type IntelligenceResponse, type SignalContextId,
 } from "@rarebird/contracts";
 import { z } from "zod";
@@ -12,6 +12,7 @@ import { readCatalysts } from "./catalysts.js";
 const inputSchema = z.object({
   context: SignalContextIdSchema.default("fundamentals"),
   limit: z.number().int().min(1).max(6).default(6),
+  beat_id: z.string().regex(BEAT_ID_PATTERN).optional(),
 }).strict();
 
 function recent(value: string | null | undefined, now: number, maxAge: number) {
@@ -152,11 +153,12 @@ export function buildOpportunityBrief(outputs: IntelligenceResponse[], context: 
 
 export async function readOpportunities(input: unknown) {
   const parsed = inputSchema.safeParse(input);
-  if (!parsed.success) throw new NewsError("invalid_request", "Use a valid context and an integer limit from 1 to 6.", 400);
-  const { context, limit } = parsed.data;
+  if (!parsed.success) throw new NewsError("invalid_request", "Use a valid context, optional beat_id and an integer limit from 1 to 6.", 400);
+  const { context, limit, beat_id: beatId } = parsed.data;
+  const beats = beatId ? PILOT_BEATS.filter(beat => beat.beat_id === beatId) : PILOT_BEATS;
   const [outputs, catalysts] = await Promise.all([
-    Promise.all(PILOT_BEATS.map(beat => readIntelligence(beat.beat_id, context))),
-    readCatalysts({ limit }),
+    Promise.all(beats.map(beat => readIntelligence(beat.beat_id, context))),
+    readCatalysts({ limit, beat_id: beatId }),
   ]);
   return { ...buildOpportunityBrief(outputs, context, limit, Date.now()), catalysts };
 }

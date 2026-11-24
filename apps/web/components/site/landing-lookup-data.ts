@@ -1,4 +1,7 @@
 export type LookupAsset = { beat_id: string; label: string; ticker: string; asset: string };
+type SearchIdentity = Pick<LookupAsset, "ticker" | "label">;
+export type MarketCoin = { id: string; name: string; symbol: string };
+export type CoinSuggestion = SearchIdentity & { coin_id: string; asset: "crypto" };
 export type LookupArticle = { id: string; beat_id: string; title: string; source: string; url: string; published_at: string };
 export type LookupNews = { items: LookupArticle[]; freshness: { status: "fresh" | "stale" | "unavailable"; last_success_at: string | null } };
 
@@ -10,12 +13,32 @@ export async function findAssets(base: string, query: string, signal: AbortSigna
   return data.topics.slice(0, 6);
 }
 
-export function chooseSearchResult(topics: LookupAsset[], query: string, index: number) {
+export function chooseSearchResult<T extends SearchIdentity>(topics: T[], query: string, index: number) {
   if (topics[index]) return topics[index];
   const term = query.normalize("NFKC").trim().replace(/^\$/, "").toLowerCase();
   const symbol = (value: string) => value.toLowerCase().replace(/-([a-z])$/, ".$1");
   const exact = topics.filter(topic => symbol(topic.ticker) === symbol(term) || topic.label.toLowerCase() === term);
   return exact.length === 1 ? exact[0] : topics.length === 1 ? topics[0] : undefined;
+}
+
+const coinName = (value: string) => value.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+const searchTerm = (value: string) => value.normalize("NFKC").trim().replace(/^\$/, "").toLowerCase();
+
+export function matchesCatalogCoin(topic: LookupAsset, coin: MarketCoin) {
+  const name = coinName(topic.label);
+  return topic.asset === "crypto" && topic.ticker.toUpperCase() === coin.symbol.toUpperCase()
+    && Boolean(name) && (name === coinName(coin.name) || name === coinName(coin.id));
+}
+
+export function workspaceSuggestions(topics: LookupAsset[], coins: readonly MarketCoin[], query: string) {
+  const term = searchTerm(query);
+  if (!term) return [];
+  const coinSuggestions: CoinSuggestion[] = coins.filter(coin =>
+    [coin.name, coin.symbol].some(value => searchTerm(value).includes(term))
+      && !topics.some(topic => matchesCatalogCoin(topic, coin))
+  ).map(coin => ({ coin_id: coin.id, label: coin.name, ticker: coin.symbol, asset: "crypto" }));
+  const exact = (item: SearchIdentity) => searchTerm(item.ticker) === term || searchTerm(item.label) === term;
+  return [...topics, ...coinSuggestions].sort((a, b) => Number(exact(b)) - Number(exact(a))).slice(0, 8);
 }
 
 export async function readCoverage(base: string, beatId: string, signal: AbortSignal): Promise<LookupNews> {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, ExternalLink, RefreshCw } from "lucide-react";
 import type { IntelligenceResponse, SignalContextId } from "@rarebird/contracts";
 import "./signal-inspector.css";
@@ -26,7 +26,7 @@ const CONTEXTS = [
 const date = (value: string) => new Date(value).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
 
 /** Selecting a context reads stored analysis; it never creates model work. */
-function StoredSignal({ asset, context }: { asset: Asset; context: SignalContextId }) {
+function StoredSignal({ asset, context, embedded }: { asset: Asset; context: SignalContextId; embedded: boolean }) {
   const [data, setData] = useState<IntelligenceResponse | null>(null);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [attempt, setAttempt] = useState(0);
@@ -103,22 +103,24 @@ function StoredSignal({ asset, context }: { asset: Asset; context: SignalContext
       </article> : null}
       <QuantitativePanel bundle={data?.quantitative} decision={construction?.quantitative} signalId={signal?.id} version={signal?.version} construction={construction} analysisStatus={data?.status} loading={phase === "loading" && !data} readStale={readStale} />
     </div>
-    <div className="signal-connect-value"><div><strong>Bring this context into your agent’s answers.</strong><p>The reported change, the interpretation and what to check next—through one connection.</p></div><a href="/docs/quickstart">Connect your agent <ArrowRight size={15} aria-hidden="true" /></a></div>
+    {!embedded && <div className="signal-connect-value"><div><strong>Bring this context into your agent’s answers.</strong><p>The reported change, the interpretation and what to check next—through one connection.</p></div><a href="/docs/quickstart">Connect your agent <ArrowRight size={15} aria-hidden="true" /></a></div>}
     <div className="signal-inspector-foot"><span>Headline-based research pilot · Source collection: {data?.freshness.status ?? "checking"}</span><details><summary>About this stored view</summary><p>{count} stored signals · {constructedCount} constructed. {data?.analysis.last_success_at ? "Last analysis " + date(data.analysis.last_success_at) + "." : "Analysis is scheduled."} Market checks run every five minutes; this page refreshes each minute while visible.{data?.analysis.coverage_truncated ? " Evidence is a selected coverage snapshot." : ""}</p><a href="/docs/intelligence">Read how signals and measurements work ↗</a></details></div>
   </>;
 }
 
-export default function SignalInspector() {
+export default function SignalInspector({ beatId }: { beatId?: string } = {}) {
   const [ticker, setTicker] = useState<string>("NVDA");
   const [context, setContext] = useState<SignalContextId>("fundamentals");
-  const asset = ASSETS.find(item => item.ticker === ticker) ?? ASSETS[0];
-  return <aside className="signal-inspector" aria-label="Explore a real signal">
-    <header><span><i aria-hidden="true" /> EXPLORE A REAL SIGNAL</span><span>REPORTING → CONTEXT → YOUR AGENT</span></header>
+  const id = useId();
+  const asset = ASSETS.find(item => beatId ? item.beatId === beatId : item.ticker === ticker);
+  if (!asset) return <p>Detailed market evidence is unavailable for this asset.</p>;
+  return <aside className="signal-inspector" aria-label={beatId ? asset.label + " market evidence" : "Explore a real signal"}>
+    {!beatId && <header><span><i aria-hidden="true" /> EXPLORE A REAL SIGNAL</span><span>REPORTING → CONTEXT → YOUR AGENT</span></header>}
     <div className="signal-inspector-filters">
-    <div className="signal-inspector-asset"><label htmlFor="inspector-asset">Follow an asset</label><select id="inspector-asset" value={ticker} onChange={event => setTicker(event.target.value)}>{ASSETS.map(item => <option key={item.ticker} value={item.ticker}>{item.label} / {item.ticker}</option>)}</select></div>
-    <div className="signal-inspector-context"><label htmlFor="inspector-context">Focus</label><select id="inspector-context" value={context} onChange={event => setContext(event.target.value as SignalContextId)}>{CONTEXTS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></div>
+    {!beatId && <div className="signal-inspector-asset"><label htmlFor={id + "-asset"}>Follow an asset</label><select id={id + "-asset"} value={ticker} onChange={event => setTicker(event.target.value)}>{ASSETS.map(item => <option key={item.ticker} value={item.ticker}>{item.label} / {item.ticker}</option>)}</select></div>}
+    <div className="signal-inspector-context"><label htmlFor={id + "-context"}>Focus</label><select id={id + "-context"} value={context} onChange={event => setContext(event.target.value as SignalContextId)}>{CONTEXTS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></div>
     </div>
     <FastCollectionControl key={asset.beatId} beatId={asset.beatId} />
-    <StoredSignal key={asset.beatId + context} asset={asset} context={context} />
+    <StoredSignal key={asset.beatId + context} asset={asset} context={context} embedded={Boolean(beatId)} />
   </aside>;
 }

@@ -66,3 +66,4 @@
 @media (max-width: 460px) {
   .rb-forecast-assets { grid-template-columns: 1fr; }
 }
+.rb-forecast-assets[data-single="true"] { grid-template-columns: minmax(0, 1fr); }

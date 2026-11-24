@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight, RefreshCw } from "lucide-react";
 import type { OpportunityBrief as Brief } from "@rarebird/api";
 import type { ReportedComparison } from "@rarebird/contracts";
+import { forecastTickerFor, type WorkspaceMarket } from "@/lib/workspace-links";
 import "./opportunity-brief.css";
 
 const endpoint = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api") + "/v2/opportunities";
@@ -26,7 +27,7 @@ function FinancialComparison({ comparison }: { comparison: ReportedComparison })
   </li>;
 }
 
-export default function OpportunityBrief() {
+export default function OpportunityBrief({ market, beatId }: { market: WorkspaceMarket; beatId?: string }) {
   const [brief, setBrief] = useState<Brief | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable">("loading");
   const [revision, setRevision] = useState(0);
@@ -46,7 +47,8 @@ export default function OpportunityBrief() {
     setStatus("loading");
     async function readBrief() {
       try {
-        const response = await fetch(endpoint, { signal: controller.signal, cache: "no-store" });
+        const path = beatId ? endpoint + "?beat_id=" + encodeURIComponent(beatId) : endpoint;
+        const response = await fetch(path, { signal: controller.signal, cache: "no-store" });
         if (!response.ok) throw new Error("Brief unavailable");
         const next = await response.json() as Brief;
         if (!Array.isArray(next.coverage) || !Array.isArray(next.review)
@@ -60,13 +62,21 @@ export default function OpportunityBrief() {
     }
     void readBrief();
     return () => { active = false; controller.abort(); window.clearTimeout(timeout); };
-  }, [revision]);
+  }, [beatId, revision]);
 
-  const reviews = brief?.review.filter(review => Date.parse(review.market_evidence_until) > Date.now()) ?? [];
-  const filings = brief?.catalysts.items ?? [];
-  return <section className="opportunity-brief" id="opportunities" aria-label="Review candidates and SEC filings">
+  const matches = (id: string) => beatId ? id === beatId : (market === "crypto") === Boolean(forecastTickerFor(id));
+  const coverage = brief?.coverage.filter(asset => matches(asset.beat_id)) ?? [];
+  const reviews = brief?.review.filter(review => matches(review.beat_id) && Date.parse(review.market_evidence_until) > Date.now()) ?? [];
+  const official = brief?.catalysts.coverage.find(asset => asset.beat_id === beatId);
+  const snapshot = official?.snapshot;
+  const filings = (snapshot ? snapshot.filings.map(filing => ({
+    ...filing, beat_id: snapshot.beat_id, label: snapshot.label,
+    reported_revenue: snapshot.comparisons.find(item => item.metric === "revenue" && item.current.filing_id === filing.id),
+  })) : brief?.catalysts.items ?? []).filter(filing => matches(filing.beat_id)).slice(0, 6);
+  const showFilings = market === "equity";
+  return <section className="opportunity-brief" aria-label={showFilings ? "Review candidates and SEC filings" : "Review candidates"}>
     <header className="opportunity-brief-header">
-      <p>Review candidates with current evidence and recent SEC filings.</p>
+      {showFilings && official?.status === "stale" && <p>Showing the last available SEC filing snapshot.</p>}
       <button type="button" className="opportunity-refresh" disabled={status === "loading"} onClick={() => setRevision(value => value + 1)}>
         <RefreshCw size={14} aria-hidden="true" /> Refresh
       </button>
@@ -75,8 +85,8 @@ export default function OpportunityBrief() {
       {status === "loading" ? "Checking the latest evidence…" : status === "unavailable" ? "Reviews and filings are unavailable. Try refreshing." : brief ? `Checked ${dateTime(brief.generated_at)}` : ""}
     </p>
     {brief ? <>
-      <div className="opportunity-lanes">
-        <section className="opportunity-lane" aria-labelledby="opportunity-filings-title">
+      <div className="opportunity-lanes" data-filings={showFilings}>
+        {showFilings && <section className="opportunity-lane" aria-labelledby="opportunity-filings-title">
           <h2 id="opportunity-filings-title">Official filings</h2>
           {filings.length ? <ul>{filings.map(filing => <li key={filing.id}>
             <a href={filing.url} target="_blank" rel="noreferrer">
@@ -85,8 +95,8 @@ export default function OpportunityBrief() {
             <p>{filing.description}</p>
             {filing.reported_revenue ? <p>Revenue {money.format(filing.reported_revenue.current.value)} versus {money.format(filing.reported_revenue.previous.value)} in the comparable prior-year period.</p> : null}
             <time dateTime={filing.accepted_at}>{dateTime(filing.accepted_at)}</time>
-          </li>)}</ul> : <p>{brief.catalysts.status === "unavailable" ? "SEC filing checks are unavailable." : "No qualifying filings in the past 72 hours across issuers with current coverage."}</p>}
-        </section>
+          </li>)}</ul> : <p>{brief.catalysts.status === "unavailable" ? "SEC filing checks are unavailable." : beatId ? "No qualifying filings in the available snapshot." : "No qualifying filings in the past 72 hours across issuers with current coverage."}</p>}
+        </section>}
         <section className="opportunity-lane" aria-labelledby="opportunity-review-title">
           <h2 id="opportunity-review-title">Ready to review</h2>
           {reviews.length ? <ul>{reviews.map(review => <li key={review.alert_id}>
@@ -97,28 +107,28 @@ export default function OpportunityBrief() {
             <p>Reassess if {review.invalidation}</p>
             {review.evidence[0] ? <a href={review.evidence[0].url} target="_blank" rel="noreferrer">{review.evidence[0].source}<ArrowUpRight size={14} aria-hidden="true" /></a> : null}
             <span>Market evidence expires {dateTime(review.market_evidence_until)}</span>
-          </li>)}</ul> : <p>{brief.status === "unavailable" ? "Current market evidence is unavailable." : "No candidates pass the current reporting and market checks."}</p>}
+          </li>)}</ul> : <p>{coverage.some(asset => asset.market === "current") ? "No candidates pass the current reporting and market checks." : "Current market evidence is unavailable."}</p>}
         </section>
       </div>
-      <details className="opportunity-coverage">
-        <summary>Coverage and reported figures</summary>
+      {coverage.length > 0 && <details className="opportunity-coverage">
+        <summary>{showFilings ? "Coverage and reported figures" : "Coverage"}</summary>
         <ul className="opportunity-asset-grid">
-          {brief.coverage.map(asset => {
+          {coverage.map(asset => {
             const official = brief.catalysts.coverage.find(item => item.beat_id === asset.beat_id);
             const comparisons = official?.snapshot?.comparisons ?? [];
             const scored = asset.review_cost_scenario?.scored ?? 0;
             return <li key={asset.beat_id}>
               <h3>{asset.label}</h3>
               <p>Market {asset.market} · Reporting {asset.source_freshness}</p>
-              <p>{official ? `SEC evidence ${official.status}${official.checked_at ? ` · checked ${dateTime(official.checked_at)}` : ""}` : "SEC filing coverage is limited to the four issuers in the pilot."}</p>
+              {showFilings && <p>{official ? `SEC evidence ${official.status}${official.checked_at ? ` · checked ${dateTime(official.checked_at)}` : ""}` : "SEC filing coverage is limited to the four issuers in the pilot."}</p>}
               {asset.holds?.length ? <ul className="opportunity-holds">{asset.holds.map(reason => <li key={reason}>{reason}</li>)}</ul> : null}
               {comparisons.length ? <ul className="opportunity-figures">{comparisons.map(comparison => <FinancialComparison key={comparison.metric} comparison={comparison} />)}</ul> : null}
               {asset.review_cost_scenario ? <p>{scored} scored reviews in the 60-minute cost scenario{scored < 20 ? " · summary available after 20 observations" : ""}</p> : null}
             </li>;
           })}
         </ul>
-        <p>Filing records establish when an issuer disclosed something. Reported figures compare matching periods. Guidance, market expectations, and the effect on prices need separate evidence.</p>
-      </details>
+        {showFilings && <p>Filing records establish when an issuer disclosed something. Reported figures compare matching periods.</p>}
+      </details>}
     </> : null}
   </section>;
 }

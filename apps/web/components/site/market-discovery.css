@@ -1,12 +1,6 @@
 .rb-discovery { min-width: 0; color: var(--text-primary); margin-bottom: 22px; }
-.rb-discovery h1 { margin: 0 0 6px; font-size: clamp(30px, 5vw, 44px); line-height: 1.08; letter-spacing: -.045em; font-weight: 600; }
-.rb-discovery-intro { margin: 0 0 18px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
 .rb-discovery-meta { margin: 10px 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
-.rb-discovery-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px 14px; margin: 12px 0; }
-.rb-discovery-search { width: 100%; --catalog-background: var(--bg-input); }
-.rb-discovery-search input { font-size: 16px; }
-.rb-discovery-tabs { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--border-default); border-radius: 11px; background: var(--bg-base); }
-.rb-discovery-tabs button, .rb-discovery-selection button, .rb-discovery-more {
+.rb-discovery-more {
   min-height: 44px;
   padding: 5px 13px;
   border: 1px solid transparent;
@@ -16,7 +10,6 @@
   font: 500 13px/1.4 var(--font-sans);
   cursor: pointer;
 }
-.rb-discovery-tabs button[aria-pressed="true"] { background: var(--bg-raised); border-color: var(--border-default); color: var(--text-primary); }
 .rb-discovery :is(a, button, summary):focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
 .rb-discovery-list { display: grid; gap: 10px; list-style: none; padding: 0; margin: 12px 0; }
 .rb-discovery-list > li, .rb-signal-selected {
@@ -42,13 +35,7 @@
 .rb-discovery a:hover, .rb-signal-quote a:hover { color: var(--text-primary); }
 .rb-discovery-more { width: 100%; border-color: var(--border-default); color: var(--text-primary); }
 .rb-discovery-more:hover { background: var(--bg-raised); }
-.rb-discovery-reporting h2 { margin: 12px 0 0; font-size: 16px; }
 .rb-signal-selected { margin-bottom: 12px; }
-.rb-discovery-selection { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
-.rb-discovery-selection p { flex: 1; margin: 0; font-size: 14px; }
-.rb-discovery-selection strong { font-family: var(--font-mono); }
-.rb-discovery-selection a { padding: 10px 0; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
-.rb-discovery-selection button { padding: 0; width: 44px; display: grid; place-items: center; }
 .rb-signal-quote, .rb-signal-price-note { margin-top: 10px; padding: 9px 0 0; border-top: 1px solid var(--border-default); color: var(--text-secondary); font-size: 12px; }
 .rb-signal-quote iframe { display: block; border: 0; width: 100%; max-width: 420px; height: 86px; }
 .rb-signal-quote a, .rb-signal-price-note a { display: inline-block; color: var(--text-secondary); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
@@ -60,7 +47,3 @@
 [data-theme="light"] .rb-signal-crypto [data-direction="up"] { color: #176944; }
 [data-theme="light"] .rb-signal-crypto [data-direction="down"] { color: #a83440; }
 .rb-signal-crypto small { color: var(--text-secondary); font-size: 11px; font-weight: 400; }
-@media (max-width: 600px) {
-  .rb-discovery-controls { grid-template-columns: minmax(0, 1fr); }
-  .rb-discovery-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
