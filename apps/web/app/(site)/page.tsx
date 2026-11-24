@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { legacyMarketDestination } from "@/lib/legacy-market-link";
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Bot, Search, Terminal } from "lucide-react";
 import SiteNav from "@/components/site/site-nav";
 import SiteFooter from "@/components/site/site-footer";
@@ -25,8 +26,8 @@ const RESEARCH_PATHS = [
     name: "Market timing",
     title: "See what deserves a closer look.",
     description: "Follow new developments across 2,030 stocks and crypto assets. See when a source published, when Rarebird picked it up, and what to check next.",
-    href: "/intelligence#discovery",
-    action: "Explore market checks",
+    href: "/app",
+    action: "Explore news signals",
   },
   {
     name: "Risk research",
@@ -48,10 +49,9 @@ export default async function Home({ searchParams }: {
   searchParams: Promise<{ beat?: string; market?: string }>;
 }) {
   const { beat, market } = await searchParams;
-  const params = new URLSearchParams();
-  if (typeof beat === "string") params.set("beat", beat);
-  if (typeof market === "string") params.set("market", market);
-  if (params.size) redirect("/intelligence?" + params);
+  if (typeof beat === "string" || typeof market === "string") {
+    redirect(legacyMarketDestination(beat, market));
+  }
   return <>
     <SiteNav active="/" />
     <main className="rb-home">

@@ -15,14 +15,14 @@ const STAGES = {
     title: "Spot a move that stands out.",
     description: "Rarebird looks for unusual moves after adjusting for a market benchmark. It checks closed 15-, 30- and 60-minute windows against earlier observations.",
     detail: "An unusual move starts a watch. Future scans check whether it persists or fades.",
-    href: "/intelligence#real-signal", link: "Inspect a market anomaly",
+    href: "/app/research#real-signal", link: "Inspect a market anomaly",
   },
   evidence: {
     name: "Evidence", icon: Layers3,
     title: "Trace the event to its source.",
     description: "Compare the move with time-stamped reporting and issuer filings. Evidence can support a possible explanation, contradict it, or leave the move unexplained.",
     detail: "Source links and timestamps let you check what was known at the time.",
-    href: "/intelligence#discovery", link: "Explore source evidence",
+    href: "/app", link: "Explore source evidence",
   },
   timing: {
     name: "Timing", icon: ScanLine,
@@ -36,7 +36,7 @@ const STAGES = {
     title: "Review now or keep watching.",
     description: "Rarebird flags a review when the evidence and timing checks pass. It keeps an independently detected anomaly on watch when there’s no qualifying review.",
     detail: "A review records why it matters now, what could invalidate it, and what to check next.",
-    href: "/intelligence#opportunities", link: "Open the review and watch lanes",
+    href: "/app/research#opportunities", link: "Open the review and watch lanes",
   },
   outcomes: {
     name: "Outcomes", icon: Clock3,
@@ -211,7 +211,7 @@ export default function SignalGraph() {
           {snapshot ? "Refresh snapshot" : "Check live pilot"}
           <ArrowUpRight size={15} aria-hidden="true" />
         </button>
-        {snapshot && <a href="/intelligence#opportunities">Open all market checks</a>}
+        {snapshot && <a href="/app/research#opportunities">See reviews and filings</a>}
       </div>
     </div>
   </div>;

@@ -9,12 +9,11 @@ import "./workspace-shell.css";
 
 const PRIMARY = [
   { href: "/app", label: "News signals", icon: Newspaper },
-  { href: "/intelligence", label: "Ask Rarebird", icon: MessageSquareText },
+  { href: "/app/research", label: "Ask Rarebird", icon: MessageSquareText },
 ] as const;
 
 const TOOLS = [
   { href: "/ask", label: "Ticker research", description: "Research a stock or token" },
-  { href: "/app/research", label: "Compare assets", description: "Investigate a question or comparison" },
   { href: "/dashboard", label: "News map", description: "Explore reporting across the catalog" },
   { href: "/app/crypto-prices", label: "Crypto prices", description: "Open the full crypto price board" },
   { href: "/crypto", label: "Crypto indicators", description: "See funding, volume, sentiment and breadth" },

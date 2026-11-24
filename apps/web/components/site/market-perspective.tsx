@@ -10,7 +10,7 @@ const PERSPECTIVES = [
     title: "Is there substance behind the momentum?",
     description: "Look beyond a rising market. Investigate the catalyst, check the original reporting and test what would need to hold for the story to continue.",
     checks: ["What actually changed?", "Does the evidence support the story?", "What would weaken the outlook?"],
-    href: "/intelligence#discovery", action: "Investigate the developments", note: "Look for supporting evidence",
+    href: "/app", action: "Investigate the developments", note: "Look for supporting evidence",
   },
   {
     id: "falling", label: "Markets falling", icon: ArrowDownRight, word: "Perspective.",

@@ -70,8 +70,8 @@ export default function DocsConnect() {
       </p>
       <AgentInstructions />
 
-      <h2 id="market-agent">Market checks conversation</h2>
-      <p>Use <a href="/intelligence">Market checks</a> to ask questions across Rarebird’s capabilities in one conversation. Developers can send a <code>question</code> and up to four recent <code>history</code> turns to <code>POST /v2/agent</code>. The response includes the selected tools, source evidence, coverage, suggested next questions and relevant forecast results. Optional <code>beat_ids</code> and <code>market</code> narrow the scope.</p>
+      <h2 id="market-agent">Agent conversations</h2>
+      <p>Ask a question in <a href="/app/research">Ask Rarebird</a>. To run a conversation across Rarebird’s tools through the API, send a <code>question</code> and up to four recent <code>history</code> turns to <code>POST /v2/agent</code>. The response includes the selected tools, source evidence, coverage, suggested next questions and relevant forecast results. Optional <code>beat_ids</code> and <code>market</code> narrow the scope.</p>
       <p><code>GET /v2/agent</code> returns a proactive briefing using existing reads, without planning or answer generation. Conversation history identifies the task; each answer checks current evidence. See the <a href="https://github.com/thepeternemec/rarebird/blob/main/docs/AGENT.md">conversation API contract</a> for the bounded history format and failure behavior.</p>
 
       <h2 id="seven-tools-and-their-rest-routes">Tools and their REST routes</h2>

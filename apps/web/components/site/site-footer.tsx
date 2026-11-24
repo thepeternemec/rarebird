@@ -10,7 +10,7 @@ const COLUMNS = [
     links: [
       { href: "/app", label: "Open app" },
       { href: "/app/forecasts", label: "Forecasts" },
-      { href: "/intelligence#opportunities", label: "Market checks" },
+      { href: "/app/research", label: "Ask Rarebird" },
       { href: "/crypto", label: "Crypto indicators" },
       { href: "/tokens", label: "Token contracts" },
       { href: "/ask", label: "Ticker research" },

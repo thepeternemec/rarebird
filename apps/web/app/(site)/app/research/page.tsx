@@ -1,5 +1,8 @@
 import WorkspaceShell, { WorkspaceEvidence } from "@/components/site/workspace-shell";
 import ResearchQuestion from "@/components/site/research-question";
+import DeferredDetails from "@/components/site/deferred-details";
+import OpportunityBrief from "@/components/site/opportunity-brief";
+import SignalInspector from "@/components/site/signal-inspector";
 
 export const metadata = {
   title: "Market research questions | Rarebird",
@@ -16,5 +19,7 @@ export default function ResearchPage() {
       <a href="/docs/try">See how to run the same question through the API</a>
     </WorkspaceEvidence>
     <ResearchQuestion />
+    <DeferredDetails id="opportunities" title="Reviews and filings"><OpportunityBrief /></DeferredDetails>
+    <DeferredDetails id="real-signal" title="Asset inspector"><SignalInspector /></DeferredDetails>
   </WorkspaceShell>;
 }

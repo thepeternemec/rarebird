@@ -18,7 +18,7 @@ export default function NewsMapLayout({ children }: { children: React.ReactNode 
   return <WorkspaceShell active="/dashboard" title="News map" description={DESCRIPTION}>
     <WorkspaceEvidence title="How to read the news map">
       <p>Use News map to follow recent reporting for one asset, or Stories by asset to browse the catalog. The collection time shows when Rarebird last received an update.</p>
-      <a href="/intelligence#discovery">See which developments passed the discovery checks</a>
+      <a href="/app">Explore news signals</a>
     </WorkspaceEvidence>
     {children}
   </WorkspaceShell>;

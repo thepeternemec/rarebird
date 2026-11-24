@@ -214,7 +214,7 @@ export default function CryptoOverview() {
       </div>
     </section>
     <section className="crypto-panel crypto-news" aria-labelledby="crypto-news-title">
-      <div className="crypto-table-head"><h2 id="crypto-news-title">What’s being reported</h2><a href="/intelligence#opportunities">Check research signals <ArrowUpRight size={15} aria-hidden="true" /></a></div>
+      <div className="crypto-table-head"><h2 id="crypto-news-title">What’s being reported</h2><a href="/app/research#opportunities">Check research signals <ArrowUpRight size={15} aria-hidden="true" /></a></div>
       <div className="crypto-news-grid">{NEWS.map(topic => <HeadlineGroup key={topic.id} topic={topic} revision={newsRevision} now={now} />)}</div>
       <p className="crypto-scope">Headline coverage is a starting point for research. A headline and a price move can occur at the same time for different reasons.</p>
     </section>

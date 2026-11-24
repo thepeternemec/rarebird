@@ -81,6 +81,6 @@ export default function LandingClarity() {
         <a href="/docs/try">Ask your own question <ArrowUpRight size={16} /></a>
       </div>
     </div>
-    <figcaption>Illustrative workflow, not live market data.<a href="/intelligence">Explore real intelligence <ArrowUpRight size={13} /></a></figcaption>
+    <figcaption>Illustrative workflow, not live market data.<a href="/app">Explore news signals <ArrowUpRight size={13} /></a></figcaption>
   </figure>;
 }
