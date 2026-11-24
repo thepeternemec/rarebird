@@ -49,7 +49,7 @@ MCP: `rarebird_intelligence({ "beat_id": "b_bb964843350e", "context": "fundament
 
 Responses preserve `signals` and add `context`, `constructions`, measured `alerts` and `quantitative`. Inspect gate reasons, freshness, analysis state/times, partial coverage and market-reaction status. The quantitative bundle includes verified pair metadata, matched price paths, information deltas, decision fits, frozen reference records and forward outcome cohorts. Track stable alert IDs in authorized monitoring workflows.
 
-The [asset inspector](https://www.rarebird.network/app/research#real-signal) selects an asset and context, shows why an alert passes or is held, and exposes evidence and review-alert history.
+The [asset inspector](https://www.rarebird.network/app/asset-inspector) selects an asset and context, shows why an alert passes or is held, and exposes evidence and review-alert history.
 
 ## Quantitative inputs and next work
 

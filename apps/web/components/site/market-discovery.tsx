@@ -126,7 +126,7 @@ export default function MarketDiscovery({ initialMarket = "all", showControls = 
       {selection && <div className="rb-signal-selected" aria-label={selection.label + " price and reporting"}>
         <div className="rb-discovery-selection">
           <p><strong>{selection.ticker}</strong> {selection.label}</p>
-          <a href={"/ask?" + new URLSearchParams({ ticker: selection.ticker, beat_id: selection.beat_id })}>Ask Rarebird <ArrowUpRight size={13} aria-hidden="true" /></a>
+          <a href={"/ask?" + new URLSearchParams({ ticker: selection.ticker, beat_id: selection.beat_id })}>Research ticker <ArrowUpRight size={13} aria-hidden="true" /></a>
           <button type="button" aria-label="Clear asset filter" onClick={() => { setSelection(null); setVisible(batchSize); document.getElementById(searchId)?.focus(); }}>
             <X size={16} aria-hidden="true" />
           </button>
@@ -160,7 +160,7 @@ export default function MarketDiscovery({ initialMarket = "all", showControls = 
         return <li key={event.id}>
           <div className="rb-discovery-tags">
             {event.assets.map(item => <a key={item.beat_id} href={"/ask?" + new URLSearchParams({ ticker: item.ticker, beat_id: item.beat_id })}
-              aria-label={"Ask Rarebird about " + item.label}>{item.ticker}</a>)}
+              aria-label={"Research " + item.label}>{item.ticker}</a>)}
             <span>{event.label}</span>
             {newSinceLastRead && <span className="rb-discovery-new">New since your visit</span>}
           </div>

@@ -15,7 +15,7 @@ const STAGES = {
     title: "Spot a move that stands out.",
     description: "Rarebird looks for unusual moves after adjusting for a market benchmark. It checks closed 15-, 30- and 60-minute windows against earlier observations.",
     detail: "An unusual move starts a watch. Future scans check whether it persists or fades.",
-    href: "/app/research#real-signal", link: "Inspect a market anomaly",
+    href: "/app/asset-inspector", link: "Inspect a market anomaly",
   },
   evidence: {
     name: "Evidence", icon: Layers3,
@@ -36,7 +36,7 @@ const STAGES = {
     title: "Review now or keep watching.",
     description: "Rarebird flags a review when the evidence and timing checks pass. It keeps an independently detected anomaly on watch when there’s no qualifying review.",
     detail: "A review records why it matters now, what could invalidate it, and what to check next.",
-    href: "/app/research#opportunities", link: "Open the review and watch lanes",
+    href: "/app/research#opportunities", link: "See reviews and filings",
   },
   outcomes: {
     name: "Outcomes", icon: Clock3,

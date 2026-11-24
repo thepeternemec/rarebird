@@ -13,8 +13,8 @@ const SignalInspector = dynamic(() => import("./signal-inspector"), {
 export default function LandingLiveSignal() {
   const [open, setOpen] = useState(false);
   return <div className="home-live-preview">
-    <div className="home-live-actions"><button type="button" className="btn-primary" aria-expanded={open} aria-controls="home-signal-workspace" onClick={() => setOpen(value => !value)}>{open ? "Close the signal" : "Explore a real signal"}<ArrowDown size={16} aria-hidden="true" style={{ transform: open ? "rotate(180deg)" : undefined }} /></button><a className="home-story-link" href="/app/research#real-signal">Open the asset inspector <ArrowUpRight size={16} /></a></div>
+    <div className="home-live-actions"><button type="button" className="btn-primary" aria-expanded={open} aria-controls="home-signal-workspace" onClick={() => setOpen(value => !value)}>{open ? "Close the signal" : "Explore a real signal"}<ArrowDown size={16} aria-hidden="true" style={{ transform: open ? "rotate(180deg)" : undefined }} /></button><a className="home-story-link" href="/app/asset-inspector">Open the asset inspector <ArrowUpRight size={16} /></a></div>
     <div id="home-signal-workspace" hidden={!open}>{open ? <SignalInspector /> : null}</div>
-    <noscript><a href="/app/research#real-signal">Open the asset inspector</a></noscript>
+    <noscript><a href="/app/asset-inspector">Open the asset inspector</a></noscript>
   </div>;
 }
