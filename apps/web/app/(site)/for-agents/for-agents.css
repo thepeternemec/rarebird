@@ -1,0 +1,225 @@
+.rb-agent-page {
+  --agent-line: var(--border-default);
+  --agent-panel: var(--bg-primary);
+  width: min(1192px, calc(100% - clamp(32px, 8vw, 112px)));
+  margin-inline: auto;
+  padding: clamp(112px, 12vw, 166px) 0 clamp(64px, 9vw, 116px);
+  color: var(--text-primary);
+}
+.rb-agent-page :is(a, button, pre, summary):focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 3px;
+}
+.rb-agent-page [id] { scroll-margin-top: 96px; }
+.rb-agent-hero { padding-bottom: clamp(37px, 6vw, 74px); }
+.rb-agent-label, .rb-agent-caption, .rb-agent-pane-head {
+  color: var(--text-secondary);
+  font: 500 12px/1.5 var(--font-mono);
+}
+.rb-agent-label { margin: 0 0 14px; }
+.rb-agent-hero h1, .rb-agent-section-head h2 { margin: 0; font-weight: 600; letter-spacing: -.045em; }
+.rb-agent-hero h1 {
+  max-width: 18ch;
+  font-size: clamp(40px, 6.8vw, 87px);
+  letter-spacing: -.063em;
+  line-height: .99;
+  text-wrap: balance;
+}
+.rb-agent-lede {
+  max-width: 57ch;
+  margin: 19px 0 0;
+  color: var(--text-secondary);
+  font-size: clamp(16px, 1.8vw, 19px);
+  line-height: 1.62;
+}
+.rb-agent-actions { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 23px; }
+.rb-agent-primary, .rb-agent-secondary, .rb-agent-run {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 44px;
+  font: 600 14px/1.3 var(--font-sans);
+  text-decoration: none;
+}
+.rb-agent-primary {
+  padding: 9px 15px;
+  border-radius: 7px;
+  background: var(--text-primary);
+  color: var(--bg-base);
+}
+.rb-agent-primary:hover { opacity: .86; }
+.rb-agent-secondary { color: var(--text-primary); }
+.rb-agent-secondary:hover { text-decoration: underline; text-underline-offset: 4px; }
+.rb-agent-section + .rb-agent-section { margin-top: clamp(56px, 8vw, 100px); }
+.rb-agent-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: 14px;
+}
+.rb-agent-section-head h2 { font-size: clamp(25px, 3.6vw, 38px); line-height: 1.13; }
+.rb-agent-console {
+  display: grid;
+  grid-template-columns: minmax(180px, .54fr) minmax(0, 2fr);
+  border: 1px solid var(--border-strong);
+  border-radius: 13px;
+  background: var(--agent-panel);
+}
+.rb-agent-examples {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 11px;
+  border-inline-end: 1px solid var(--agent-line);
+}
+.rb-agent-examples > button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  min-height: 56px;
+  padding: 9px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.rb-agent-examples button strong, .rb-agent-examples button small { display: block; }
+.rb-agent-examples button strong { font-size: 13px; font-weight: 600; }
+.rb-agent-examples button small { margin-top: 3px; font-size: 11px; line-height: 1.35; }
+.rb-agent-examples button:hover, .rb-agent-examples button[aria-pressed="true"] {
+  border-color: var(--agent-line);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+.rb-agent-example-arrow { visibility: hidden; }
+.rb-agent-examples button[aria-pressed="true"] .rb-agent-example-arrow { visibility: visible; }
+.rb-agent-console-main, .rb-agent-pane { min-width: 0; }
+.rb-agent-console-head, .rb-agent-pane-head, .rb-agent-run-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-inline: 15px;
+}
+.rb-agent-console-head { min-height: 58px; border-bottom: 1px solid var(--agent-line); }
+.rb-agent-console-head strong { font-size: 14px; font-weight: 600; }
+.rb-agent-transport { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--agent-line); border-radius: 7px; }
+.rb-agent-transport button {
+  min-height: 34px;
+  padding: 5px 11px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: 600 12px/1.2 var(--font-mono);
+  cursor: pointer;
+}
+.rb-agent-transport button[aria-pressed="true"], .rb-agent-transport button:hover { background: var(--bg-raised); color: var(--text-primary); }
+.rb-agent-trace { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rb-agent-pane { display: grid; grid-template-rows: auto 1fr auto; }
+.rb-agent-output { border-inline-start: 1px solid var(--agent-line); }
+.rb-agent-pane-head { min-height: 45px; border-bottom: 1px solid var(--agent-line); background: var(--bg-raised); }
+.rb-agent-http { color: var(--text-primary); }
+.rb-agent-page .copy-btn {
+  display: inline-flex;
+  position: static;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: 600 11px/1.3 var(--font-sans);
+  white-space: nowrap;
+}
+.rb-agent-page .copy-btn:hover { border-color: var(--agent-line); color: var(--text-primary); }
+.rb-agent-code, .rb-agent-fields {
+  min-width: 0;
+  min-height: 196px;
+  max-height: 264px;
+  margin: 0;
+  padding: 15px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.rb-agent-code {
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 500 12px/1.62 var(--font-mono);
+}
+.rb-agent-code code { color: inherit; font: inherit; }
+.rb-agent-fields { display: grid; align-content: start; gap: 12px; }
+.rb-agent-fields dt { font: 600 12px/1.45 var(--font-mono); }
+.rb-agent-fields dd { margin: 3px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.42; }
+.rb-agent-run-row { min-height: 54px; border-top: 1px solid var(--agent-line); }
+.rb-agent-run {
+  min-height: 40px;
+  padding: 6px 9px;
+  border: 1px solid var(--agent-line);
+  border-radius: 6px;
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 12px;
+}
+.rb-agent-run:hover:not(:disabled) { border-color: var(--border-strong); }
+.rb-agent-run:disabled { opacity: .55; cursor: default; }
+.rb-agent-run-row > span { color: var(--text-secondary); font-size: 12px; line-height: 1.3; }
+.rb-agent-run-row > a { display: inline-flex; flex: none; gap: 5px; align-items: center; min-height: 42px; font-size: 12px; }
+.rb-agent-run-row > a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.rb-agent-coverage { width: 100%; border-collapse: collapse; }
+.rb-agent-coverage :is(th, td) { text-align: left; vertical-align: top; padding: 14px 15px 14px 0; border-bottom: 1px solid var(--agent-line); }
+.rb-agent-coverage thead th { color: var(--text-secondary); font: 500 12px/1.5 var(--font-mono); border-top: 1px solid var(--agent-line); }
+.rb-agent-coverage tbody th { width: 40%; font: 400 14px/1.45 var(--font-sans); }
+.rb-agent-coverage tbody strong { display: block; margin-bottom: 3px; font-size: 15px; font-weight: 600; }
+.rb-agent-coverage tbody th span, .rb-agent-coverage-note { color: var(--text-secondary); }
+.rb-agent-coverage tbody code { display: block; font: 500 12px/1.68 var(--font-mono); overflow-wrap: anywhere; }
+.rb-agent-coverage-note { max-width: 78ch; margin: 14px 0 0; font-size: 13px; line-height: 1.55; }
+.rb-agent-mobile-label { display: none; }
+.rb-agent-connect { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.rb-agent-connect article { display: grid; align-content: start; gap: 10px; padding: clamp(16px, 3vw, 27px); border: 1px solid var(--agent-line); border-radius: 10px; background: var(--agent-panel); }
+.rb-agent-connect article > svg { color: var(--text-secondary); }
+.rb-agent-connect h3 { margin: 0; font-size: 21px; letter-spacing: -.02em; }
+.rb-agent-connect p, .rb-agent-collection p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.56; }
+.rb-agent-endpoint { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 7px; align-items: center; padding: 4px 8px; border: 1px solid var(--agent-line); border-radius: 6px; background: var(--bg-raised); }
+.rb-agent-endpoint code { min-width: 0; padding-block: 5px; font: 500 12px/1.45 var(--font-mono); overflow-wrap: anywhere; }
+.rb-agent-collection { margin-top: 14px; padding: 0 15px 10px; border-bottom: 1px solid var(--agent-line); }
+.rb-agent-collection summary { min-height: 44px; padding-top: 12px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.rb-agent-collection a { display: inline-flex; gap: 6px; align-items: center; min-height: 42px; font-size: 13px; }
+
+@media (max-width: 850px) {
+  .rb-agent-console { grid-template-columns: minmax(0, 1fr); }
+  .rb-agent-examples { grid-template-columns: repeat(3, minmax(0, 1fr)); border-inline-end: 0; border-bottom: 1px solid var(--agent-line); }
+  .rb-agent-examples > button { grid-template-columns: auto minmax(0, 1fr); }
+  .rb-agent-example-arrow { display: none; }
+}
+@media (max-width: 600px) {
+  .rb-agent-hero h1 { text-wrap: initial; }
+  .rb-agent-hero { padding-bottom: 36px; }
+  .rb-agent-actions { gap: 4px 15px; }
+  .rb-agent-examples { gap: 4px; padding: 6px; }
+  .rb-agent-examples > button { display: flex; justify-content: center; padding: 5px; min-height: 46px; text-align: center; }
+  .rb-agent-examples > button :is(svg, small) { display: none; }
+  .rb-agent-transport button { min-height: 38px; }
+  .rb-agent-trace, .rb-agent-connect { grid-template-columns: minmax(0, 1fr); }
+  .rb-agent-output { border-inline-start: 0; border-top: 1px solid var(--agent-line); }
+  .rb-agent-code, .rb-agent-fields { min-height: auto; }
+  .rb-agent-coverage, .rb-agent-coverage tbody { display: block; }
+  .rb-agent-coverage thead { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; white-space: nowrap; }
+  .rb-agent-coverage tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; padding: 12px 0; border-top: 1px solid var(--agent-line); }
+  .rb-agent-coverage tbody th { grid-column: span 2; width: auto; }
+  .rb-agent-coverage :is(th, td) { border: 0; padding: 0; }
+  .rb-agent-mobile-label { display: block; color: var(--text-secondary); font-size: 11px; margin-bottom: 3px; }
+  .rb-agent-connect article { gap: 7px; }
+}
