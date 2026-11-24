@@ -55,6 +55,20 @@ assert.equal(called.structuredContent.status, "needs_clarification");
 assert.equal(called.structuredContent.answer, null);
 assert.deepEqual(called.structuredContent.candidates.map(asset => asset.asset).sort(), ["crypto", "equity"]);
 
+for (const { name, args, verify } of [
+  { name: "rarebird_discovery", args: { asset: "equity", limit: 3 },
+    verify: data => Array.isArray(data.events) && data.coverage.catalog_total >= 2000 },
+  { name: "rarebird_catalysts", args: { beat_id: "b_bb964843350e", limit: 3 },
+    verify: data => data.coverage[0]?.beat_id === "b_bb964843350e" && data.coverage[0]?.status === "fresh" },
+  { name: "rarebird_prices", args: { ids: ["bitcoin", "ethereum"] },
+    verify: data => ["bitcoin", "ethereum"].every(id => data.data.assets.some(asset => asset.id === id && asset.price_usd > 0)) },
+]) {
+  const result = await call("tools/call", { name, arguments: args });
+  assert.notEqual(result.isError, true, name);
+  assert.ok(verify(result.structuredContent), name + " returned usable data");
+  console.log(JSON.stringify({ check: name, result: "pass" }));
+}
+
 const start = Date.now();
 const bitcoin = await call("tools/call", { name: "rarebird_investment", arguments: { ticker: "BTC" } });
 assert.notEqual(bitcoin.isError, true);

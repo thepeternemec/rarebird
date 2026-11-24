@@ -142,15 +142,6 @@ html .status-page .status-components { gap: 18px; }
 html .status-page .status-component { padding: 24px; border-radius: 16px; }
 html .status-page .status-service-identity h3 { font-size: 17px; }
 
-/* A quiet full-width footer instead of another framed card. */
-html footer.site { padding: 64px 0 0; border-top: 1px solid var(--border-subtle); }
-html footer.site .footer-panel { margin: 0; padding: 0 0 26px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
-html footer.site .footer-grid { gap: 36px; }
-html footer.site .footer-head { font: 600 12px/1.6 var(--font-sans); letter-spacing: 0; text-transform: none; color: var(--text-primary); }
-html footer.site .footer-col a { font-size: 13px; line-height: 1.6; }
-html footer.site .footer-tag { font-size: 14px; line-height: 1.65; }
-html[data-theme="light"] footer.site { background: #f5f5f7; }
-
 @media (max-width: 1000px) {
   html .nb-product-page .nb-product-hero,
   html .nb-product-page .nb-product-details { gap: 40px; }
@@ -181,9 +172,5 @@ html[data-theme="light"] footer.site { background: #f5f5f7; }
   html .status-page { padding-top: 124px; padding-bottom: 64px; }
   html .status-page .status-heading { margin-bottom: 28px; }
   html .status-page .status-component { padding: 20px; }
-  html footer.site { padding-top: 36px; }
-  html footer.site .footer-grid { gap: 0; }
-  html footer.site .footer-panel { padding-bottom: 16px; }
 }
 
-.footer-wordmark { display: inline-flex; align-items: center; min-height: 28px; }
