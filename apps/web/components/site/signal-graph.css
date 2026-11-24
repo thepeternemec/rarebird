@@ -33,19 +33,35 @@
 }
 .rb-signal-board {
   grid-area: board;
+  --rb-scene-canvas: #090a0c;
+  --rb-scene-wash: #1c1e23;
+  --rb-scene-plane: #171a20;
   --rb-scene-line: #98a1af;
+  --rb-scene-ink: #e6e8ee;
+  --rb-scene-orb-highlight: #4d5057;
+  --rb-scene-orb-shadow: #0d0f13;
+  --rb-scene-active-orb-highlight: #737780;
+  --rb-scene-active-orb-shadow: #111318;
   position: relative;
   display: grid;
   align-content: center;
   min-width: 0;
   min-height: 435px;
   padding-top: 27px;
-  color: #e6e8ee;
-  background:
-    radial-gradient(ellipse at 50% 45%, #1c1e23 0%, transparent 67%),
-    radial-gradient(ellipse at 78% 86%, #12141a 0%, transparent 52%),
-    #090a0c;
+  color: var(--rb-scene-ink);
+  background: radial-gradient(ellipse at 50% 38%, var(--rb-scene-wash), transparent 72%), var(--rb-scene-canvas);
   overflow: hidden;
+}
+:root[data-theme="light"] .rb-signal-board {
+  --rb-scene-canvas: #f1f2f5;
+  --rb-scene-wash: #fff;
+  --rb-scene-plane: #e3e7ee;
+  --rb-scene-line: #626c7d;
+  --rb-scene-ink: #252a33;
+  --rb-scene-orb-highlight: #fff;
+  --rb-scene-orb-shadow: #d9dde5;
+  --rb-scene-active-orb-highlight: #fff;
+  --rb-scene-active-orb-shadow: #bac3d0;
 }
 .rb-signal-board-tools {
   position: absolute;
@@ -55,7 +71,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  color: #b1b7c2;
+  color: var(--text-secondary);
   font-size: 12px;
   pointer-events: none;
 }
@@ -65,15 +81,15 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 1px solid #3b404a;
+  border: 1px solid var(--border-strong);
   border-radius: 7px;
-  color: #e6e8ee;
-  background: #15171b;
+  color: var(--rb-scene-ink);
+  background: var(--bg-raised);
   cursor: pointer;
 }
-.rb-signal-board-tools button:hover { background: #2b2e35; }
+.rb-signal-board-tools button:hover { background: color-mix(in srgb, var(--text-primary) 9%, var(--bg-raised)); }
 .rb-home .rb-signal-board-tools button:focus-visible,
-.rb-home .rb-signal-node:focus-visible { outline-color: #f4f5f8; outline-offset: 2px; }
+.rb-home .rb-signal-node:focus-visible { outline-color: var(--rb-scene-ink); outline-offset: 2px; }
 .rb-signal-stage {
   position: relative;
   width: 100%;
@@ -85,33 +101,33 @@
 }
 .rb-signal-stage:active { cursor: grabbing; }
 .rb-signal-scene { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.rb-signal-grid-plane { fill: #171a20; fill-opacity: .55; stroke: #454b56; stroke-opacity: .38; }
-.rb-signal-grid-line { stroke: var(--rb-scene-line); stroke-opacity: .16; }
-.rb-signal-pedestal { fill: #171b23; fill-opacity: .8; stroke: #798390; stroke-opacity: .46; stroke-width: 1; }
-.rb-signal-pedestal[data-active="true"] { stroke: #cdd1da; stroke-opacity: .75; }
+.rb-signal-grid-plane { fill: var(--rb-scene-plane); fill-opacity: .59; stroke: var(--rb-scene-line); stroke-opacity: .34; }
+.rb-signal-grid-line { stroke: var(--rb-scene-line); stroke-opacity: .2; }
+.rb-signal-pedestal { fill: var(--rb-scene-plane); fill-opacity: .8; stroke: var(--rb-scene-line); stroke-opacity: .52; stroke-width: 1; }
+.rb-signal-pedestal[data-active="true"] { stroke: var(--rb-scene-ink); stroke-opacity: .75; }
 .rb-signal-pedestal .rb-signal-floor-ring { fill: none; stroke-opacity: .34; stroke-dasharray: 2 4; }
-.rb-signal-pedestal circle { fill: #c7cdd8; stroke: none; }
+.rb-signal-pedestal circle { fill: var(--rb-scene-line); stroke: none; }
 .rb-signal-edge { fill: none; }
-.rb-signal-edge-base { stroke: #8090a5; stroke-opacity: .56; stroke-width: 1.45; }
+.rb-signal-edge-base { stroke: var(--rb-scene-line); stroke-opacity: .63; stroke-width: 1.45; }
 .rb-signal-edge[data-branch="watch"] .rb-signal-edge-base { stroke-dasharray: 3.5 4.5; }
-.rb-signal-edge[data-lit="true"] .rb-signal-edge-base { stroke: #b6c2d4; stroke-opacity: .82; stroke-width: 1.6; }
+.rb-signal-edge[data-lit="true"] .rb-signal-edge-base { stroke: var(--rb-scene-ink); stroke-opacity: .78; stroke-width: 1.6; }
 .rb-signal-edge-flow {
-  stroke: #edf1fa;
+  stroke: var(--rb-scene-ink);
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-dasharray: 7 93;
-  filter: drop-shadow(0 0 5px #c1d5f8);
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--rb-scene-ink) 52%, transparent));
 }
 @media (prefers-reduced-motion: no-preference) {
   .rb-signal-edge-flow { animation: rb-signal-flow 4.8s linear infinite; }
 }
 @keyframes rb-signal-flow { to { stroke-dashoffset: -100; } }
-.rb-signal-orb-orbit { fill: #2d3440; fill-opacity: .22; stroke: #748294; stroke-opacity: .55; stroke-width: 1; }
-.rb-signal-orb-border { stroke: #9ba7b8; stroke-opacity: .75; stroke-width: 1.1; }
-.rb-signal-orb-rim { stroke: #c7d2e4; stroke-opacity: .15; fill: none; stroke-width: 1; }
-.rb-signal-orb-glyph { fill: none; stroke: #d8deea; stroke-width: 1.55; stroke-linecap: round; stroke-linejoin: round; }
-.rb-signal-orb[data-active="true"] .rb-signal-orb-border { stroke: #edf2fc; stroke-opacity: 1; stroke-width: 1.5; }
-.rb-signal-orb[data-active="true"] .rb-signal-orb-orbit { stroke: #bac7db; stroke-opacity: .8; }
+.rb-signal-orb-orbit { fill: var(--rb-scene-plane); fill-opacity: .4; stroke: var(--rb-scene-line); stroke-opacity: .55; stroke-width: 1; }
+.rb-signal-orb-border { stroke: var(--rb-scene-line); stroke-opacity: .75; stroke-width: 1.1; }
+.rb-signal-orb-rim { stroke: var(--rb-scene-ink); stroke-opacity: .18; fill: none; stroke-width: 1; }
+.rb-signal-orb-glyph { fill: none; stroke: var(--rb-scene-ink); stroke-width: 1.55; stroke-linecap: round; stroke-linejoin: round; }
+.rb-signal-orb[data-active="true"] .rb-signal-orb-border { stroke: var(--rb-scene-ink); stroke-opacity: 1; stroke-width: 1.5; }
+.rb-signal-orb[data-active="true"] .rb-signal-orb-orbit { stroke: var(--rb-scene-line); stroke-opacity: .8; }
 .rb-signal-node {
   position: absolute;
   z-index: 0;
@@ -124,7 +140,7 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  color: #e4e8f0;
+  color: var(--rb-scene-ink);
   background: transparent;
   transform: translate(-50%, -50%);
   cursor: pointer;
@@ -135,13 +151,13 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 2px 8px 3px;
-  border: 1px solid #414751;
+  border: 1px solid var(--border-strong);
   border-radius: 5px;
-  background: #121419;
+  background: var(--bg-raised);
   font: 500 11px/1.35 var(--font-sans);
   white-space: nowrap;
 }
-.rb-signal-node[data-active="true"] span, .rb-signal-node:hover span { color: #fff; border-color: #a9b1bf; }
+.rb-signal-node[data-active="true"] span, .rb-signal-node:hover span { border-color: var(--rb-scene-ink); background: var(--bg-base); }
 .rb-signal-inspector {
   grid-area: inspector;
   display: flex;
