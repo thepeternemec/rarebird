@@ -20,6 +20,8 @@ test("the durable feed journal preserves first availability and isolates failed 
     await sql.unsafe(readFileSync(new URL("../../../../db/schema.sql", import.meta.url), "utf8"));
     await sql.unsafe("truncate public.newsbeat_kumo_feed_records,public.newsbeat_kumo_feed_health,public.newsbeat_kumo_feed_worker,public.newsbeat_official_evidence,public.newsbeat_market_sources");
     await runKumoFeedCollection([{ kind: "funding", fetch: async () => payload }]);
+    const stored = await sql.unsafe<Array<{ type: string }>>("select jsonb_typeof(record) as type from public.newsbeat_kumo_feed_records where kind='funding'");
+    assert.equal(stored[0]!.type, "object");
     const first = await readKumoFeedPage({ kind: "funding" });
     assert.equal(first.records.length, 1);
     await runKumoFeedCollection([{ kind: "funding", fetch: async () => payload }, { kind: "sentiment", fetch: async () => { throw new Error("outage"); } }]);
@@ -94,5 +96,28 @@ test("short-lived hourly samples retain a fresh reading for the next forecast", 
     assert.ok(Date.parse(page.records[0]!.available_at) <= Date.parse(at(61)));
     assert.ok(Date.parse(page.records[0]!.expires_at) > Date.parse(at(61)));
     assert.equal((await readKumoFeedPage({ kind: "chain", since: at(0), until: at(61) })).records.length, 2);
+  } finally { await closeDb(); }
+});
+
+
+test("hourly journal sampling normalizes legacy JSON strings and groups by the real entity", { skip: !connection, timeout: 45000 }, async () => {
+  process.env.DATABASE_URL = connection!;
+  const sql = db(), hour = Math.floor(Date.now() / 3600000) * 3600000 - 2 * 3600000;
+  const at = (minutes: number) => new Date(hour + minutes * 60000).toISOString();
+  try {
+    await sql.unsafe(readFileSync(new URL("../../../../db/schema.sql", import.meta.url), "utf8"));
+    await sql.unsafe("truncate public.newsbeat_kumo_feed_records,public.newsbeat_kumo_feed_health");
+    for (const minute of [5, 15]) {
+      const record = { id: "funding:" + minute, kind: "funding", entity_id: "b_06c91290de1c", asset_class: "crypto",
+        source: "test", source_url: "https://example.com", event_at: at(minute), available_at: at(minute),
+        expires_at: at(minute + 60), text: "", values: { rate: minute }, categories: {}, related_ids: [] };
+      const parameter = minute === 5 ? JSON.stringify(record) : record as never;
+      await sql.unsafe("insert into public.newsbeat_kumo_feed_records(id,kind,available_at,record) values($1,'funding',$2,$3::jsonb)", [record.id, record.available_at, parameter]);
+    }
+    const types = await sql.unsafe<Array<{ type: string }>>("select jsonb_typeof(record) as type from public.newsbeat_kumo_feed_records order by available_at");
+    assert.deepEqual(types.map(r => r.type), ["string", "object"]);
+    const page = await readKumoFeedPage({ kind: "funding", sampling: "hourly", since: at(0), until: at(30) });
+    assert.deepEqual(page.records.map(r => r.values.rate), [5]);
+    assert.equal((await readKumoFeedPage({ kind: "funding", since: at(0), until: at(30) })).records.length, 2);
   } finally { await closeDb(); }
 });

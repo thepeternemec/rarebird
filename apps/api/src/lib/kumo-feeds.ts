@@ -15,10 +15,10 @@ const cursorSchema = z.object({ kind: KumoFeedKindSchema, sampling: z.enum(["all
 function baseQuery(kind: KumoFeedKind) {
   switch (kind) {
     case "news": return "select 'news:'||id::text as id,greatest(published_at,first_indexed_at) as available_at,beat_id as entity_id,null::jsonb as payload from public.news_articles a";
-    case "interpretation": return "select 'interpretation:'||r.event_id||':'||r.version::text as id,r.recorded_at as available_at,jsonb_build_object('signal',r.signal,'recorded_at',r.recorded_at) as payload from public.newsbeat_intelligence_revisions r";
+    case "interpretation": return "select 'interpretation:'||r.event_id||':'||r.version::text as id,r.recorded_at as available_at,jsonb_build_object('signal',case when jsonb_typeof(r.signal)='string' then (r.signal#>>'{}')::jsonb else r.signal end,'recorded_at',r.recorded_at) as payload from public.newsbeat_intelligence_revisions r";
     case "discovery": return "select 'discovery:'||id as id,greatest(published_at,recorded_at) as available_at,to_jsonb(d) as payload from public.newsbeat_discovery_observations d";
     case "market_bar": return "select 'market_bar:'||instrument_id||':'||extract(epoch from started_at)::bigint::text as id,observed_at as available_at,to_jsonb(b) as payload from public.newsbeat_market_bars b where started_at+interval '5 minutes'<=observed_at";
-    default: return "select id,available_at,record as payload from public.newsbeat_kumo_feed_records where kind='" + kind + "'";
+    default: return "select id,available_at,case when jsonb_typeof(record)='string' then (record#>>'{}')::jsonb else record end as payload from public.newsbeat_kumo_feed_records where kind='" + kind + "'";
   }
 }
 /** Earliest arrivals cannot be displaced by a record that becomes available later. */
@@ -83,7 +83,7 @@ export async function readKumoFeedPage(input: unknown, now = Date.now()): Promis
       // Rank lightweight identities first. Only selected rows load headline payloads.
       const articles = await db().unsafe<Array<{ id: string } & Record<string, unknown>>>(
         "select id::text,beat_id,title,source,url,published_at,first_indexed_at from public.news_articles where id in (select jsonb_array_elements_text($1::jsonb)::bigint)",
-        [JSON.stringify(kept.map(row => row.id.slice(5)))]);
+        [kept.map(row => row.id.slice(5)) as never]);
       const byId = new Map(articles.map(article => [article.id, article]));
       for (const row of kept) row.payload = byId.get(row.id.slice(5));
     }

@@ -44,7 +44,7 @@ export async function runKumoFeedCollection(fetchers: FeedFetcher[] = kumoFeedFe
         let captured = 0;
         for (const record of records) {
           if (Date.parse(record.available_at) > Date.parse(recordedAt)) continue;
-          const rows = await tx.unsafe<Array<{ id: string }>>("insert into public.newsbeat_kumo_feed_records(id,kind,available_at,record) values($1,$2,$3,$4::jsonb) on conflict(id) do nothing returning id", [record.id, record.kind, record.available_at, JSON.stringify(record)]);
+          const rows = await tx.unsafe<Array<{ id: string }>>("insert into public.newsbeat_kumo_feed_records(id,kind,available_at,record) values($1,$2,$3,$4::jsonb) on conflict(id) do nothing returning id", [record.id, record.kind, record.available_at, JSON.parse(JSON.stringify(record)) as never]);
           inserted += rows.length;
           captured++;
         }
