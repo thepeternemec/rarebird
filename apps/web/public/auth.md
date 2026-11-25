@@ -76,10 +76,11 @@ GET /v2/tools HTTP/1.1
 Host: www.rarebird.network
 ```
 
-Returns 16 research calls plus one explicit collection-control call in OpenAI function-call shape:
+Returns research, stock-screening and reference tools plus explicit collection control in OpenAI function-call shape:
 
 | Tool | Purpose | REST route |
 | --- | --- | --- |
+| `rarebird_stock_screener` | Developing setups in four US shares versus SPY, with source coverage, expiry, lifecycle events and forward outcomes. Read-only; notifications require separate operator configuration. | `GET /v2/stock-screener` |
 | `rarebird_research` | Question → asset-specific evidence → cited answer, uncertainty and next checks. Explicit on-demand model call; quantitative coverage is limited. | `POST /v2/research` |
 | `rarebird_investment` | The ticker brief shown on Ask Rarebird, with its stance, supporting evidence and limits. | `POST /v2/investment` |
 | `rarebird_collection` | Explicitly request one-minute collection for 15 minutes, read status, or stop with your token. | `GET/POST /v2/collection` |

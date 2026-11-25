@@ -1,0 +1,72 @@
+import { z } from "zod";
+
+export const STOCK_SCREENER_POLICY = "stock-relative-strength-v1";
+export const STOCK_SCREENER_UNIVERSE = [
+  { symbol: "NVDA", label: "NVIDIA", beat_id: "b_bb964843350e" },
+  { symbol: "AAPL", label: "Apple", beat_id: "b_7d5acdda6186" },
+  { symbol: "MSFT", label: "Microsoft", beat_id: "b_a723a1d2787f" },
+  { symbol: "GOOGL", label: "Alphabet", beat_id: "b_c0c3f9282a94" },
+] as const;
+export type ScreenSymbol = (typeof STOCK_SCREENER_UNIVERSE)[number]["symbol"];
+export const StockScreenerQuerySchema = z.object({
+  after: z.string().regex(/^\d{1,18}$/).optional(),
+  limit: z.number().int().min(1).max(50).default(20),
+}).strict();
+export type StockFeed = "iex" | "sip";
+export type ScreenState = "warming_up" | "data_hold" | "quiet" | "candidate" | "extended";
+export interface StockBar {
+  time: number; open: number; high: number; low: number; close: number; volume: number;
+  observed_at?: number;
+}
+export interface StockQuote { time: number; bid: number; ask: number; bid_size: number; ask_size: number }
+export interface StockInstrument {
+  symbol: string; asset_class: "us_equity"; exchange: string; verified: boolean;
+  bars: StockBar[]; quote: StockQuote | null;
+}
+export interface StockFrame {
+  provider: "alpaca"; feed: StockFeed; mode: "scheduled" | "streaming";
+  received_at: string; session_open: boolean; session_checked_at: string;
+  instruments: Record<string, StockInstrument>;
+}
+export interface ScreenMetrics {
+  measured_at: string; window_minutes: 5; price: number; benchmark_price: number;
+  asset_return_bps: number; benchmark_return_bps: number; relative_return_bps: number;
+  residual_z: number; relative_volume: number; spread_bps: number; beta: number;
+  baseline_samples: number; baseline_end_at: string; quote_at: string;
+}
+export interface StockScreenResult {
+  symbol: ScreenSymbol; label: string; beat_id: string; state: ScreenState;
+  reason: string; metrics: ScreenMetrics | null;
+}
+export interface ScreenerEvidence {
+  title: string; url: string; source: string; published_at: string; known_at: string;
+}
+export type StockAlertState = "active" | "data_hold" | "invalidated" | "expired";
+export interface StockAlert {
+  id: string; policy: typeof STOCK_SCREENER_POLICY; symbol: ScreenSymbol; label: string; beat_id: string;
+  version: number; state: StockAlertState; created_at: string; updated_at: string;
+  valid_until: string; expires_at: string; closed_at: string | null; reason: string;
+  feed: StockFeed; reference: ScreenMetrics; latest: ScreenMetrics;
+  evidence: ScreenerEvidence[];
+  outcomes: Array<{
+    minutes: 15 | 60; due_at: string; status: "pending" | "observed" | "missing";
+    measured_at: string | null; asset_return_bps: number | null;
+    relative_return_bps: number | null; cost_scenario_bps: number | null;
+  }>;
+}
+export interface StockScreenEvent {
+  sequence: string; id: string; type: "created" | "updated" | "data_hold" | "invalidated" | "expired";
+  recorded_at: string; alert: StockAlert;
+}
+export interface StockScreenerFeed {
+  generated_at: string; policy: typeof STOCK_SCREENER_POLICY;
+  status: "not_configured" | "warming_up" | "market_closed" | "monitoring" | "data_hold" | "unavailable";
+  message: string; benchmark: "SPY";
+  source: { provider: "alpaca"; feed: StockFeed; coverage: string; mode: "scheduled" | "streaming"; last_scan_at: string | null };
+  delivery: { configured: boolean; pending: number; delivered: number; failed: number };
+  universe: readonly { symbol: string; label: string; beat_id: string }[];
+  coverage: StockScreenResult[]; active: StockAlert[]; recent: StockAlert[]; events: StockScreenEvent[];
+  next_cursor: string; has_more: boolean;
+  evaluation: { observed: number; pending: number; missing: number; mean_cost_scenario_bps: number | null };
+  limitations: string[];
+}

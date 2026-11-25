@@ -12,6 +12,12 @@ Rarebird brings market developments, source evidence and risk context into one w
 
 **Free through December 31, 2026.** Both are included in the planned Rarebird Pro membership at **$8.99 USD/month**. [See pricing](https://www.rarebird.network/pricing).
 
+## Stock opportunities for agents — first build
+
+The new [stock screener](https://www.rarebird.network/app/screener) follows **NVDA, AAPL, MSFT and GOOGL US shares versus SPY**. It flags developing relative strength with unusual volume, records one setup per episode, follows holds/invalidation/expiry, and freezes 15/60-minute forward observations. Optional signed webhooks deliver lifecycle changes to an operator-configured agent.
+
+Read it through the existing MCP connection with `rarebird_stock_screener`, or `GET /api/v2/stock-screener`. This screen uses a dedicated US-share feed; tokenized share prices are not substituted. **Feed connection and notification delivery must be configured before live operation.** Every response states coverage and readiness. [Feed, worker and agent setup](docs/STOCK-SCREENER.md).
+
 ## NVIDIA Kumo Engine integration
 
 **Kumo Engine is an accelerator for context generation over structured data.** It stores related tables as a graph on disk and assembles connected records as context for predictive models. [Explore NVIDIA Kumo Engine](https://github.com/NVIDIA/kumo-engine).

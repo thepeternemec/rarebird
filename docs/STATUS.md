@@ -1,10 +1,16 @@
 # Rarebird project status
 
-Updated **2026-11-25** with the Kumo Engine integration. Counts describe the bundled catalog, and live coverage is reported by each endpoint.
+Updated **2026-11-25** with the first US-share screener implementation. Counts describe the bundled catalog, and live coverage is reported by each endpoint.
 
 ## Product direction
 
 Rarebird is building meaningful signals for AI agents. The source-linked news foundation is live; a first general signal-construction pilot is implemented for six assets. Task-specific relevance, broader context and stronger verification remain planned. Stocks and crypto describe coverage. [Read the product direction](INTELLIGENCE.md).
+
+## First stock screener
+
+A dedicated four-stock screen now follows actual NVDA, AAPL, MSFT and GOOGL shares against SPY. The implementation includes an Alpaca adapter, past-only intraday relative-strength policy, persistent episode lifecycle, 15/60-minute forward observations, cursor-readable events, optional signed webhook delivery, one-minute scheduled fallback and a separate streaming runner. The app is at `/app/screener`; the existing MCP exposes `rarebird_stock_screener`.
+
+**Code availability is separate from activation.** US-share credentials, market-data entitlement, database and optional webhook destination must be configured. The API explicitly reports `not_configured` or held states until measurements exist. The streaming runner requires a long-lived host; deploying Vercel alone provides scheduled mode. No stock model edge or profitability has been established. [Setup and limits](STOCK-SCREENER.md).
 
 ## Kumo coverage and direction
 
@@ -26,8 +32,8 @@ We are building toward coverage across all asset classes and data types, connect
 | Stories | Approximate headline grouping, ranked by relevance, with original reports and source links |
 | Question research | Evidence-led answers, conditional reasoning, unknowns and next checks across the catalog; missing market data explicit |
 | Batched watch | Up to 50 assets per request; each result can succeed or fail independently |
-| REST and function calling | 16 research operations plus explicit collection control and schemas at `/api/v2/tools` |
-| Hosted MCP | 17 tools over Streamable HTTP at `/api/mcp`, 16 research operations plus the explicit `rarebird_collection` control |
+| REST and function calling | Research, stock screening and reference operations, explicit collection control and schemas at `/api/v2/tools` |
+| Hosted MCP | One Streamable HTTP server at `/api/mcp`; live schemas at `/api/v2/tools`, including stock screening and explicit collection control |
 | Supporting reference utilities | Sourced crypto prices, sentiment, chain readings, contract prices and positioning, retained through REST and MCP |
 | Intelligence workbench | Full-width measured market path, context selection, thesis/evidence inspector, timing reasons and forward observation cohorts. The former `/crypto` page redirects here. |
 | Web news explorer | Asset search, grouped stories, source expansion, Show more controls and on-demand research questions |
