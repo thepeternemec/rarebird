@@ -16,7 +16,9 @@ Rarebird brings market developments, source evidence and risk context into one w
 
 **Kumo Engine is an accelerator for context generation over structured data.** It stores related tables as a graph on disk and assembles connected records as context for predictive models. [Explore NVIDIA Kumo Engine](https://github.com/NVIDIA/kumo-engine).
 
-Rarebird has integrated Kumo Engine into an experimental BTC pipeline. It connects hourly market measurements with news-arrival metadata, trains a model for the next-hour 1% move target, and measures it against the existing forecast and historical base rate. The hourly job records Brier score, log loss and calibration, with historical test results and a prospective prediction journal.
+Rarebird has integrated Kumo Engine with a shared feed graph for experimental BTC predictions. Fourteen feed types cover headlines, interpreted news events, discoveries, SEC filings and reported financials, crypto and tokenized-equity market observations, funding, liquidity, sentiment and chain readings. Each record keeps its source, entity identity and first availability. Headline and interpretation text contributes explicit word-vector features.
+
+The hourly job compares the expanded graph with the original market-and-news-metadata model on the same next-hour 1% move target. It reports Brier score, log loss, calibration and per-feed coverage, with a separate prospective prediction journal. Newly journaled feeds accumulate history from first capture; gaps and sampling caps remain visible.
 
 **BTC is our first measured pilot.** We are building this approach across all asset classes and data types, connecting market data, reporting, filings, events and outcomes. Broader Kumo coverage is part of the roadmap.
 

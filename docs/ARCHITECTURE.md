@@ -56,9 +56,11 @@ A model interpretation and an observed price move do not establish causality. Mi
 
 ## Kumo Engine experiment
 
-The BTC pilot integrates NVIDIA Kumo Engine 1.0.0 through a Python job in GitHub Actions. The read-only `/api/v2/btc-pilot` export supplies closed market candles, news availability metadata and recorded forecast outcomes from PostgreSQL.
+The BTC pilot integrates NVIDIA Kumo Engine 1.0.0 through a Python job in GitHub Actions. The read-only `/api/v2/btc-pilot` export supplies BTC candles, headline metadata and recorded forecast targets. `/api/v2/kumo-feeds` adds a shared, paginated record format for 14 public feed types across the stored catalog and market providers.
 
-The job freezes inputs at each forecast's issue time and connects market-hour entities to news metadata in Kumo's graph on disk. It trains and evaluates with chronological partitions, then retains an hourly prediction journal and scorecard in workflow artifacts. The model runtime uses CPU execution outside the Next.js deployment.
+The authenticated ten-minute `/api/cron/kumo-feeds` collector journals observations previously held only in cache, including funding, DEX volume, stablecoin supply, sentiment, TVL, chain readings and market quotes. It also freezes existing filing, financial and book snapshots. Records are immutable, retained for 30 days and available from their first local capture. Existing headline, interpreted-event revision, discovery and closed-candle histories remain in their source tables.
+
+The model job freezes context at each forecast's issue time and builds separate hour, entity and feed tables. Text uses an explicit GloVe encoder. The expanded graph and original metadata variant train on identical chronological partitions. Reports include paired historical measurements, per-feed coverage and a separate expanded prospective journal. CPU training runs outside the Next.js deployment; public exports only read stored data.
 
 BTC is the first validation target for this integration. The product direction extends across asset classes and data types, including market observations, reporting, filings, events and outcomes. Each extension will need its own data mapping, prediction target and measurements.
 

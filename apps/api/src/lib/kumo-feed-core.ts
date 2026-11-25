@@ -5,11 +5,14 @@ const HOUR = 3_600_000;
 const iso = (value: number) => new Date(value).toISOString();
 export const feedHash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const beats = new Map(SEED_BEATS.map(beat => [beat.beat_id, beat]));
-const cryptoEntity = (ticker: string) => SEED_BEATS.find(beat => beat.asset === "crypto" && beat.ticker === ticker.toUpperCase())?.beat_id;
+const cryptoEntity = (ticker: string) => {
+  const matches = SEED_BEATS.filter(beat => beat.asset === "crypto" && beat.ticker === ticker.toUpperCase());
+  return matches.length === 1 ? matches[0]!.beat_id : undefined;
+};
 export function feedEntity(id: string): Pick<KumoFeedRecord, "entity_id" | "asset_class" | "categories"> {
   const beat = beats.get(id);
   return { entity_id: beat?.beat_id ?? id,
-    asset_class: beat ? beat.asset === "crypto" ? "crypto" : "equity" : id.startsWith("chain:") ? "chain" : id.startsWith("coingecko:") || id.startsWith("symbol:") || id.startsWith("stablecoin:") ? "crypto" : "macro",
+    asset_class: beat ? beat.asset === "crypto" ? "crypto" : "equity" : id.startsWith("chain:") ? "chain" : id.startsWith("kraken:") ? id.includes("xUSD") ? "equity" : "crypto" : id.startsWith("coingecko:") || id.startsWith("symbol:") || id.startsWith("stablecoin:") ? "crypto" : "macro",
     categories: beat ? { ticker: beat.ticker, asset_name: beat.label } : {} };
 }
 export function sourceRecord(input: {

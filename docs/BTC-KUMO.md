@@ -7,8 +7,8 @@ base rate on identical labeled hours.
 
 GET /api/v2/btc-pilot is a read-only export of at most 30 days of
 closed BTC five-minute candles, 721 recorded BTC move-risk forecasts, and 6,000
-recent BTC headline metadata records. Public market measurements and publisher
-metadata form its inputs. The existing worker owns collection.
+recent BTC headline metadata records. Public market measurements and source-linked headline
+metadata form its base export. The existing worker owns collection.
 
 ## Execution and measurements
 
