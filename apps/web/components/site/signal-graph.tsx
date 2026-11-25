@@ -2,9 +2,10 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import {
-  Activity, ArrowUpRight, Clock3, GitFork, Layers3, ScanLine,
+  Activity, ArrowUpRight, Clock3, GitFork, Layers3, RefreshCw, ScanLine,
 } from "lucide-react";
 import type { OpportunityBrief } from "@rarebird/api";
+import { summarizePilot, type PilotSnapshot } from "./pilot-snapshot";
 import SignalGraphScene, { type SignalNode, type SignalStage } from "./signal-graph-scene";
 import "./signal-graph.css";
 
@@ -35,7 +36,7 @@ const STAGES = {
     title: "Review now or keep watching.",
     description: "Rarebird flags a review when the evidence and timing checks pass. It keeps an independently detected anomaly on watch when there’s no qualifying review.",
     detail: "A review records why it matters now, what could invalidate it, and what to check next.",
-    href: "/app/research#opportunities", link: "See reviews and filings",
+    href: "/app#opportunities", link: "See reviews and filings",
   },
   outcomes: {
     name: "Outcomes", icon: Clock3,
@@ -52,49 +53,15 @@ const dateTime = new Intl.DateTimeFormat(undefined, {
   month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short",
 });
 
-type Snapshot = {
-  title: string;
-  detail: string;
-  asOf: string;
-  coverage: string;
-  branch: "review" | "watch" | "none";
+type Pilot = {
+  status: "idle" | "loading" | "failed" | "ready";
+  snapshot: PilotSnapshot | null;
 };
-
-type Pilot = { status: "idle" | "loading" | "failed" } | { status: "ready"; snapshot: Snapshot };
-
-function summarize(brief: OpportunityBrief): Snapshot {
-  if (!Array.isArray(brief.coverage) || !brief.coverage.length || !Array.isArray(brief.review)
-    || !Array.isArray(brief.watch) || !Number.isFinite(Date.parse(brief.generated_at))) {
-    throw new Error("Pilot snapshot is invalid");
-  }
-  const current = brief.coverage.filter(asset => asset.market === "current").length;
-  const base = {
-    asOf: brief.generated_at,
-    coverage: `${current} of ${brief.coverage.length} assets had current market data`,
-  };
-  const review = brief.review.find(item => Date.parse(item.market_evidence_until) > Date.now());
-  if (review) return {
-    ...base, branch: "review", title: `${review.label} · Review now`,
-    detail: `The recorded alert passed the reporting and timing checks. The market evidence expires at ${dateTime.format(new Date(review.market_evidence_until))}.`,
-  };
-  const watch = brief.watch[0];
-  if (watch) return {
-    ...base, branch: "watch", title: `${watch.label} · Keep watching`,
-    detail: `A ${watch.minutes}-minute relative move stood out against ${watch.historical_windows} earlier windows. At the snapshot, it was an anomaly watch.`,
-  };
-  return {
-    ...base, branch: "none",
-    title: current ? "No qualifying candidates" : "Market data on hold",
-    detail: current
-      ? "No reviews or 30-minute anomaly watches were returned for this snapshot."
-      : "The pilot didn’t have sufficiently current market evidence at the time of this snapshot.",
-  };
-}
 
 export default function SignalGraph() {
   const uid = useId();
   const [selected, setSelected] = useState<SignalNode | "decision">("timing");
-  const [pilot, setPilot] = useState<Pilot>({ status: "idle" });
+  const [pilot, setPilot] = useState<Pilot>({ status: "idle", snapshot: null });
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => {
     request.current?.abort();
@@ -107,24 +74,24 @@ export default function SignalGraph() {
     : selected === "watch" ? "Track an unconfirmed move." : info.title;
   const description = selected === "review" ? "The evidence and timing checks passed. Inspect the source, the observed reaction and what would invalidate the signal."
     : selected === "watch" ? "A relative move stood out. Rarebird tracks whether it persists while it waits for evidence that qualifies for review." : info.description;
-  const snapshot = pilot.status === "ready" ? pilot.snapshot : null;
+  const snapshot = pilot.snapshot;
 
   async function readPilot() {
     if (request.current) return;
     const controller = new AbortController();
     request.current = controller;
-    setPilot({ status: "loading" });
+    setPilot(previous => ({ ...previous, status: "loading" }));
     const timeout = window.setTimeout(() => controller.abort(), 12_000);
     try {
       const response = await fetch(ENDPOINT, { signal: controller.signal, cache: "no-store" });
       if (!response.ok) throw new Error("Pilot unavailable");
-      const next = summarize(await response.json() as OpportunityBrief);
+      const next = summarizePilot(await response.json() as OpportunityBrief);
       if (request.current === controller) {
         setPilot({ status: "ready", snapshot: next });
         setSelected(current => current === selected ? (next.branch === "none" ? "decision" : next.branch) : current);
       }
     } catch {
-      if (request.current === controller) setPilot({ status: "failed" });
+      if (request.current === controller) setPilot(previous => ({ ...previous, status: "failed" }));
     } finally {
       window.clearTimeout(timeout);
       if (request.current === controller) request.current = null;
@@ -146,24 +113,31 @@ export default function SignalGraph() {
       </article>
     </div>
     <div className="rb-signal-live">
-      <div className="rb-signal-live-text" aria-live="polite" aria-atomic="true">
+      <div className="rb-signal-live-text" id={`${uid}-pilot-status`} role="status" aria-live="polite" aria-atomic="true">
         {snapshot ? <>
           <strong>{snapshot.title}</strong>
           <p>{snapshot.detail}</p>
+          {snapshot.notice && <p className="rb-signal-live-notice">{snapshot.notice}</p>}
           <p className="rb-signal-live-time"><time dateTime={snapshot.asOf}>{dateTime.format(new Date(snapshot.asOf))}</time> · {snapshot.coverage}</p>
         </> : <>
           <strong>Market pilot</strong>
-          <p>{pilot.status === "loading" ? "Checking the latest market evidence…"
-            : pilot.status === "failed" ? "The snapshot is unavailable. Try again."
-              : "See the latest qualifying review or anomaly watch across the pilot assets."}</p>
+          <p>Open the current reviews and coverage, or preview a snapshot here.</p>
         </>}
+        {pilot.status === "loading" && <p className="rb-signal-live-feedback">Checking the latest market evidence…</p>}
+        {pilot.status === "failed" && <p className="rb-signal-live-feedback">{snapshot
+          ? "The refresh failed. The previous snapshot is still shown with its check time. Try again or open the live pilot."
+          : "The snapshot could not be loaded. Open the live pilot or try the preview again."}</p>}
       </div>
       <div className="rb-signal-live-actions">
-        <button type="button" onClick={() => void readPilot()} disabled={pilot.status === "loading"} aria-busy={pilot.status === "loading"}>
-          {snapshot ? "Refresh snapshot" : "Check live pilot"}
-          <ArrowUpRight size={15} aria-hidden="true" />
+        <a className="rb-signal-open-pilot" href="/app#opportunities">
+          Check live pilot <ArrowUpRight size={15} aria-hidden="true" />
+        </a>
+        <button className="rb-signal-preview" type="button" onClick={() => void readPilot()} disabled={pilot.status === "loading"} aria-busy={pilot.status === "loading"} aria-controls={`${uid}-pilot-status`}>
+          <RefreshCw size={14} aria-hidden="true" />
+          {pilot.status === "loading" ? "Checking…"
+            : pilot.status === "failed" ? "Retry snapshot"
+              : snapshot ? "Refresh snapshot" : "Preview snapshot"}
         </button>
-        {snapshot && <a href="/app/research#opportunities">See reviews and filings</a>}
       </div>
     </div>
   </div>;

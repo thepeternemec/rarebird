@@ -162,7 +162,7 @@
 .rb-signal-live-text p { margin-top: 3px; color: var(--text-secondary); line-height: 1.55; font-size: 13px; }
 .rb-signal-live-text .rb-signal-live-time { margin-top: 6px; font-size: 12px; }
 .rb-signal-live-actions { display: flex; flex: none; flex-direction: column; align-items: center; gap: 7px; }
-.rb-signal-live-actions button {
+.rb-signal-live-actions .rb-signal-open-pilot {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -175,9 +175,18 @@
   font: 500 13px/1.3 var(--font-sans);
   cursor: pointer;
 }
-.rb-signal-live-actions button:hover { background: var(--bg-raised); }
-.rb-signal-live-actions button:disabled { cursor: wait; opacity: .65; }
-.rb-signal-live-actions a { color: var(--text-secondary); text-decoration: underline; text-underline-offset: 3px; font-size: 12px; }
+.rb-signal-live-actions .rb-signal-open-pilot:hover { background: var(--bg-raised); }
+.rb-signal-live-actions .rb-signal-open-pilot { text-decoration: none; }
+.rb-signal-live-actions .rb-signal-preview {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 44px;
+  padding: 7px 10px; border: 0; background: transparent; color: var(--text-secondary);
+  font: 400 12px/1.4 var(--font-sans); text-decoration: underline;
+  text-underline-offset: 3px; cursor: pointer;
+}
+.rb-signal-live-actions .rb-signal-preview:hover { color: var(--text-primary); }
+.rb-signal-live-actions .rb-signal-preview:disabled { cursor: wait; opacity: .65; }
+.rb-signal-live-actions :is(a, button):focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }
+.rb-signal-live-text .rb-signal-live-notice, .rb-signal-live-text .rb-signal-live-feedback { margin-top: 8px; color: var(--text-primary); }
 @media (max-width: 760px) {
   .rb-home .rb-signal-section { padding-top: 16px; }
   .rb-signal-heading { grid-template-columns: 1fr; gap: 12px; padding-top: 33px; }

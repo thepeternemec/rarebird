@@ -5,6 +5,7 @@ import { ArrowUpRight, RefreshCw } from "lucide-react";
 import type { OpportunityBrief as Brief } from "@rarebird/api";
 import type { ReportedComparison } from "@rarebird/contracts";
 import { forecastTickerFor, type WorkspaceMarket } from "@/lib/workspace-links";
+import { pilotCoverage } from "./pilot-snapshot";
 import "./opportunity-brief.css";
 
 const endpoint = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api") + "/v2/opportunities";
@@ -66,6 +67,7 @@ export default function OpportunityBrief({ market, beatId }: { market: Workspace
 
   const matches = (id: string) => beatId ? id === beatId : (market === "crypto") === Boolean(forecastTickerFor(id));
   const coverage = brief?.coverage.filter(asset => matches(asset.beat_id)) ?? [];
+  const coverageStatus = pilotCoverage(coverage);
   const reviews = brief?.review.filter(review => matches(review.beat_id) && Date.parse(review.market_evidence_until) > Date.now()) ?? [];
   const official = brief?.catalysts.coverage.find(asset => asset.beat_id === beatId);
   const snapshot = official?.snapshot;
@@ -107,7 +109,10 @@ export default function OpportunityBrief({ market, beatId }: { market: Workspace
             <p>Reassess if {review.invalidation}</p>
             {review.evidence[0] ? <a href={review.evidence[0].url} target="_blank" rel="noreferrer">{review.evidence[0].source}<ArrowUpRight size={14} aria-hidden="true" /></a> : null}
             <span>Market evidence expires {dateTime(review.market_evidence_until)}</span>
-          </li>)}</ul> : <p>{coverage.some(asset => asset.market === "current") ? "No candidates pass the current reporting and market checks." : "Current market evidence is unavailable."}</p>}
+          </li>)}</ul> : <p>{!coverageStatus.current ? "Current market evidence is unavailable."
+            : !coverageStatus.complete ? "Current reporting analysis is not ready for this selection. Market prices alone cannot produce a review."
+              : coverageStatus.complete < coverageStatus.total ? "No qualifying reviews were returned. Some assets have held data or analysis; see coverage below."
+                : "No candidates pass the current reporting and market checks."}</p>}
         </section>
       </div>
       {coverage.length > 0 && <details className="opportunity-coverage">
