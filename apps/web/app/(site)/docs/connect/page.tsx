@@ -10,6 +10,7 @@ export const metadata = {
 const API = RAREBIRD_API_URL;
 const MCP_CONFIG = RAREBIRD_MCP_CONFIG;
 const TOOLS = [
+  ["rarebird_stock_screener", "Read developing setups in four US shares, their lifecycle events and prospective outcomes. Check feed coverage and expiry.", "GET /v2/stock-screener"],
   ["rarebird_catalysts", "Inspect official filings and comparable reported figures for the four pilot issuers.", "GET /v2/catalysts"],
   ["rarebird_investment", "Get the same ticker brief shown on Ask Rarebird, with a stance and its evidence.", "POST /v2/investment"],
   ["rarebird_research", "Answer a question with asset-specific evidence, conditional reasoning, unknowns and next checks.", "POST /v2/research"],
@@ -35,6 +36,7 @@ const TOOLS = [
   ["rarebird_signals","Read funding, DEX volume and stablecoin supply.","GET /v2/signals"],
 ];
 const GROUPS = [
+  { title: "Stock screening and agent alerts", names: ["rarebird_stock_screener"] },
   { title: "Research and briefings", names: ["rarebird_research", "rarebird_investment", "rarebird_discovery", "rarebird_market_briefing"] },
   { title: "Headlines and follow-up checks", names: ["rarebird_topics", "rarebird_news", "rarebird_brief", "rarebird_stories", "rarebird_changes", "rarebird_watch"] },
   { title: "Prices, tokens and market data", names: ["rarebird_market", "rarebird_prices", "rarebird_fear_greed", "rarebird_chain", "rarebird_token", "rarebird_token_intelligence", "rarebird_signals", "rarebird_ask"] },
@@ -42,6 +44,7 @@ const GROUPS = [
   { title: "Collection controls and legacy tools", names: ["rarebird_collection", "rarebird_summary"] },
 ];
 const RECOMMENDED = [
+  ["Check developing stock setups", "rarebird_stock_screener", "{}"],
   ["Answer a stock or crypto question", "rarebird_research", '{"question":"What changed with NVIDIA?"}'],
   ["Get a brief by ticker", "rarebird_investment", '{"ticker":"BTC"}'],
   ["Get a crypto market briefing", "rarebird_market_briefing", "{}"],
@@ -76,6 +79,16 @@ export default function DocsConnect() {
         <li><code>GET /v2/tvl?limit=12</code> returns chain DeFi total value locked and 24-hour changes. Keep the source and fetch time with each reading.</li>
       </ul></details>
       <p className="docs-small">The full function schemas are available at <a href="/api/v2/tools"><code>/api/v2/tools</code></a>. Forecasts also have a REST read at <code>GET /api/v2/forecasts</code>.</p>
+    </section>
+
+    <section className="docs-section" aria-labelledby="stock-screener">
+      <h2 id="stock-screener">Stock setups for your agent</h2>
+      <p>Open the <a href="/app/screener">stock screener</a> or call <code>rarebird_stock_screener</code> with <code>{"{}"}</code>. The first screen follows NVIDIA, Apple, Microsoft and Alphabet US shares against SPY.</p>
+      <ol><li><strong>Connect once.</strong> Use the MCP URL above. No separate screener connection is needed.</li><li><strong>Check the result.</strong> Read <code>status</code>, source coverage, <code>active</code> setups and each setup’s <code>valid_until</code>. An empty result with <code>not_configured</code> or <code>data_hold</code> means missing measurements, not a quiet market.</li><li><strong>Follow changes.</strong> After processing the initial events, save <code>next_cursor</code>. Pass it as <code>after</code> on the next call; keep paging while <code>has_more</code>. Use <code>{'{"after":"0","limit":20}'}</code> to replay retained events from the beginning.</li></ol>
+      <div className="code"><div className="code-bar"><span>REST · read current setups</span><CopyButton text="curl 'https://www.rarebird.network/api/v2/stock-screener'" label="Copy stock screener request" /></div><pre><code>{"curl 'https://www.rarebird.network/api/v2/stock-screener'"}</code></pre></div>
+      <p>Events are <code>created</code>, <code>updated</code> (resumed after a hold), <code>data_hold</code>, <code>invalidated</code> or <code>expired</code>. The same alert ID keeps its original reference price. Ordinary continuation refreshes the measurement without sending another creation alert. Deduplicate by event ID.</p>
+      <details className="docs-disclosure"><summary>Receive notifications in your own agent</summary><p>MCP reads return stored results; they do not create a background subscription in your assistant. The operator can configure one HTTPS webhook destination for signed lifecycle events. Feed and delivery status are visible in every response. See the <a href="https://github.com/thepeternemec/rarebird/blob/main/docs/STOCK-SCREENER.md">stock feed, worker and webhook setup</a> for credentials, signing verification, retry behavior and market-data entitlements.</p></details>
+      <p className="docs-small">The screen uses closed one-minute bars during the regular US session and requires 66 aligned minutes for its intraday baseline. IEX is single-exchange coverage; SIP requires entitlement. This is an experimental setup detector, with 15/60-minute forward observations, not a forecast or an executed trade. Recent reporting is context and does not prove the cause of a move.</p>
     </section>
 
     <section className="docs-section" aria-labelledby="first-rest-requests">

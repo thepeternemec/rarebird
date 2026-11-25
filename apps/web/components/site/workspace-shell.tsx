@@ -7,7 +7,7 @@ import ThemeToggle from "./theme-toggle";
 import "./workspace-shell.css";
 
 export default function WorkspaceShell({ active, title, description, children }: {
-  active: "/app" | "/tokens";
+  active: "/app" | "/app/screener" | "/tokens";
   title?: string;
   description?: string;
   children: ReactNode;
@@ -17,9 +17,11 @@ export default function WorkspaceShell({ active, title, description, children }:
       <a className="rb-app-skip" href="#workspace-content">Skip to workspace content</a>
       <header className="rb-workspace-header">
         <a className="nav-logo" href="/" aria-label="Rarebird home"><BrandWordmark className="brand-wordmark" /></a>
-        {active === "/tokens" && <nav className="rb-app-nav" aria-label="Rarebird workspace">
-          <Link href="/app?market=crypto">Crypto workspace</Link>
-        </nav>}
+        <nav className="rb-app-nav" aria-label="Rarebird workspace">
+          {active === "/tokens" ? <Link href="/app?market=crypto">Crypto workspace</Link>
+            : active === "/app/screener" ? <Link href="/app?market=equity">Stock research</Link>
+            : <Link href="/app/screener">Stock screener</Link>}
+        </nav>
         <ThemeToggle />
       </header>
       <main className="rb-app-main" id="workspace-content">

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { NEWS_TOOLS, SignalContextIdSchema } from "@rarebird/contracts";
+import { NEWS_TOOLS, SignalContextIdSchema, StockScreenerQuerySchema } from "@rarebird/contracts";
 import { NewsError, topics, topicIdentities, newsPage, brief, stories, watchMany, WATCH_LIMIT, TOPIC_PAGE_DEFAULT, TOPIC_PAGE_MAX } from "./news.js";
 import { headlineSummary } from "./headline-summary.js";
 import { fearGreed, overview, prices, DEFAULT_PRICE_IDS } from "./market.js";
@@ -17,6 +17,7 @@ import { readTokenIntelligence } from "./token-intelligence.js";
 import { readMarketForecasts } from "./forecast-store.js";
 import { readMarketBriefing } from "./market-briefing.js";
 import { readDiscovery } from "./discovery.js";
+import { readStockScreener } from "./stock-screener-store.js";
 export const newsRoutes = new Hono();
 newsRoutes.onError((error, c) => { if (error instanceof NewsError)
     return c.json({ error: { code: error.code, message: error.message } }, error.status as 400 | 404 | 410 | 503); console.error("news request failed", error.name); return c.json({ error: { code: "service_unavailable", message: "News is temporarily unavailable." } }, 503); });
@@ -24,6 +25,13 @@ const clamp = (raw: string | undefined, fallback: number, max: number) => {
     const n = Number.parseInt(raw ?? "", 10);
     return Number.isFinite(n) && n >= 0 ? Math.min(n, max) : fallback;
 };
+newsRoutes.get("/stock-screener", async c => {
+    const limit = c.req.query("limit");
+    const parsed = StockScreenerQuerySchema.safeParse({ after: c.req.query("after"), limit: limit === undefined ? undefined : Number(limit) });
+    if (!parsed.success) throw new NewsError("invalid_request", "Use a numeric event cursor and a limit between 1 and 50.", 400);
+    c.header("Cache-Control", "no-store");
+    return c.json(await readStockScreener(parsed.data));
+});
 newsRoutes.get("/research", c => c.json({ ...researchCoverage, method: "POST", body: { question: "Why is NVIDIA moving, and what should I check next?" } }));
 newsRoutes.get("/discovery", async c => {
     const limit = c.req.query("limit");
@@ -153,6 +161,7 @@ export function canonicalToolName(name: string): string {
 
 export async function callNewsTool(name: string, args: unknown, oidcToken?: string | null) {
     name = canonicalToolName(name);
+    if (name === "rarebird_stock_screener") return readStockScreener(args);
     if (name === "rarebird_discovery") return readDiscovery(args);
     if (name === "rarebird_research") return researchQuestion(args, oidcToken);
     if (name === "rarebird_investment") return readInvestmentBrief(args, oidcToken);

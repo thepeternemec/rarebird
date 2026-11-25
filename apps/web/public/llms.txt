@@ -126,7 +126,7 @@ shown once. That is a browser flow and needs a human.
 - Source — https://github.com/thepeternemec/rarebird
 
 ## Mission
-Rarebird is a news feed for AI agents following stocks and crypto. It exposes 16 research tools plus one explicit collection-control tool over MCP and REST, including the signal-construction pilot. Verified tokenized-asset mapping is planned; current news resolves the underlying company or cryptocurrency.
+Rarebird is a news feed for AI agents following stocks and crypto. It exposes research, stock screening and reference tools plus an explicit collection-control tool through one MCP server and REST API. Verified tokenized-asset mapping is planned; current news resolves the underlying company or cryptocurrency.
 
 ### Ask, chain and contracts
 
@@ -146,3 +146,7 @@ move every twelve seconds or less; none of this reads balances or quotes swaps.
 Contextual signals: pass context=fundamentals, liquidity or risk to /v2/intelligence, or the context argument to rarebird_intelligence. Read constructions for hypotheses, trigger conditions, invalidation and alert checks; alerts is the persisted review-alert journal. Actions: review_now, keep_watching, no_alert, reassess. The pilot adds `quantitative`: verified Kraken xStock/crypto prices, five-minute closed candles, a pre-information beta baseline, residual moves, relative volume and observed book costs. `constructions[].quantitative` explains information delta and timing gates; `market_reaction` can be `observed` when an aligned post-thesis window exists, without establishing causality. Missing, stale, thin or unprocessed data holds alerts. `evaluation` compares prospective all-construction and review-alert cohorts; `evaluations` freezes entry references and later 15/60/240-minute observations. Returns exclude fees and are not executable P&L. Thresholds are research heuristics awaiting calibration. Notification delivery and execution are not connected. See [methodology](https://github.com/thepeternemec/rarebird/blob/main/docs/QUANTITATIVE.md).
 
 Temporary fast collection: only when the user explicitly asks for one-minute news, call rarebird_collection with action=start, the priority beat_id and interval_seconds=60. It expires in 15 minutes and never auto-renews. Status reads do not activate it. Store the returned session_token privately for stop. This does not accelerate market candles, run model analysis immediately or deliver notifications. See https://www.rarebird.network/docs/connect.
+
+## Developing stock setups
+
+Use rarebird_stock_screener or GET /api/v2/stock-screener for NVDA, AAPL, MSFT and GOOGL US shares versus SPY. Check status, source coverage and valid_until; not_configured or data_hold is not evidence of a quiet market. Save next_cursor after processing events, pass after on the next read, and page while has_more. Deduplicate event IDs and retain the greatest alert version. Reference measurements are frozen; linked reporting is context, not a cause claim. Outcomes are prospective observations, not executed trades. Public reads do not configure monitoring or notifications. Optional operator-configured signed webhooks deliver lifecycle events; see https://www.rarebird.network/docs/connect#stock-screener and https://github.com/thepeternemec/rarebird/blob/main/docs/STOCK-SCREENER.md.

@@ -2,7 +2,7 @@
   "name": "rarebird",
   "version": "0.2.0",
   "private": true,
-  "description": "Rarebird — meaningful signals for AI agents. Stock and crypto context, source-grounded interpretations and market checks over MCP and REST.",
+  "description": "Rarebird \u2014 meaningful signals for AI agents. Stock and crypto context, source-grounded interpretations and market checks over MCP and REST.",
   "license": "MIT",
   "engines": {
     "node": ">=20"
@@ -24,7 +24,8 @@
     "prepare": "git config core.hooksPath .githooks || true",
     "db:retain": "node db/retain.mjs",
     "balance:grant": "node db/grant.mjs",
-    "db:dedupe": "node db/dedupe.mjs"
+    "db:dedupe": "node db/dedupe.mjs",
+    "stocks:worker": "node scripts/stock-screener-worker.mjs"
   },
   "allowScripts": {
     "esbuild@0.28.2": true

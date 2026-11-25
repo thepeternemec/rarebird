@@ -81,3 +81,9 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for exact environment-file locations and ru
 The standard suite checks contracts and pure application behavior without service credentials. CI separately verifies persistence against disposable PostgreSQL. Main-branch CI checks the deployed read path, measured context, analysis health and authenticated worker boundaries.
 
 The workflow is defined in [ci.yml](../.github/workflows/ci.yml).
+
+## US-share screener
+
+The dedicated stock screener is independent from Kraken xStock/crypto measurement and BTC Kumo training. `stock-screener-provider.ts` verifies Alpaca US-share identities and loads entitled minute bars, quotes and the market clock. `stock-screener-engine.ts` performs a deterministic past-only relative-strength screen, lifecycle transitions and frozen forward measurements. `stock-screener-store.ts` leases scans, freezes first observations and atomically commits setups, lifecycle events and optional delivery outbox records. Public REST/MCP reads only load stored results and project stale measurements to holds.
+
+Vercel runs the authenticated fallback once per minute. `scripts/stock-screener-worker.mjs` is a separately hosted Node 22+ WebSocket runner. Feed configuration and source mode are explicit; no credentials means no provider requests or fabricated results. Operator-configured HMAC webhooks are at least once, with idempotency IDs and retry/expiry handling. [Operational setup and measurement limits](STOCK-SCREENER.md).

@@ -2,6 +2,12 @@
 
 The integration guide for agents. For people: [connect your assistant](https://www.rarebird.network/docs/quickstart) and ask a stock or crypto news question in your own words.
 
+## Stock screener
+
+Use `rarebird_stock_screener` or `GET /api/v2/stock-screener` for developing setups in NVDA, AAPL, MSFT and GOOGL US shares versus SPY. This is separate from the tokenized-equity pilot. Read source coverage (single-exchange IEX or entitled SIP), status and per-stock holds before interpreting results. Setups expire; never present a held/expired measurement as current. Save `next_cursor` after processing events, pass it as `after`, and page while `has_more`. Event IDs are stable; versions describe creation, hold, resumption, invalidation and expiry. Initial calls return a recent snapshot; `after: "0"` replays the retained 30-day journal. Reference measurements are frozen. Linked reporting is context, not proof of causality. Forward outcomes are observations, not filled trades or demonstrated profits.
+
+Public reads do not start the worker or configure notifications. Signed webhook delivery is an explicitly configured operator feature; deduplicate event IDs, retain the greatest alert version and check current status/expiry before downstream use. The source can be `not_configured` until the operator connects US-share market data. [Stock setup and notification guide](docs/STOCK-SCREENER.md).
+
 ## Catalog discovery
 
 Call `rarebird_discovery` or `GET /api/v2/discovery` to read developments recorded by the scheduled stock and token scan. Optional inputs are `asset` (`equity` or `crypto`), `beat_id` and `limit` (1–20). Link the evidence and keep its timestamps. A press publication timestamp describes the article. A filing acceptance timestamp describes the official disclosure. `first_recorded_at` measures when the discovery worker recorded qualifying evidence. Catalog news checks cover 2,030 assets and direct filing checks cover four pilot issuers.
