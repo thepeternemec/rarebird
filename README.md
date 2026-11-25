@@ -12,6 +12,16 @@ Rarebird brings market developments, source evidence and risk context into one w
 
 **Free through December 31, 2026.** Both are included in the planned Rarebird Pro membership at **$8.99 USD/month**. [See pricing](https://www.rarebird.network/pricing).
 
+## NVIDIA Kumo Engine integration
+
+**Kumo Engine is an accelerator for context generation over structured data.** It stores related tables as a graph on disk and assembles connected records as context for predictive models. [Explore NVIDIA Kumo Engine](https://github.com/NVIDIA/kumo-engine).
+
+Rarebird has integrated Kumo Engine into an experimental BTC pipeline. It connects hourly market measurements with news-arrival metadata, trains a model for the next-hour 1% move target, and measures it against the existing forecast and historical base rate. The hourly job records Brier score, log loss and calibration, with historical test results and a prospective prediction journal.
+
+**BTC is our first measured pilot.** We are building this approach across all asset classes and data types, connecting market data, reporting, filings, events and outcomes. Broader Kumo coverage is part of the roadmap.
+
+[BTC experiment and methodology](docs/BTC-KUMO.md) · [Measurement runs](https://github.com/thepeternemec/rarebird/actions/workflows/btc-kumo.yml) · [Integration code](scripts/kumo-btc)
+
 ## What you can do today
 
 | | What Rarebird gives you |
@@ -61,6 +71,7 @@ Catalog news collection runs on a ten-minute schedule. Priority assets support f
 | Source-linked ticker research and Telegram briefs | [#121](https://github.com/thepeternemec/rarebird/pull/121) |
 | Catalog-wide market discovery with source and observation times | [#131](https://github.com/thepeternemec/rarebird/pull/131) |
 | Token identity and pool evidence by chain and contract | [#125](https://github.com/thepeternemec/rarebird/pull/125) |
+| NVIDIA Kumo Engine integration and BTC model measurements | [#162](https://github.com/thepeternemec/rarebird/pull/162) · [#163](https://github.com/thepeternemec/rarebird/pull/163) |
 | Hourly BTC and ETH forecasts and forward evaluation | [#130](https://github.com/thepeternemec/rarebird/pull/130) |
 | Direct filing evidence for four pilot issuers | [#119](https://github.com/thepeternemec/rarebird/pull/119) |
 

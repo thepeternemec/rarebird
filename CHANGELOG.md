@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-25 — NVIDIA Kumo Engine BTC pilot
+
+- Integrated Kumo Engine 1.0.0 for experimental predictions using structured market data and news-arrival metadata.
+- Started an hourly BTC pilot for the next-hour 1% move target, with Brier score, log loss, calibration and a prospective prediction journal.
+- Added a bounded BTC dataset export and chronological evaluation against the existing forecast and historical base rate.
+- Established BTC as the first measured target in a broader direction across asset classes and data types. [Methodology](docs/BTC-KUMO.md) · [Measurement runs](https://github.com/thepeternemec/rarebird/actions/workflows/btc-kumo.yml).
+
 ## 2026-11-17 — Rarebird launch identity
 
 - Renamed the GitHub repository, workspace packages, public API identity and advertised tool names to Rarebird.
