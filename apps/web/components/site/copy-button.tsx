@@ -1,29 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Copy } from "lucide-react";
 
-/** Copies a string. Small enough to live here; used wherever a snippet is shown. */
-export default function CopyButton({ text, label = "copy" }: { text: string; label?: string }) {
-  const [copied, setCopied] = useState(false);
+/** Copies the displayed URL or code and confirms whether the clipboard accepted it. */
+export default function CopyButton({ text, label = "Copy", copiedLabel = "Copied", className = "copy-btn" }: {
+  text: string;
+  label?: string;
+  copiedLabel?: string;
+  className?: string;
+}) {
+  const [feedback, setFeedback] = useState<"idle" | "copied" | "failed">("idle");
+
+  useEffect(() => {
+    if (feedback === "idle") return;
+    const timeout = window.setTimeout(() => setFeedback("idle"), 2500);
+    return () => window.clearTimeout(timeout);
+  }, [feedback, text]);
 
   return (
     <button
       type="button"
-      className="copy-btn"
+      className={className}
       aria-label={/^copy\b/i.test(label) ? label : `Copy ${label}`}
       onClick={async () => {
         try {
           await navigator.clipboard.writeText(text);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
+          setFeedback("copied");
         } catch {
-          /* clipboard unavailable — the text is selectable either way */
+          setFeedback("failed");
         }
       }}
     >
-      {copied ? <Check size={13} /> : <Copy size={13} />}
-      {copied ? "copied" : label}
+      {feedback === "copied" ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
+      <span role="status">{feedback === "copied" ? copiedLabel : feedback === "failed" ? "Select text to copy" : label}</span>
     </button>
   );
 }

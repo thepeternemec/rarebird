@@ -14,7 +14,7 @@ const questions = [
 ];
 const help = [
   { question: "I can’t find a place to add Rarebird", answer: <>Look in your assistant’s tools, connectors or integrations settings for a custom remote MCP connection. Availability varies by app and account. If your app does not support it, <a href="/docs/try">try a live lookup in your browser</a> or use the <a href="/docs/connect">developer integration guide</a>. Pasting the address into a chat does not enable the tools.</> },
-  { question: "My assistant isn’t using the connection", answer: <>Check that Rarebird is saved and enabled, including its news tools. Then ask it to “use Rarebird” explicitly. You can <a href="/connect">check that the service is responding</a> here; this checks Rarebird, rather than the settings inside your assistant. If your app requires a sign-in flow that the public connection does not support, that connection method may not work yet.</> },
+  { question: "My assistant isn’t using the connection", answer: <>Check that Rarebird is saved and enabled, including the tools you want to use. Then ask it to “use Rarebird” explicitly. You can <a href="/connect">check that the service is responding</a> here; this checks Rarebird, rather than the settings inside your assistant. If your app requires a sign-in flow that the public connection does not support, that connection method may not work yet.</> },
   { question: "The company or its news is missing", answer: <>Try the company’s full name or ticker. It may be outside the supported catalog. If news is old or unavailable, ask for the last successful check time and retry later. If you hit the public request limit, pause and follow the retry time.</> },
   { question: "The answer doesn’t include sources", answer: <>Ask whether the Rarebird lookup succeeded, then request the links, publishers and dates returned by the tool. Rarebird provides headlines and source links, so the answer should stay within what those headlines support.</> },
 ];
@@ -25,7 +25,7 @@ export default function DocsQuickstart() {
       <header className="docs-head quickstart-head">
         <div className="quickstart-eyebrow"><span>QUICKSTART</span><span>Free public access</span></div>
         <h1>Connect once.<br /><span>Ask naturally.</span></h1>
-        <p className="docs-lead">Add Rarebird to your AI assistant. Ask about Bitcoin, a stock on your watchlist, or a move you want to understand, and get recent reporting with sources.</p>
+        <p className="docs-lead">Add Rarebird to your AI assistant. Ask about Bitcoin, a stock on your watchlist, or a move you want to understand, and get recent reporting with sources. One MCP connection includes news, research, prices, filings, forecasts and market checks.</p>
         <div className="quickstart-assurances"><span><Check size={13} /> No Rarebird account</span><span><Check size={13} /> No API key</span></div>
       </header>
 
@@ -51,13 +51,13 @@ export default function DocsQuickstart() {
         </section>
 
         <section className="quickstart-step quickstart-connection" aria-labelledby="add-rarebird">
-          <div className="quickstart-step-heading"><span className="quickstart-number">02</span><div><span className="quickstart-kicker">ONE ADDRESS. YOUR NEWS CONNECTION.</span><h2 id="add-rarebird">Add the Rarebird address.</h2></div><Link2 className="quickstart-step-icon" size={22} /></div>
+          <div className="quickstart-step-heading"><span className="quickstart-number">02</span><div><span className="quickstart-kicker">ONE CONNECTION FOR ALL RAREBIRD TOOLS</span><h2 id="add-rarebird">Add the Rarebird connection.</h2></div><Link2 className="quickstart-step-icon" size={22} /></div>
           <div className="quickstart-step-body">
-            <p>Add a new connection named <strong>Rarebird</strong>. Paste this address, then follow your app’s prompts to enable its news tools.</p>
+            <p>Add a new connection named <strong>Rarebird</strong>. Choose a remote MCP server and paste this URL into the <strong>server URL</strong> field. Save the connection and enable Rarebird’s tools.</p>
             <div className="quickstart-endpoint">
-              <div className="quickstart-endpoint-top"><span>REMOTE MCP ADDRESS</span><CopyButton text={MCP_URL} label="Copy address" /></div>
+              <div className="quickstart-endpoint-top"><span>MCP SERVER URL</span><CopyButton text={MCP_URL} label="Copy MCP connection URL" copiedLabel="MCP URL copied" /></div>
               <code>{MCP_URL}</code>
-              <dl><div><dt>Connection name</dt><dd>Rarebird</dd></div><div><dt>Authentication</dt><dd>No API key needed</dd></div></dl>
+              <dl><div><dt>Connection name</dt><dd>Rarebird</dd></div><div><dt>Transport</dt><dd>Streamable HTTP</dd></div><div><dt>Authentication</dt><dd>No API key needed</dd></div></dl>
             </div>
             <a className="quickstart-text-link" href="/docs/connect#mcp">Need a configuration file? Open developer setup <ArrowUpRight size={14} /></a>
           </div>

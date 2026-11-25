@@ -28,12 +28,15 @@ export default function ForAgents() {
     <main className="rb-agent-page">
       <section className="rb-agent-hero" aria-labelledby="agent-title">
         <p className="rb-agent-label">Rarebird for agents</p>
-        <h1 id="agent-title">The workspace your agent can read.</h1>
-        <p className="rb-agent-lede">Get the source-linked stock and crypto coverage you see in Rarebird through MCP or REST. Bring headlines, prices, filings, and market evidence into the tools you already use.</p>
+        <h1 id="agent-title">One connection.<br />All of Rarebird’s tools.</h1>
+        <p className="rb-agent-lede">Connect Rarebird once to give your assistant news, research, prices, filings, forecasts and market checks. Your assistant chooses the tools it needs for each question.</p>
         <div className="rb-agent-actions">
-          <a className="rb-agent-primary" href="/docs/quickstart">Connect with MCP <ArrowUpRight size={17} aria-hidden="true" /></a>
+          <CopyButton text={origin + "/api/mcp"} label="Copy MCP connection URL" copiedLabel="MCP URL copied" className="rb-agent-primary" />
+          <a className="rb-agent-secondary" href="/docs/quickstart">Setup instructions <ArrowUpRight size={17} aria-hidden="true" /></a>
           <a className="rb-agent-secondary" href="#tool-explorer">Try a live request <ArrowDown size={17} aria-hidden="true" /></a>
         </div>
+        <div className="rb-agent-endpoint"><code>{origin}/api/mcp</code></div>
+        <p className="rb-agent-lede">In your assistant’s settings, add a custom remote MCP server named <strong>Rarebird</strong> and paste the URL into the server URL field. Public access needs no API key.</p>
       </section>
 
       <AgentCallExplorer origin={origin} />
@@ -59,16 +62,16 @@ export default function ForAgents() {
         <div className="rb-agent-connect">
           <article>
             <Cable size={22} aria-hidden="true" />
-            <h3>MCP server</h3>
-            <p>Add the remote server to an assistant that supports MCP. Public tools are available without a Rarebird API key.</p>
-            <div className="rb-agent-endpoint"><code>{origin}/api/mcp</code><CopyButton text={origin + "/api/mcp"} label="Copy MCP URL" /></div>
+            <h3>One MCP server for your assistant</h3>
+            <p>Add this URL once in your assistant’s remote MCP settings, name the connection Rarebird, and enable the tools. This connection includes every tool shown above. Public access needs no API key.</p>
+            <div className="rb-agent-endpoint"><code>{origin}/api/mcp</code><CopyButton text={origin + "/api/mcp"} label="Copy MCP connection URL" copiedLabel="MCP URL copied" /></div>
             <a className="rb-agent-secondary" href="/docs/quickstart">MCP setup guide <ArrowRight size={16} aria-hidden="true" /></a>
           </article>
           <article>
             <Braces size={22} aria-hidden="true" />
-            <h3>REST API</h3>
+            <h3>REST API for developers</h3>
             <p>Use the same capabilities from your own agent, script, or application. Responses expose source and coverage information where available.</p>
-            <div className="rb-agent-endpoint"><code>{origin}/api</code><CopyButton text={origin + "/api"} label="Copy REST URL" /></div>
+            <div className="rb-agent-endpoint"><code>{origin}/api</code><CopyButton text={origin + "/api"} label="Copy REST API base URL" copiedLabel="REST API base URL copied" /></div>
             <a className="rb-agent-secondary" href="/docs/connect#first-rest-requests">First REST requests <ArrowRight size={16} aria-hidden="true" /></a>
           </article>
         </div>
