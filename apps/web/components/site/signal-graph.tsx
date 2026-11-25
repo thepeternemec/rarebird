@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
-  Activity, ArrowUpRight, Clock3, Compass, GitFork, Layers3, RotateCcw,
-  RotateCw, ScanLine,
+  Activity, ArrowUpRight, Clock3, GitFork, Layers3, ScanLine,
 } from "lucide-react";
 import type { OpportunityBrief } from "@rarebird/api";
-import SignalGraphScene, { DEFAULT_GRAPH_VIEW, rotateGraph, type GraphView, type SignalStage } from "./signal-graph-scene";
+import SignalGraphScene, { type SignalNode, type SignalStage } from "./signal-graph-scene";
 import "./signal-graph.css";
 
 const STAGES = {
@@ -48,7 +47,6 @@ const STAGES = {
 } satisfies Record<SignalStage, {
   name: string; icon: typeof Activity; title: string; description: string; detail: string; href: string; link: string;
 }>;
-const STAGE_NAMES = Object.keys(STAGES) as SignalStage[];
 const ENDPOINT = `${process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api"}/v2/opportunities?limit=1`;
 const dateTime = new Intl.DateTimeFormat(undefined, {
   month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short",
@@ -95,17 +93,20 @@ function summarize(brief: OpportunityBrief): Snapshot {
 
 export default function SignalGraph() {
   const uid = useId();
-  const [stage, setStage] = useState<SignalStage>("anomaly");
-  const [view, setView] = useState(DEFAULT_GRAPH_VIEW);
+  const [selected, setSelected] = useState<SignalNode | "decision">("timing");
   const [pilot, setPilot] = useState<Pilot>({ status: "idle" });
-  const drag = useRef<{ id: number; x: number; y: number; view: GraphView; moved: boolean } | null>(null);
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => {
     request.current?.abort();
     request.current = null;
   }, []);
 
+  const stage = selected === "review" || selected === "watch" ? "decision" : selected;
   const info = STAGES[stage];
+  const title = selected === "review" ? "The evidence is ready for review."
+    : selected === "watch" ? "Track an unconfirmed move." : info.title;
+  const description = selected === "review" ? "The evidence and timing checks passed. Inspect the source, the observed reaction and what would invalidate the signal."
+    : selected === "watch" ? "A relative move stood out. Rarebird tracks whether it persists while it waits for evidence that qualifies for review." : info.description;
   const snapshot = pilot.status === "ready" ? pilot.snapshot : null;
 
   async function readPilot() {
@@ -120,7 +121,7 @@ export default function SignalGraph() {
       const next = summarize(await response.json() as OpportunityBrief);
       if (request.current === controller) {
         setPilot({ status: "ready", snapshot: next });
-        setStage(current => current === stage ? "decision" : current);
+        setSelected(current => current === selected ? (next.branch === "none" ? "decision" : next.branch) : current);
       }
     } catch {
       if (request.current === controller) setPilot({ status: "failed" });
@@ -130,64 +131,15 @@ export default function SignalGraph() {
     }
   }
 
-  function startDrag(event: PointerEvent<HTMLDivElement>) {
-    if (!event.isPrimary || event.button !== 0 || (event.target as Element).closest("button")) return;
-    drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, view, moved: false };
-  }
-
-  function moveDrag(event: PointerEvent<HTMLDivElement>) {
-    const start = drag.current;
-    if (!start || start.id !== event.pointerId) return;
-    const dx = event.clientX - start.x;
-    const dy = event.clientY - start.y;
-    if (!start.moved) {
-      if (Math.hypot(dx, dy) < 5) return;
-      if (event.pointerType === "touch" && Math.abs(dy) > Math.abs(dx)) {
-        drag.current = null;
-        return;
-      }
-      event.currentTarget.setPointerCapture(event.pointerId);
-      start.moved = true;
-    }
-    setView(rotateGraph(start.view, dx * 0.0045, dy * 0.0035));
-  }
-
-  function endDrag(event: PointerEvent<HTMLDivElement>) {
-    if (drag.current?.id === event.pointerId) drag.current = null;
-  }
-
   return <div className="rb-signal-graph">
     <div className="rb-signal-main">
-      <div className="rb-signal-board">
-        <div className="rb-signal-board-tools">
-          <span>Drag to rotate</span>
-          <div role="group" aria-label="Graph view controls">
-            <button type="button" onClick={() => setView(current => rotateGraph(current, -0.2, 0))} aria-label="Rotate left" title="Rotate left"><RotateCcw size={16} aria-hidden="true" /></button>
-            <button type="button" onClick={() => setView(current => rotateGraph(current, 0.2, 0))} aria-label="Rotate right" title="Rotate right"><RotateCw size={16} aria-hidden="true" /></button>
-            <button type="button" onClick={() => setView(DEFAULT_GRAPH_VIEW)} aria-label="Reset view" title="Reset view"><Compass size={16} aria-hidden="true" /></button>
-          </div>
-        </div>
-        <div className="rb-signal-stage" onPointerDown={startDrag} onPointerMove={moveDrag}
-          onPointerUp={endDrag} onPointerCancel={endDrag} onPointerLeave={event => {
-            if (!event.currentTarget.hasPointerCapture(event.pointerId)) endDrag(event);
-          }} onLostPointerCapture={endDrag}>
-          <SignalGraphScene stage={stage} view={view} uid={uid} liveBranch={snapshot?.branch} onSelect={setStage} />
-        </div>
-      </div>
-      <div className="rb-signal-steps" role="group" aria-label="Signal intelligence stages">
-        {STAGE_NAMES.map(name => {
-          const item = STAGES[name];
-          return <button key={name} type="button" aria-pressed={stage === name} aria-controls={`${uid}-details`} onClick={() => setStage(name)}>
-            <item.icon size={17} strokeWidth={1.5} aria-hidden="true" /> {item.name}
-          </button>;
-        })}
-      </div>
+      <SignalGraphScene selected={selected} detailsId={`${uid}-details`} onSelect={setSelected} />
       <article className="rb-signal-inspector" id={`${uid}-details`} aria-live="polite">
         <div className="rb-signal-inspector-icon"><info.icon size={21} strokeWidth={1.45} aria-hidden="true" /></div>
         <div>
-          <p className="rb-signal-meta">{info.name}</p>
-          <h3>{info.title}</h3>
-          <p className="rb-signal-description">{info.description}</p>
+          <p className="rb-signal-meta">{selected === "review" ? "Review now" : selected === "watch" ? "Keep watching" : info.name}</p>
+          <h3>{title}</h3>
+          <p className="rb-signal-description">{description}</p>
         </div>
         <p className="rb-signal-detail">{info.detail}</p>
         <a className="rb-home-text-link" href={info.href}>{info.link}<ArrowUpRight size={15} aria-hidden="true" /></a>
