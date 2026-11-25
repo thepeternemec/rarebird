@@ -17,9 +17,9 @@ export default function WorkspaceShell({ active, title, description, children }:
       <a className="rb-app-skip" href="#workspace-content">Skip to workspace content</a>
       <header className="rb-workspace-header">
         <a className="nav-logo" href="/" aria-label="Rarebird home"><BrandWordmark className="brand-wordmark" /></a>
-        <nav className="rb-app-nav" aria-label="Rarebird workspace">
-          {active === "/app" ? <Link href="/tokens">Token contracts</Link> : <Link href="/app?market=crypto">Crypto workspace</Link>}
-        </nav>
+        {active === "/tokens" && <nav className="rb-app-nav" aria-label="Rarebird workspace">
+          <Link href="/app?market=crypto">Crypto workspace</Link>
+        </nav>}
         <ThemeToggle />
       </header>
       <main className="rb-app-main" id="workspace-content">

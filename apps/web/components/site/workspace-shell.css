@@ -30,7 +30,7 @@
   border-bottom: 1px solid var(--border-default);
 }
 .rb-workspace-header > .nav-logo { width: fit-content; min-height: 44px; display: flex; align-items: center; color: var(--text-primary); }
-.rb-workspace-header > .theme-toggle { justify-self: end; margin: 0; min-width: 44px; min-height: 44px; }
+.rb-workspace-header > .theme-toggle { grid-column: 3; justify-self: end; margin: 0; min-width: 44px; min-height: 44px; }
 .rb-app-nav { display: flex; justify-content: flex-end; }
 .rb-app-nav > a {
   display: inline-flex;
