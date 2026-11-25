@@ -41,7 +41,7 @@ def download(path, until, require_export=True):
         cap = 24000 if kind == "market_bar" else 12000 if kind == "news" else 4000
         coverage, status = {}, "warming_up"
         while len(records) < cap:
-            args = {"kind": kind, "since": since, "until": until, "limit": 1000}
+            args = {"kind": kind, "since": since, "until": until, "limit": 1000, "sampling": "hourly"}
             if cursor:
                 args["cursor"] = cursor
             url = "https://www.rarebird.network/api/v2/kumo-feeds?" + urllib.parse.urlencode(args)

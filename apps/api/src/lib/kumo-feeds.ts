@@ -9,8 +9,8 @@ const DAY = 86_400_000;
 const iso = (v: unknown) => new Date(v as string).toISOString();
 const decode = (v: unknown): any => typeof v === "string" ? JSON.parse(v) : v;
 const querySchema = z.object({ kind: KumoFeedKindSchema, limit: z.coerce.number().int().min(1).max(1000).default(1000),
-  since: z.string().datetime().optional(), until: z.string().datetime().optional(), cursor: z.string().max(900).optional() }).strict();
-const cursorSchema = z.object({ kind: KumoFeedKindSchema, since: z.string(), until: z.string(), at: z.string().datetime(), id: z.string().max(240) }).strict();
+  sampling: z.enum(["all", "hourly"]).optional(), since: z.string().datetime().optional(), until: z.string().datetime().optional(), cursor: z.string().max(900).optional() }).strict();
+const cursorSchema = z.object({ kind: KumoFeedKindSchema, sampling: z.enum(["all", "hourly"]).default("all"), since: z.string(), until: z.string(), at: z.string().datetime(), id: z.string().max(240) }).strict();
 
 function baseQuery(kind: KumoFeedKind) {
   switch (kind) {
@@ -20,6 +20,17 @@ function baseQuery(kind: KumoFeedKind) {
     case "market_bar": return "select 'market_bar:'||instrument_id||':'||extract(epoch from started_at)::bigint::text as id,observed_at as available_at,to_jsonb(b) as payload from public.newsbeat_market_bars b where started_at+interval '5 minutes'<=observed_at";
     default: return "select id,available_at,record as payload from public.newsbeat_kumo_feed_records where kind='" + kind + "'";
   }
+}
+/** Earliest arrivals cannot be displaced by a record that becomes available later. */
+function sampleQuery(kind: KumoFeedKind, sampling: "all" | "hourly") {
+  if (sampling === "all") return "select * from windowed";
+  if (kind === "market_bar") return "select * from windowed where extract(minute from (payload->>'started_at')::timestamptz) in (45,50,55)";
+  const entity = "coalesce(payload->>'entity_id',payload->>'beat_id',payload->>'instrument_id',payload->'signal'->>'beat_id',id)";
+  const perEntity = kind === "news" || kind === "interpretation" || kind === "discovery" ? 2 : 1;
+  const perHour = kind === "news" ? 16 : kind === "filing" || kind === "financial" ? 100 : 5;
+  // Priority only breaks ties at the same availability time; later arrivals never replace earlier context.
+  const priority = "case when entity='b_06c91290de1c' or entity like 'macro:%' then 0 else 1 end";
+  return "select id,available_at,payload from (select *,row_number() over(partition by date_trunc('hour',available_at) order by available_at," + priority + ",id) as hour_n from (select *,row_number() over(partition by date_trunc('hour',available_at),entity order by available_at,id) as entity_n from (select *," + entity + " as entity from windowed) identities) ranked where entity_n<=" + (kind === "filing" ? 100 : kind === "financial" ? 10 : perEntity) + ") sampled where hour_n<=" + perHour;
 }
 function mapRecord(kind: KumoFeedKind, row: { id: string; available_at: unknown; payload: unknown }): KumoFeedRecord {
   const p = decode(row.payload);
@@ -49,25 +60,27 @@ export async function readKumoFeedPage(input: unknown, now = Date.now()): Promis
     try { cursor = cursorSchema.parse(JSON.parse(Buffer.from(q.cursor, "base64url").toString())); }
     catch { throw new Error("invalid_feed_cursor"); }
   }
+  const sampling = q.sampling ?? cursor?.sampling ?? "all";
   const until = q.until ?? cursor?.until ?? iso(now), since = q.since ?? cursor?.since ?? iso(Date.parse(until) - 30 * DAY);
   if (Date.parse(until) > now || Date.parse(since) < now - 31 * DAY || Date.parse(since) >= Date.parse(until)
     || Date.parse(until) - Date.parse(since) > 30 * DAY + 1000
-    || (cursor && (cursor.kind !== q.kind || cursor.since !== since || cursor.until !== until
+    || (cursor && (cursor.kind !== q.kind || cursor.sampling !== sampling || cursor.since !== since || cursor.until !== until
       || Date.parse(cursor.at) < Date.parse(since) || Date.parse(cursor.at) > Date.parse(until)))) throw new Error("invalid_feed_window");
   const page: KumoFeedPage = { schema_version: "kumo-feeds-v1", generated_at: iso(now), since, until, kind: q.kind,
     status: "unavailable", records: [], next_cursor: null, coverage: { retained_days: 30,
+      sampling,
       source: ["news", "interpretation", "discovery", "market_bar"].includes(q.kind) ? "existing_observation_history" : "immutable_feed_journal", error: null } };
   if (!hasDatabaseEnv()) return page;
   try {
     const rows = await db().unsafe<Array<{ id: string; available_at: Date; cursor_at: string; payload: unknown }>>(
-      "with records as (" + baseQuery(q.kind) + ") select id,available_at,to_char(available_at at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') as cursor_at,payload from records where available_at >= $1 and available_at <= $2 and ($3::timestamptz is null or (available_at,id)<($3::timestamptz,$4::text)) order by available_at desc,id desc limit $5",
+      "with records as (" + baseQuery(q.kind) + "), windowed as (select * from records where available_at >= $1 and available_at <= $2), chosen as (" + sampleQuery(q.kind, sampling) + ") select id,available_at,to_char(available_at at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') as cursor_at,payload from chosen where ($3::timestamptz is null or (available_at,id)<($3::timestamptz,$4::text)) order by available_at desc,id desc limit $5",
       [since, until, cursor?.at ?? null, cursor?.id ?? null, q.limit + 1]);
     const kept = rows.slice(0, q.limit);
     page.records = kept.map(row => mapRecord(q.kind, row)).filter(row => Date.parse(row.available_at) <= Date.parse(until));
     page.status = page.records.length ? "ready" : "warming_up";
     if (rows.length > q.limit && kept.length) {
       const last = kept[kept.length - 1]!;
-      page.next_cursor = Buffer.from(JSON.stringify({ kind: q.kind, since, until, at: last.cursor_at, id: last.id })).toString("base64url");
+      page.next_cursor = Buffer.from(JSON.stringify({ kind: q.kind, sampling, since, until, at: last.cursor_at, id: last.id })).toString("base64url");
     }
     if (page.coverage.source === "immutable_feed_journal") {
       const health = await db().unsafe<Array<{ last_error: string | null }>>("select last_error from public.newsbeat_kumo_feed_health where kind=$1", [q.kind]);

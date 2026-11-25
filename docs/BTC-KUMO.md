@@ -119,7 +119,15 @@ financial-description text uses Kumo's explicit GloVe 50-dimensional text encode
 through the pinned text dependency. It is a word-vector representation, not
 full article comprehension or verified causality.
 
-Exports are bounded to 12,000 recent catalog news records, 24,000 market bars and
+The model requests sampling=hourly so source caps preserve older training history.
+News keeps the first two arrivals per asset and at most 16 per hour. Other frequent
+feeds keep their first observation per entity and at most five per hour; interpreted
+and discovery events allow two per entity. Ties favor BTC or aggregate market
+context. Filings and financials have a 100-record hourly cap. Market context uses
+the last three fixed five-minute candle slots of each hour. Later arrivals cannot
+displace earlier selections. Ordinary exports default to all records.
+
+Downloads remain bounded to 12,000 catalog news records, 24,000 market bars and
 4,000 records per other feed. The existing 6,000-record BTC news history also
 carries headline text to preserve BTC context when the catalog export is capped.
 Each report states export truncation, selected records, source states and
