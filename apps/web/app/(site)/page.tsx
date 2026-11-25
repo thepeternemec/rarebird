@@ -3,7 +3,7 @@ import { legacyMarketDestination } from "@/lib/legacy-market-link";
 import { ArrowRight, ArrowUpRight, Bell, Check, ChevronDown, Radio, Terminal } from "lucide-react";
 import SiteNav from "@/components/site/site-nav";
 import SiteFooter from "@/components/site/site-footer";
-import BrandMark, { BrandWordmark } from "@/components/site/brand-mark";
+import BrandMark from "@/components/site/brand-mark";
 import StockScreeningActivity from "@/components/site/signal-graph";
 import StockPilotReadiness from "@/components/site/stock-pilot-readiness";
 import CopyButton from "@/components/site/copy-button";
@@ -92,8 +92,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ b
 
       <section className="rb-home-build rb-home-width" id="build-history" aria-labelledby="build-title"><div><p className="rb-home-eyebrow">Built in the open</p><h2 id="build-title">Inspect the rules.</h2><p>The screening policy and measurement methods are public. You can see exactly what qualifies and how outcomes are recorded.</p></div><nav aria-label="Open-source project"><a href={REPO + "/blob/main/docs/STOCK-SCREENER.md"}>Screening rules <ArrowUpRight size={15} /></a><a href={REPO}>Source code <ArrowUpRight size={15} /></a><a href={REPO + "/commits/main/"}>Build history <ArrowUpRight size={15} /></a></nav></section>
 
-      <section className="rb-home-close rb-home-width" id="community" aria-labelledby="closing-title"><p className="rb-home-eyebrow">Give your agent a market watch</p><h2 id="closing-title">See what deserves<br /><span>a closer look.</span></h2><a className="rb-home-button" href="/app/screener">Explore the stock screener <ArrowUpRight size={17} /></a><div className="rb-home-signature" role="img" aria-label="Rarebird"><BrandWordmark width={1040} /></div></section>
     </main>
-    <SiteFooter />
+    <SiteFooter landing />
   </>;
 }
