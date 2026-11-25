@@ -7,6 +7,7 @@ import MobileNavigation from "./mobile-navigation";
 import "./mobile-navigation.css";
 
 const LINKS = [
+  { href: "/#signal-graph", label: "How it works", description: "See how stock checks become agent alerts" },
   { href: "/for-agents", label: "For agents", description: "Bring stock setups into your AI agent" },
   { href: "/pricing", label: "Pricing", description: "See the Rarebird Pro membership" },
   { href: "/docs", label: "Developers", description: "Connect with MCP and REST" },

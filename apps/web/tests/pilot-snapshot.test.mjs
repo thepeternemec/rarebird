@@ -79,18 +79,20 @@ test("the full pilot view distinguishes available prices from review-ready cover
   assert.equal(pilotCoverage([]).current, 0);
 });
 
-// The main action must navigate without waiting for a snapshot fetch or JavaScript.
+// The primary action stays a real link, independent of animation or market requests.
 const stockSnapshotModule = compile("../components/site/stock-pilot-snapshot.ts");
-const SignalGraph = compile("../components/site/signal-graph.tsx", {
-  "./signal-graph-scene": { default: () => null },
-  "./pilot-snapshot": snapshotModule,
-  "./stock-pilot-snapshot": stockSnapshotModule,
+const activityDemo = compile("../components/site/stock-activity-demo.ts");
+const StockScreeningActivity = compile("../components/site/signal-graph.tsx", {
+  "./stock-activity-demo": activityDemo,
 }).default;
-test("the stock screener is a direct link; the optional stock preview is a separate control", () => {
-  const html = renderToStaticMarkup(createElement(SignalGraph));
-  assert.match(html, /<a[^>]*href="\/app\/screener"[^>]*>Check stock screener/);
-  assert.match(html, /<button[^>]*aria-controls="[^"]+-pilot-status"[^>]*>[\s\S]*?Preview snapshot<\/button>/);
-  assert.ok(!/<button[^>]*>Check stock screener/.test(html));
+test("the activity illustration links directly to the stock screener and cannot look like live data", () => {
+  const html = renderToStaticMarkup(createElement(StockScreeningActivity));
+  assert.match(html, /<a[^>]*href="\/app\/screener"[^>]*>Open stock screener/);
+  assert.match(html, /Illustrative example/);
+  assert.match(html, /Illustration only/);
+  assert.match(html, /not live data or a performance record/);
+  assert.match(html, /data-playing="false"/, "the server-rendered fallback is static");
+  assert.match(html, /aria-label="How stock screening works"/);
 });
 
 

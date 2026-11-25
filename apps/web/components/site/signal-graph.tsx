@@ -1,145 +1,78 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import {
-  Activity, ArrowUpRight, Clock3, GitFork, Layers3, RefreshCw, ScanLine,
-} from "lucide-react";
-import type { StockScreenerFeed } from "@rarebird/contracts";
-import type { PilotSnapshot } from "./pilot-snapshot";
-import { STOCK_PILOT_ENDPOINT, summarizeStockPilot } from "./stock-pilot-snapshot";
-import SignalGraphScene, { type SignalNode, type SignalStage } from "./signal-graph-scene";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import { ArrowRight, ArrowUpRight, Check, Circle, Pause, Play, Radio } from "lucide-react";
+import { ACTIVITY_CHECKS, ACTIVITY_COLUMNS, ACTIVITY_STEPS, ACTIVITY_STOCKS, activityLevel } from "./stock-activity-demo";
 import "./signal-graph.css";
 
-const STAGES = {
-  anomaly: {
-    name: "Anomaly", icon: Activity,
-    title: "Spot a move that stands out.",
-    description: "Rarebird checks five-minute stock strength against SPY, adjusted for the stock’s recent sensitivity to the market. The fit uses earlier closed minutes from the same session.",
-    detail: "The first screen follows NVDA, AAPL, MSFT and GOOGL US shares during the regular session.",
-    href: "/app/screener", link: "Inspect the stock screen",
-  },
-  evidence: {
-    name: "Evidence", icon: Layers3,
-    title: "Trace the event to its source.",
-    description: "Recent reporting already known at detection stays attached to the setup, with source links and publication times. It can suggest a question to investigate; it does not establish the cause of a move.",
-    detail: "Reporting is optional context. The measured stock screen can qualify without a news explanation.",
-    href: "/app?market=equity", link: "Explore stock reporting",
-  },
-  timing: {
-    name: "Timing", icon: ScanLine,
-    title: "Check strength and participation.",
-    description: "The stock must show relative strength and unusual traded volume with a reasonable spread. Already extended moves, old quotes and missing measurements cannot qualify as a fresh setup.",
-    detail: "IEX covers one exchange; SIP requires entitlement. The screener always shows which feed is in use.",
-    href: "/docs/connect#stock-screener", link: "Read the stock-screening guide",
-  },
-  decision: {
-    name: "Decision", icon: GitFork,
-    title: "Send the setup. Follow the change.",
-    description: "A qualifying setup gets one stable ID. Your agent can read it through MCP or receive signed lifecycle events at a configured webhook. Continuation does not create duplicate alerts.",
-    detail: "A setup can pause, resume, invalidate or expire. A read does not configure a notification destination.",
-    href: "/docs/connect#stock-screener", link: "Connect your agent",
-  },
-  outcomes: {
-    name: "Outcomes", icon: Clock3,
-    title: "Measure what happened next.",
-    description: "Each detected setup keeps its starting stock and SPY reference. Rarebird records forward observations at 15 and 60 minutes, including setups that later fail.",
-    detail: "Missing observations stay missing. These are measured outcomes, not filled trades or demonstrated profits.",
-    href: "/app/screener", link: "See setup history and outcomes",
-  },
-} satisfies Record<SignalStage, {
-  name: string; icon: typeof Activity; title: string; description: string; detail: string; href: string; link: string;
-}>;
-const ENDPOINT = STOCK_PILOT_ENDPOINT;
-const dateTime = new Intl.DateTimeFormat(undefined, {
-  month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short",
-});
+const STEP_DURATION = 6500;
 
-type Pilot = {
-  status: "idle" | "loading" | "failed" | "ready";
-  snapshot: PilotSnapshot | null;
-};
+/** A contribution-style illustration of screening, not a live market or performance chart. */
+export default function StockScreeningActivity() {
+  const [step, setStep] = useState(0), [stock, setStock] = useState(0), [paused, setPaused] = useState(false);
+  const [reduced, setReduced] = useState(true), [visible, setVisible] = useState(true), [inView, setInView] = useState(false);
+  const root = useRef<HTMLDivElement>(null), tabs = useRef<Array<HTMLButtonElement | null>>([]), uid = useId();
+  const playing = !paused && !reduced && visible && inView;
+  const stage = ACTIVITY_STEPS[step], asset = ACTIVITY_STOCKS[stock];
 
-export default function SignalGraph() {
-  const uid = useId();
-  const [selected, setSelected] = useState<SignalNode | "decision">("timing");
-  const [pilot, setPilot] = useState<Pilot>({ status: "idle", snapshot: null });
-  const request = useRef<AbortController | null>(null);
-  useEffect(() => () => {
-    request.current?.abort();
-    request.current = null;
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const motion = () => setReduced(preference.matches), visibility = () => setVisible(!document.hidden);
+    motion(); visibility(); preference.addEventListener("change", motion); document.addEventListener("visibilitychange", visibility);
+    const observer = new IntersectionObserver(entries => setInView(entries[0]?.isIntersecting ?? false), { threshold: .2 });
+    if (root.current) observer.observe(root.current);
+    return () => { preference.removeEventListener("change", motion); document.removeEventListener("visibilitychange", visibility); observer.disconnect(); };
   }, []);
+  useEffect(() => {
+    if (!playing) return;
+    const interval = window.setInterval(() => setStep(value => (value + 1) % ACTIVITY_STEPS.length), STEP_DURATION);
+    return () => clearInterval(interval);
+  }, [playing]);
+  const choose = (index: number) => { setPaused(true); setStep(index); };
 
-  const stage = selected === "review" || selected === "watch" ? "decision" : selected;
-  const info = STAGES[stage];
-  const title = selected === "review" ? "A stock setup passed the screen."
-    : selected === "watch" ? "Keep screening for a qualifying setup." : info.title;
-  const description = selected === "review" ? "Strength, volume and spread qualified together. Your agent gets the setup with its reference, linked context and expiry when delivery is configured."
-    : selected === "watch" ? "A current scan can return no setup. Data holds, incomplete baselines and a closed session are shown separately; none is a quiet-market result." : info.description;
-  const snapshot = pilot.snapshot;
+  return <div className="rb-activity" ref={root} onFocusCapture={event => { if ((event.target as HTMLElement).closest(".rb-activity-steps, .rb-activity-stock-select")) setPaused(true); }} data-playing={playing} data-step={step} style={{ "--activity-duration": `${STEP_DURATION}ms` } as CSSProperties}>
+    <div className="rb-activity-toolbar"><div><Radio size={15} aria-hidden="true" /><span>rarebird <i>/</i> stock watch</span></div><div><span className="rb-activity-example">Illustrative example</span><button type="button" aria-label={reduced ? "Animation disabled by reduced-motion preference" : paused ? "Resume animation" : "Pause animation"} disabled={reduced} onClick={() => setPaused(value => !value)}>{paused || reduced ? <Play size={14} /> : <Pause size={14} />}</button></div></div>
 
-  async function readPilot() {
-    if (request.current) return;
-    const controller = new AbortController();
-    request.current = controller;
-    setPilot(previous => ({ ...previous, status: "loading" }));
-    const timeout = window.setTimeout(() => controller.abort(), 12_000);
-    try {
-      const response = await fetch(ENDPOINT, { signal: controller.signal, cache: "no-store" });
-      if (!response.ok) throw new Error("Pilot unavailable");
-      const next = summarizeStockPilot(await response.json() as StockScreenerFeed);
-      if (request.current === controller) {
-        setPilot({ status: "ready", snapshot: next });
-        setSelected(current => current === selected ? (next.branch === "none" ? "decision" : next.branch) : current);
-      }
-    } catch {
-      if (request.current === controller) setPilot(previous => ({ ...previous, status: "failed" }));
-    } finally {
-      window.clearTimeout(timeout);
-      if (request.current === controller) request.current = null;
-    }
-  }
+    <div className="rb-activity-steps" role="tablist" aria-label="How stock screening works">{ACTIVITY_STEPS.map((item, index) => <button type="button" role="tab" key={item.name}
+      ref={node => { tabs.current[index] = node; }} id={`${uid}-step-${index}`} aria-controls={`${uid}-panel`} aria-selected={step === index} tabIndex={step === index ? 0 : -1}
+      onClick={() => choose(index)} onKeyDown={event => {
+        const next = event.key === "ArrowRight" ? (index + 1) % 4 : event.key === "ArrowLeft" ? (index + 3) % 4 : event.key === "Home" ? 0 : event.key === "End" ? 3 : null;
+        if (next === null) return; event.preventDefault(); choose(next); tabs.current[next]?.focus();
+      }}><span>0{index + 1}</span>{item.name}<i className="rb-activity-step-progress" key={`${step}-${index}`} /></button>)}</div>
 
-  return <div className="rb-signal-graph">
-    <div className="rb-signal-main">
-      <SignalGraphScene selected={selected} detailsId={`${uid}-details`} onSelect={setSelected} />
-      <article className="rb-signal-inspector" id={`${uid}-details`} aria-live="polite">
-        <div className="rb-signal-inspector-icon"><info.icon size={21} strokeWidth={1.45} aria-hidden="true" /></div>
-        <div>
-          <p className="rb-signal-meta">{selected === "review" ? "Alert your agent" : selected === "watch" ? "Keep watching" : info.name}</p>
-          <h3>{title}</h3>
-          <p className="rb-signal-description">{description}</p>
+    <div className="rb-activity-body">
+      <div className="rb-activity-visual">
+        <div className="rb-activity-visual-heading"><div><span className="rb-activity-micro">SCREENING CHECKS</span><h3>Small checks. A clearer picture.</h3></div><span className="rb-activity-symbol">{asset.symbol}</span></div>
+        <div className="rb-activity-stock-select" role="group" aria-label="Choose an illustrative stock">{ACTIVITY_STOCKS.map((item, index) => <button type="button" key={item.symbol} aria-pressed={stock === index} onClick={() => { setPaused(true); setStock(index); }}>{item.symbol}</button>)}</div>
+
+        <div className="rb-activity-matrix" aria-hidden="true">
+          <div className="rb-activity-axis"><span>Earlier checks</span><span>Later checks <ArrowRight size={11} /></span></div>
+          {ACTIVITY_STOCKS.map((item, assetIndex) => <div className="rb-activity-stock" key={item.symbol} data-selected={assetIndex === stock}>
+            <div className="rb-activity-stock-label"><strong>{item.symbol}</strong><span>{item.name}</span></div>
+            <div className="rb-activity-stock-checks">{ACTIVITY_CHECKS.map((check, checkIndex) => <div className="rb-activity-check-row" key={check}>
+              <span className="rb-activity-check-label">{check}</span>
+              <div className="rb-activity-cells">{Array.from({ length: ACTIVITY_COLUMNS }, (_, column) => <span key={column} className="rb-activity-cell"
+                data-level={activityLevel(assetIndex, checkIndex, column, stock)} data-older={column < 10}
+                data-future={column > stage.column} data-current={column === stage.column && assetIndex === stock}
+                data-match={assetIndex === stock && column >= 24 && column <= 26 && step > 0} />)}</div>
+            </div>)}</div>
+          </div>)}
+          <div className="rb-activity-grid-key"><span>Each column is an example screening minute.</span><span>Less activity <i data-level="0" /><i data-level="1" /><i data-level="2" /><i data-level="3" /> More</span></div>
         </div>
-        <p className="rb-signal-detail">{info.detail}</p>
-        <a className="rb-home-text-link" href={info.href}>{info.link}<ArrowUpRight size={15} aria-hidden="true" /></a>
-      </article>
-    </div>
-    <div className="rb-signal-live">
-      <div className="rb-signal-live-text" id={`${uid}-pilot-status`} role="status" aria-live="polite" aria-atomic="true">
-        {snapshot ? <>
-          <strong>{snapshot.title}</strong>
-          <p>{snapshot.detail}</p>
-          {snapshot.notice && <p className="rb-signal-live-notice">{snapshot.notice}</p>}
-          <p className="rb-signal-live-time"><time dateTime={snapshot.asOf}>{dateTime.format(new Date(snapshot.asOf))}</time> · {snapshot.coverage}</p>
-        </> : <>
-          <strong>Four-stock screener pilot</strong>
-          <p>Open NVDA, AAPL, MSFT and GOOGL setups and feed status, or check a snapshot here.</p>
-        </>}
-        {pilot.status === "loading" && <p className="rb-signal-live-feedback">Checking the latest market evidence…</p>}
-        {pilot.status === "failed" && <p className="rb-signal-live-feedback">{snapshot
-          ? "The refresh failed. The previous snapshot is still shown with its check time. Try again or open the stock screener."
-          : "The snapshot could not be loaded. Open the stock screener or try the preview again."}</p>}
+        <div className="rb-activity-scan-caption"><span className="rb-activity-indicator" /><span>{step === 0 ? "Scanning for changes across four stocks" : step === 1 ? `${asset.symbol}: strength, volume and spread align` : step === 2 ? `${asset.symbol}: a setup event is ready for the agent` : `${asset.symbol}: the conditions fade; the setup is invalidated`}</span></div>
       </div>
-      <div className="rb-signal-live-actions">
-        <a className="rb-signal-open-pilot" href="/app/screener">
-          Check stock screener <ArrowUpRight size={15} aria-hidden="true" />
-        </a>
-        <button className="rb-signal-preview" type="button" onClick={() => void readPilot()} disabled={pilot.status === "loading"} aria-busy={pilot.status === "loading"} aria-controls={`${uid}-pilot-status`}>
-          <RefreshCw size={14} aria-hidden="true" />
-          {pilot.status === "loading" ? "Checking…"
-            : pilot.status === "failed" ? "Retry snapshot"
-              : snapshot ? "Refresh snapshot" : "Preview snapshot"}
-        </button>
+
+      <div className="rb-activity-explanation" role="tabpanel" id={`${uid}-panel`} aria-labelledby={`${uid}-step-${step}`} tabIndex={0}>
+        <div className="rb-activity-panel-copy" key={step}><span className="rb-activity-micro">0{step + 1} / {stage.name}</span><h3>{stage.title}</h3><p>{stage.description}</p></div>
+        <div className="rb-activity-event" data-phase={step}><div><span>{asset.symbol}</span><span>{stage.status}</span></div>
+          {step < 2 ? <ul>{["Strength versus SPY", "Unusual traded volume", "Spread within limit"].map(label => <li key={label}>{step === 1 ? <Check size={13} /> : <Circle size={11} />}<span>{label}</span><small>{step === 1 ? "Pass" : "Checking"}</small></li>)}</ul>
+            : step === 2 ? <><p>Developing strength with participation.</p><dl><div><dt>Setup ID</dt><dd>demo_{asset.symbol.toLowerCase()}_01</dd></div><div><dt>Delivered with</dt><dd>Reason, context, expiry</dd></div></dl><span className="rb-activity-event-route"><Radio size={12} /> Rarebird <ArrowRight size={12} /> Your agent</span></>
+              : <><p>The same setup. An updated state.</p><div className="rb-activity-state-change"><span>Active</span><ArrowRight size={13} /><strong>Invalidated</strong></div><dl><div><dt>Setup ID</dt><dd>demo_{asset.symbol.toLowerCase()}_01</dd></div><div><dt>Outcome checks</dt><dd>15m / 60m</dd></div></dl></>}
+        </div>
+        <p className="rb-activity-panel-note">{stage.note}</p>
       </div>
     </div>
+
+    <div className="rb-activity-footer"><p><span>Illustration only.</span> This grid explains the workflow; it is not live data or a performance record.</p><a href="/app/screener">Open stock screener <ArrowUpRight size={14} aria-hidden="true" /></a></div>
   </div>;
 }
