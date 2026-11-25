@@ -35,6 +35,7 @@ export function interpretationFeedRecord(signal: IntelligenceSignal, recordedAt:
     eventAt: signal.updated_at, availableAt: available, ttl: 24 * HOUR,
     text: [signal.what_changed, ...signal.implications.map(i => i.hypothesis + " " + i.mechanism)].join(" "),
     categories: { event_id: signal.id, category: signal.category, event_state: signal.event_state, attention: signal.attention,
+      affected_entities: signal.affected_entities.join(", ").slice(0, 300),
       channel: signal.market_assessment?.channel ?? "unclear", direction: signal.market_assessment?.direction ?? "unclear", basis: "model_inference" },
     related: signal.evidence.map(e => "news:" + e.id).slice(0, 20) });
 }
@@ -60,6 +61,7 @@ export function snapshotFeedRecords(kind: KumoFeedKind, payload: FeedEnvelope, r
   if (payload.freshness.status !== "fresh") return [];
   const records: KumoFeedRecord[] = [];
   const add = (entity: string, values: Record<string, number | null>, ttl: number, eventAt = payload.fetched_at, categories: Record<string, string> = {}) => {
+    if (Date.parse(recordedAt) - Date.parse(eventAt) > ttl) return;
     const clean = Object.fromEntries(Object.entries(values).filter(([, value]) => value === null || Number.isFinite(value)));
     if (!Object.values(clean).some(value => value !== null)) return;
     records.push(sourceRecord({ id: kind + ":" + feedHash([kind, entity, payload.source, eventAt, clean, categories]), kind,

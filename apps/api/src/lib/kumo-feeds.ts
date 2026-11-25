@@ -59,15 +59,15 @@ export async function readKumoFeedPage(input: unknown, now = Date.now()): Promis
       source: ["news", "interpretation", "discovery", "market_bar"].includes(q.kind) ? "existing_observation_history" : "immutable_feed_journal", error: null } };
   if (!hasDatabaseEnv()) return page;
   try {
-    const rows = await db().unsafe<Array<{ id: string; available_at: Date; payload: unknown }>>(
-      "with records as (" + baseQuery(q.kind) + ") select id,available_at,payload from records where available_at >= $1 and available_at <= $2 and ($3::timestamptz is null or (available_at,id)<($3::timestamptz,$4::text)) order by available_at desc,id desc limit $5",
+    const rows = await db().unsafe<Array<{ id: string; available_at: Date; cursor_at: string; payload: unknown }>>(
+      "with records as (" + baseQuery(q.kind) + ") select id,available_at,to_char(available_at at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') as cursor_at,payload from records where available_at >= $1 and available_at <= $2 and ($3::timestamptz is null or (available_at,id)<($3::timestamptz,$4::text)) order by available_at desc,id desc limit $5",
       [since, until, cursor?.at ?? null, cursor?.id ?? null, q.limit + 1]);
     const kept = rows.slice(0, q.limit);
     page.records = kept.map(row => mapRecord(q.kind, row)).filter(row => Date.parse(row.available_at) <= Date.parse(until));
     page.status = page.records.length ? "ready" : "warming_up";
     if (rows.length > q.limit && kept.length) {
       const last = kept[kept.length - 1]!;
-      page.next_cursor = Buffer.from(JSON.stringify({ kind: q.kind, since, until, at: iso(last.available_at), id: last.id })).toString("base64url");
+      page.next_cursor = Buffer.from(JSON.stringify({ kind: q.kind, since, until, at: last.cursor_at, id: last.id })).toString("base64url");
     }
     if (page.coverage.source === "immutable_feed_journal") {
       const health = await db().unsafe<Array<{ last_error: string | null }>>("select last_error from public.newsbeat_kumo_feed_health where kind=$1", [q.kind]);

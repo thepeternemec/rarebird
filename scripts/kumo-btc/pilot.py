@@ -8,13 +8,15 @@ import math
 import time
 import urllib.error
 import urllib.request
+
+import feed_context
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
 HOUR = 3600
 BAR = 300
-VERSION = "btc-kumo-v1"
+VERSION = "btc-kumo-feeds-v2"
 DATASET_VERSION = "btc-kumo-dataset-v1"
 BASELINE_VERSION = "spot-range-hourly-v1"
 THRESHOLD = 0.01
@@ -143,7 +145,7 @@ def prepare(data):
 
 def metrics(rows):
     result = {"scored": len(rows), "events": sum(r["label"] for r in rows)}
-    for name in ("kumo", "existing", "base_rate"):
+    for name in ("kumo", "metadata", "existing", "base_rate"):
         cohort = [r for r in rows if name in r]
         probabilities = [(probability(r[name]), r["label"]) for r in cohort]
         result[name + "_brier"] = sum((p - y) ** 2 for p, y in probabilities) / len(cohort) if cohort else None
@@ -197,14 +199,14 @@ def resolve_journal(journal, data):
                          target_price_usd=row["target_price_usd"], resolved_at=data["generated_at"])
         elif (row and row["outcome"] == "missing") or stamp(data["generated_at"]) >= stamp(entry["target_at"]) + 6 * HOUR:
             entry["outcome"] = "missing"
-    scored = [{"kumo": e["probability"], "existing": e["existing_probability"], "base_rate": e["base_rate_probability"], "label": e["label"]}
+    scored = [{"kumo": e["probability"], **({"metadata": e["metadata_probability"]} if "metadata_probability" in e else {}), "existing": e["existing_probability"], "base_rate": e["base_rate_probability"], "label": e["label"]}
               for e in journal["predictions"] if e["outcome"] == "scored"]
     return {**metrics(scored), "issued": len(journal["predictions"]),
             "pending": sum(e["outcome"] == "pending" for e in journal["predictions"]),
             "missing": sum(e["outcome"] == "missing" for e in journal["predictions"])}
 
 
-def train(examples, cohorts, directory):
+def train(examples, cohorts, directory, expanded=False):
     import pandas as pd
     import torch
     import kumo.engine as kumo
@@ -219,9 +221,23 @@ def train(examples, cohorts, directory):
     source.mkdir(parents=True, exist_ok=True)
     kumo.configure(scratch_dir=str(directory / "scratch"))
     train_ids = {e["id"] for e in cohorts[0]}
+    fitting = [e for cohort in cohorts[:3] for e in cohort]
+    context_specs = feed_context.table_specs(fitting) if expanded else {}
+    numerical_features = FEATURES + (feed_context.EXTRA_FEATURES if expanded else [])
+
+    def save_context(population):
+        entities, tables = feed_context.graph_rows(population, context_specs)
+        if context_specs:
+            pd.DataFrame(entities).to_parquet(source / "context_entities.parquet", index=False)
+        for kind, rows in tables.items():
+            frame = pd.DataFrame(rows)
+            for key in context_specs[kind]["numbers"]:
+                frame["value_" + key] = pd.array(frame["value_" + key], dtype="Float64")
+            frame.to_parquet(source / ("context_" + kind + ".parquet"), index=False)
+
 
     def save_sources(population):
-        rows = [{"hour_id": e["id"], **e["features"],
+        rows = [{"hour_id": e["id"], **e["features"], **(e.get("extra_features", {}) if expanded else {}),
                  "large_move": bool(e["label"]) if e["id"] in train_ids else None} for e in population]
         frame = pd.DataFrame(rows)
         frame["large_move"] = pd.array(frame.large_move, dtype="boolean")
@@ -230,19 +246,42 @@ def train(examples, cohorts, directory):
                      "age_minutes": (stamp(e["forecast"]["issued_at"]) - n["known"]) / 60}
                     for e in population for n in e["news"]]
         pd.DataFrame(arrivals, columns=["news_id", "hour_id", "publisher", "age_minutes"]).to_parquet(source / "news.parquet", index=False)
+        if expanded:
+            save_context(population)
         return bool(arrivals)
 
     fitting = [e for cohort in cohorts[:3] for e in cohort]
     has_news = save_sources(fitting)
     connector = kumo.FileConnector(root_dir=str(source))
     hours = kumo.Table.from_source_table(connector["hours.parquet"], primary_key="hour_id")
-    for name in FEATURES:
+    for name in numerical_features:
         hours = hours.with_column(name, stype=Stype.numerical)
     tables = {"hours": hours.with_column("large_move", stype=Stype.categorical)}
     edges = []
     if has_news:
         tables["news"] = kumo.Table.from_source_table(connector["news.parquet"], primary_key="news_id").with_column("hour_id", stype=Stype.ID).with_column("publisher", stype=Stype.categorical)
         edges = [kumo.Edge(src_table="news", fkey="hour_id", dst_table="hours")]
+    if context_specs:
+        entity_table = kumo.Table.from_source_table(connector["context_entities.parquet"], primary_key="entity_key")
+        entity_table = entity_table.with_column("hour_id", stype=Stype.ID)
+        for name in ("asset_class", "ticker", "relation"):
+            entity_table = entity_table.with_column(name, stype=Stype.categorical)
+        tables["context_entities"] = entity_table
+        edges.append(kumo.Edge(src_table="context_entities", fkey="hour_id", dst_table="hours"))
+        for kind, spec in context_specs.items():
+            table_name = "context_" + kind
+            table = kumo.Table.from_source_table(connector[table_name + ".parquet"], primary_key="record_key")
+            for name in ("hour_id", "entity_key"):
+                table = table.with_column(name, stype=Stype.ID)
+            for name in ("source", "asset_class", *feed_context.CATEGORY_COLUMNS):
+                table = table.with_column(name, stype=Stype.categorical)
+            for name in ("age_minutes", "event_age_minutes", *("value_" + key for key in spec["numbers"])):
+                table = table.with_column(name, stype=Stype.numerical)
+            if spec["text"]:
+                table = table.with_column("text", stype=Stype.text)
+            tables[table_name] = table
+            edges.extend([kumo.Edge(src_table=table_name, fkey="hour_id", dst_table="hours"),
+                          kumo.Edge(src_table=table_name, fkey="entity_key", dst_table="context_entities")])
     graph = kumo.Graph(tables=tables, edges=edges)
     graph.validate()
     snapshot = graph.snapshot()
@@ -258,6 +297,13 @@ def train(examples, cohorts, directory):
     plan.training_job.refit_full = False
     plan.training_job.disable_explain = True
     plan.optimization.max_epochs = 3
+    text_columns = ["context_" + kind + ".text" for kind, spec in context_specs.items() if spec["text"]]
+    if text_columns:
+        from kumoapi.encoder import TextEmbedding
+        plan.column_processing.encoder_overrides = {
+            **(plan.column_processing.encoder_overrides or {}),
+            **{column: TextEmbedding() for column in text_columns},
+        }
     trainer = kumo.Trainer(plan)
     trainer.fit(training_table, snapshot=snapshot)
 
@@ -275,7 +321,10 @@ def train(examples, cohorts, directory):
         raise ValueError("Kumo did not score the exact requested population")
     scores = {row[entity]: probability(row["True_PROB"]) for _, row in output.iterrows()}
     return scores, {"plan": plan.as_json(), "snapshot_id": snapshot.id,
-                    "features": FEATURES, "news_features": ["publisher", "age_minutes"] if has_news else [],
+                    "variant": "shared_feeds" if expanded else "metadata_only",
+                    "features": numerical_features, "context_tables": context_specs,
+                    "text_encoder": "glove.6B-50d" if text_columns else None, "text_columns": text_columns,
+                    "news_features": ["publisher", "age_minutes"] if has_news else [],
                     "seed": 42, "epochs": 3, "accelerator": "cpu", "kumo_version": kumo.__version__,
                     "training_label_cutoff": iso(max(e["ref"] for e in cohorts[0]) + 7 * HOUR)}
 
@@ -288,18 +337,30 @@ def run(args):
         download(dataset)
     data = json.loads(dataset.read_text())
     examples, skipped = prepare(data)
+    context_path = Path(args.context_dataset) if args.context_dataset else output / "context.json"
+    if args.download:
+        feed_context.download(context_path, data["generated_at"], require_export=not args.allow_unavailable_feeds)
+    if not context_path.exists():
+        raise ValueError("A shared feed context export is required")
+    context_data = json.loads(context_path.read_text())
+    if context_data["until"] != data["generated_at"]:
+        raise ValueError("Shared context and BTC observations must use the same export cutoff")
+    context_coverage = feed_context.attach(examples, context_data, data)
+    if not args.allow_unavailable_feeds and not any(c.get("status") == "ready" for c in context_data["coverage"].values()):
+        raise ValueError("No shared feed history is available")
     state = Path(args.state)
     journal = json.loads(state.read_text()) if state.exists() else {"version": VERSION, "predictions": []}
     cohorts = splits(examples)
     baseline_rows = [{"existing": e["forecast"]["probability"], "base_rate": e["forecast"]["baseline_probability"], "label": e["label"]}
                      for e in examples if e["label"] is not None]
     report = {"version": VERSION, "as_of": data["generated_at"], "target": data["target"], "instrument_id": data["instrument_id"],
-              "dataset_sha256": hashlib.sha256(dataset.read_bytes()).hexdigest(), "status": "warming_up", "training_ready": cohorts is not None,
+              "dataset_sha256": hashlib.sha256(dataset.read_bytes() + context_path.read_bytes()).hexdigest(), "status": "warming_up", "training_ready": cohorts is not None,
               "eligible_hours": len(examples), "resolved_hours": len(baseline_rows),
               "raw_counts": {k: len(data[k]) for k in ("bars", "news", "forecasts")}, "skipped": skipped,
+              "feed_context": context_coverage,
               "news_truncated": data["coverage"]["news_truncated"], "retrospective": metrics([]),
               "baseline_measurements": metrics(baseline_rows), "prospective": resolve_journal(journal, data),
-              "note": "BTC close-to-close 1% move probability. Three CPU epochs validate integration. Lower Brier and log loss are better. Historical tests and prospective results have separate cohorts."}
+              "note": "BTC close-to-close 1% move probability. Three CPU epochs per variant validate integration. Feed histories have explicit gaps. Lower Brier and log loss are better. Historical tests and prospective results have separate cohorts."}
     write_json(output / "journal.json", journal)
     write_json(output / "report.json", report)
     if cohorts is None:
@@ -312,13 +373,24 @@ def run(args):
         write_json(output / "report.json", report)
         return report
     try:
-        scores, model = train(examples, cohorts, output.parent / "kumo-work")
+        metadata_scores, metadata_model = train(examples, cohorts, output.parent / "kumo-metadata")
+        scores, model = train(examples, cohorts, output.parent / "kumo-feeds", expanded=True)
         model_id = hashlib.sha256((report["dataset_sha256"] + iso(time.time())).encode()).hexdigest()[:24]
         model["id"] = model_id
-        write_json(output / "model.json", {**model, "dataset_sha256": report["dataset_sha256"]})
-        paired = [{"kumo": scores[e["id"]], "existing": e["forecast"]["probability"],
+        write_json(output / "model.json", {**model, "metadata_comparison": metadata_model, "dataset_sha256": report["dataset_sha256"]})
+        paired = [{"kumo": scores[e["id"]], "metadata": metadata_scores[e["id"]], "existing": e["forecast"]["probability"],
                    "base_rate": e["forecast"]["baseline_probability"], "label": e["label"]} for e in cohorts[3]]
         report.update(status="measuring", retrospective=metrics(paired), split_counts=[len(c) for c in cohorts])
+        report["comparison"] = {
+            "scored": len(paired), "variants": ["metadata_only", "shared_feeds"],
+            "brier_delta": report["retrospective"]["kumo_brier"] - report["retrospective"]["metadata_brier"],
+            "log_loss_delta": report["retrospective"]["kumo_log_loss"] - report["retrospective"]["metadata_log_loss"],
+            "note": "Shared feeds minus metadata-only on identical held-out hours. Negative is better; this does not attribute improvement to an individual feed.",
+        }
+        report["feed_context"]["training_hours"] = {kind: sum(bool(e["context"][kind]) for e in cohorts[0]) for kind in feed_context.KINDS}
+        report["feed_context"]["heldout_hours"] = {kind: sum(bool(e["context"][kind]) for e in cohorts[3]) for kind in feed_context.KINDS}
+        report["feed_context"]["active_model_tables"] = list(model["context_tables"])
+        report["feed_context"]["text_columns"] = model["text_columns"]
         issued = time.time()
         current = [e for e in examples if e["id"] in scores and e["forecast"]["outcome"] == "pending"
                    and e["ref"] <= issued <= e["ref"] + 480]
@@ -332,7 +404,7 @@ def run(args):
                 continue
             journal["predictions"].append({"reference_at": f["reference_at"], "target_at": f["target_at"],
                 "issued_at": iso(issued), "feature_cutoff": f["issued_at"], "reference_price_usd": f["reference_price_usd"],
-                "probability": scores[e["id"]], "existing_probability": f["probability"], "base_rate_probability": f["baseline_probability"],
+                "probability": scores[e["id"]], "metadata_probability": metadata_scores[e["id"]], "existing_probability": f["probability"], "base_rate_probability": f["baseline_probability"],
                 "outcome": "pending", "dataset_sha256": report["dataset_sha256"], "model_id": model_id})
             inserted += 1
         report["prospective"] = resolve_journal(journal, data)
@@ -343,7 +415,7 @@ def run(args):
         report.update(status="model_error", reason=type(error).__name__ + ": " + str(error)[:500])
         diagnostic = getattr(error, "private_output_tail", "")
         if diagnostic:
-            # Inputs contain public BTC measurements and publisher metadata only.
+            # Inputs contain public observations, headline metadata and attributed model interpretations.
             report["ingest_diagnostic"] = diagnostic[-4000:]
         write_json(output / "report.json", report)
         raise
@@ -355,6 +427,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--context-dataset")
+    parser.add_argument("--allow-unavailable-feeds", action="store_true")
     parser.add_argument("--state", default="previous/journal.json")
     parser.add_argument("--download", action="store_true")
     parser.add_argument("--prepare-only", action="store_true")

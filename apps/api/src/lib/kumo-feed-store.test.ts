@@ -39,8 +39,8 @@ test("feed pagination freezes its window and handles identical timestamps withou
   const sql = db(), at = new Date(Date.now() - 60000).toISOString();
   try {
     await sql.unsafe(readFileSync(new URL("../../../../db/schema.sql", import.meta.url), "utf8"));
-    await sql.unsafe("delete from public.news_articles where source='kumo-pagination-test'");
-    for (let i = 0; i < 3; i++) await sql.unsafe("insert into public.news_articles(beat_id,provider_uri,title,excerpt,url,source,published_at,first_indexed_at) values('b_06c91290de1c',$1,'Bitcoin test','',$2,'kumo-pagination-test',$3,$3)", [String(i), "https://example.com/kumo/" + i, at]);
+    await sql.unsafe("truncate public.news_articles restart identity");
+    for (let i = 0; i < 3; i++) await sql.unsafe("insert into public.news_articles(beat_id,provider_uri,title,excerpt,url,source,published_at,first_indexed_at) values('b_06c91290de1c',$1,'Bitcoin test','',$2,'kumo-pagination-test',$3,$3)", [String(i), "https://example.com/kumo/" + i, at.slice(0, -1) + "123Z"]);
     const since = new Date(Date.parse(at) - 1000).toISOString();
     const first = await readKumoFeedPage({ kind: "news", since, limit: 1 });
     assert.ok(first.next_cursor);

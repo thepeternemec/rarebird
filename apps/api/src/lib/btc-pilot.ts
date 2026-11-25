@@ -24,7 +24,7 @@ export async function readBtcPilotDataset(now = Date.now()): Promise<BtcPilotDat
       "select started_at,observed_at,open_price as open,high_price as high,low_price as low,close_price as close,volume,trades from public.newsbeat_market_bars where instrument_id=$1 and started_at >= $2 and started_at+interval '5 minutes'<=$3 and observed_at<=$3 order by started_at limit 8641",
       [INSTRUMENT, since, output.generated_at]),
     sql.unsafe<Array<BtcPilotDataset["news"][number]>>(
-      "select id::text,source,published_at,first_indexed_at from public.news_articles where beat_id=$1 and first_indexed_at >= $2 and first_indexed_at <= $3 and published_at <= $3 order by first_indexed_at desc,id desc limit $4",
+      "select id::text,source,title,url,published_at,first_indexed_at from public.news_articles where beat_id=$1 and first_indexed_at >= $2 and first_indexed_at <= $3 and published_at <= $3 order by first_indexed_at desc,id desc limit $4",
       [BTC_BEAT, since, output.generated_at, NEWS_LIMIT + 1]),
     sql.unsafe<Array<BtcPilotDataset["forecasts"][number]>>(
       "select reference_at,issued_at,target_at,(forecast->>'reference_price_usd')::double precision as reference_price_usd,(forecast->>'probability')::double precision as probability,(forecast->>'baseline_probability')::double precision as baseline_probability,outcome,target_price_usd from public.newsbeat_market_forecasts where instrument_id=$1 and version=$2 and reference_at >= $3 and issued_at <= $4 order by reference_at limit 721",

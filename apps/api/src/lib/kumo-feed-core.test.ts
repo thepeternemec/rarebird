@@ -28,9 +28,9 @@ test("interpretations use immutable revision availability and retain their evide
 test("a current sentiment snapshot cannot be backdated to its provider's historical date", () => {
   const records = snapshotFeedRecords("sentiment", { source: "alternative.me", source_url: "https://alternative.me",
     fetched_at: first, freshness: { status: "fresh" },
-    data: { current: { value: 30, classification: "Fear", observed_at: "2026-11-20T00:00:00.000Z" } } }, later);
+    data: { current: { value: 30, classification: "Fear", observed_at: "2026-11-24T12:00:00.000Z" } } }, later);
   assert.equal(records[0]!.available_at, later);
-  assert.equal(records[0]!.event_at, "2026-11-20T00:00:00.000Z");
+  assert.equal(records[0]!.event_at, "2026-11-24T12:00:00.000Z");
   assert.equal(records[0]!.values.change, null);
 });
 test("funding symbols join the crypto identity and stale readings never become context", () => {
