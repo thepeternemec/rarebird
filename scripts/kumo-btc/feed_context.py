@@ -74,7 +74,7 @@ def download(path, until, require_export=True):
         return records, {"status": status, "records": len(records), "truncated": bool(cursor), "download_seconds": round(time.monotonic() - started, 3), **coverage}
 
     if require_export:
-        probe = "https://www.rarebird.network/api/v2/kumo-feeds?kind=news&limit=1&sampling=hourly"
+        probe = "https://www.rarebird.network/api/v2/kumo-feeds?kind=funding&limit=1&sampling=hourly"
         for attempt in range(13):
             try:
                 with urllib.request.urlopen(probe, timeout=15) as response:
