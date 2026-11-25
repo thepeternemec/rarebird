@@ -22,3 +22,5 @@ export * from "./discovery.js";
 export * from "./agent.js";
 
 export * from "./btc-pilot.js";
+
+export * from "./kumo-feeds.js";

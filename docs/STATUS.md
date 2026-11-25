@@ -8,7 +8,7 @@ Rarebird is building meaningful signals for AI agents. The source-linked news fo
 
 ## Kumo coverage and direction
 
-BTC is the first measured Kumo pilot, targeting a close-to-close move of at least 1% over the next hour. Its prediction journal and historical scorecard are available through the experiment workflow.
+BTC is the first measured Kumo pilot, targeting a close-to-close move of at least 1% over the next hour. A shared graph connects 14 feed types, including headline text, interpreted events, filings and market context. The hourly workflow compares the expanded model with the original metadata variant on identical held-out hours. New snapshot feeds accumulate history from first capture, with per-feed coverage and missing data reported.
 
 We are building toward coverage across all asset classes and data types, connecting market observations, reporting, filings, events and outcomes. Broader Kumo coverage is planned and will be measured as each dataset is integrated.
 
@@ -16,7 +16,7 @@ We are building toward coverage across all asset classes and data types, connect
 
 | Capability | Status |
 | --- | --- |
-| NVIDIA Kumo Engine integration | Experimental BTC model using linked market measurements and news metadata, hourly CPU runs, chronological test partitions and paired Brier, log-loss and calibration measurements. [Method and results](BTC-KUMO.md) |
+| NVIDIA Kumo Engine integration | Experimental BTC models using a shared public-feed graph, explicit headline and interpretation text features, immutable snapshot collection, hourly CPU runs and paired metadata-only versus expanded-context measurements. [Method and results](BTC-KUMO.md) |
 | Independent discovery | Past-only 15/30/60-minute market scans, descriptive historical rarity, volatility context and frozen episode outcomes; no headline thesis required |
 | Intelligence pilot | Persistent thesis revisions, measured information deltas, pre-information beta/residuals, participation/liquidity gates and prospective outcomes for NVIDIA, Apple, Microsoft, Alphabet, Bitcoin and Ethereum |
 | Asset catalog | **2,030 topics**: 1,528 US-listed equities and 502 crypto assets |

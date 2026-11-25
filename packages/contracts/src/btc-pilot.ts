@@ -16,7 +16,7 @@ export const BtcPilotDatasetSchema = z.object({
     volume: z.number().nonnegative().finite(), trades: z.number().int().nonnegative(),
   })),
   news: z.array(z.object({
-    id: z.string(), source: z.string(), published_at: timestamp, first_indexed_at: timestamp,
+    id: z.string(), source: z.string(), title: z.string().optional(), url: z.string().url().optional(), published_at: timestamp, first_indexed_at: timestamp,
   })),
   forecasts: z.array(z.object({
     reference_at: timestamp, issued_at: timestamp, target_at: timestamp, reference_price_usd: price,

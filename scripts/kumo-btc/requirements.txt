@@ -1,1 +1,1 @@
-kumo-engine==1.0.0
+kumo-engine[text]==1.0.0

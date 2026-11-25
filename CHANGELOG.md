@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-25 — Shared feed graph for Kumo
+
+- Connected 14 public feed types through a shared time-aware record contract, paginated export and authenticated ten-minute snapshot collector.
+- Added headline and interpretation text features, cross-asset context and immutable first-availability records for previously cached feeds.
+- Added paired BTC measurements against the original metadata-only Kumo model and a separate expanded prospective journal, with per-feed coverage and truncation reports.
+
 ## 2026-11-25 — NVIDIA Kumo Engine BTC pilot
 
 - Integrated Kumo Engine 1.0.0 for experimental predictions using structured market data and news-arrival metadata.

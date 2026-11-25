@@ -1,4 +1,4 @@
-name: BTC Kumo pilot
+name: BTC Kumo shared feeds
 
 on:
   workflow_dispatch:
@@ -7,12 +7,18 @@ on:
     paths:
       - 'scripts/kumo-btc/**'
       - 'apps/api/src/lib/btc-pilot.ts'
+      - 'apps/api/src/lib/kumo-feed*.ts'
+      - 'packages/contracts/src/kumo-feeds.ts'
+      - 'apps/web/app/api/cron/kumo-feeds/**'
       - 'packages/contracts/src/btc-pilot.ts'
       - '.github/workflows/btc-kumo.yml'
   pull_request:
     paths:
       - 'scripts/kumo-btc/**'
       - 'apps/api/src/lib/btc-pilot.ts'
+      - 'apps/api/src/lib/kumo-feed*.ts'
+      - 'packages/contracts/src/kumo-feeds.ts'
+      - 'apps/web/app/api/cron/kumo-feeds/**'
       - 'packages/contracts/src/btc-pilot.ts'
       - '.github/workflows/btc-kumo.yml'
   schedule:
@@ -42,7 +48,7 @@ jobs:
     if: github.event_name == 'pull_request'
     needs: validate
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       OMP_NUM_THREADS: '2'
       MKL_NUM_THREADS: '2'
@@ -61,13 +67,13 @@ jobs:
       - name: Exercise the Kumo graph, fit and prediction APIs on synthetic rows
         run: python scripts/kumo-btc/smoke.py
       - name: Validate the candidate on the live public BTC export
-        run: python scripts/kumo-btc/pilot.py --download --dataset candidate/dataset.json --output candidate --retrospective-only
+        run: python scripts/kumo-btc/pilot.py --download --dataset candidate/dataset.json --output candidate --retrospective-only --allow-unavailable-feeds
 
   measure:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: validate
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       OMP_NUM_THREADS: '2'
       MKL_NUM_THREADS: '2'
@@ -86,7 +92,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p previous output
-          artifact_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=btc-kumo-state&per_page=100" --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")][0].id // empty')
+          artifact_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=btc-kumo-feeds-state&per_page=100" --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")][0].id // empty')
           if [ -n "$artifact_id" ]; then
             gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > previous.zip
             python - <<'PY'
@@ -97,7 +103,7 @@ jobs:
               if len(matches) != 1:
                   raise ValueError("Previous artifact must contain one journal")
               journal = json.loads(archive.read(matches[0]))
-              if journal.get("version") != "btc-kumo-v1":
+              if journal.get("version") != "btc-kumo-feeds-v2":
                   raise ValueError("Previous journal has an unexpected version")
               Path("previous/journal.json").write_text(json.dumps(journal))
           PY
@@ -121,7 +127,7 @@ jobs:
           python -m pip install 'torch==2.9.1' --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -r scripts/kumo-btc/requirements.txt
 
-      - name: Fit the bounded Kumo experiment and record eligible future predictions
+      - name: Compare metadata-only and shared-feed Kumo models and record eligible future predictions
         id: train
         if: steps.audit.outputs.training_ready == 'true'
         run: python scripts/kumo-btc/pilot.py --dataset output/dataset.json --output output
@@ -145,13 +151,20 @@ jobs:
               path.write_text(json.dumps(report, indent=2) + "\n")
           print(json.dumps(report, indent=2))
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as file:
-              file.write("# BTC Kumo pilot\n\n")
+              file.write("# BTC Kumo shared feeds\n\n")
               file.write("Status " + report["status"] + "\n\n")
               file.write("Eligible resolved hours " + str(report["resolved_hours"]) + "\n\n")
-              file.write("| Measurement | Scored hours | Kumo Brier | Existing Brier | Base-rate Brier |\n| --- | --- | --- | --- | --- |\n")
+              file.write("| Measurement | Scored hours | Shared-feed Brier | Metadata-only Brier | Existing Brier | Base-rate Brier |\n| --- | --- | --- | --- | --- | --- |\n")
               for title, key in [("Recorded baseline", "baseline_measurements"), ("Historical held-out", "retrospective"), ("Prospective", "prospective")]:
                   row = report[key]
-                  file.write(f"| {title} | {row['scored']} | {row['kumo_brier']} | {row['existing_brier']} | {row['base_rate_brier']} |\n")
+                  file.write(f"| {title} | {row['scored']} | {row['kumo_brier']} | {row['metadata_brier']} | {row['existing_brier']} | {row['base_rate_brier']} |\n")
+              if "comparison" in report:
+                  file.write("\nPaired shared-feed minus metadata-only Brier " + str(report["comparison"]["brier_delta"]) + "\n")
+              context = report.get("feed_context", {})
+              file.write("\n| Feed | Exported records | Training hours | Held-out hours | Source state | Truncated |\n| --- | --- | --- | --- | --- | --- |\n")
+              for kind, row in context.get("source_coverage", {}).items():
+                  file.write(f"| {kind} | {row['records']} | {context.get('training_hours', {}).get(kind, 0)} | {context.get('heldout_hours', {}).get(kind, 0)} | {row['status']} | {row['truncated']} |\n")
+              file.write("\nText columns " + ", ".join(context.get("text_columns", [])) + "\n")
               if report.get("reason"):
                   file.write("\n" + report["reason"] + "\n")
               file.write("\n" + report["note"] + "\n")
@@ -160,7 +173,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: btc-kumo-state
+          name: btc-kumo-feeds-state
           path: |
             output/journal.json
             output/report.json

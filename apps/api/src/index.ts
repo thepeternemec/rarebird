@@ -14,12 +14,14 @@ import { marketRoutes } from "./lib/market-routes.js";
 import { newsRoutes } from "./lib/news-routes.js";
 import { agentRoutes } from "./lib/agent-routes.js";
 import { btcPilotRoutes } from "./lib/btc-pilot.js";
+import { kumoFeedRoutes } from "./lib/kumo-feeds.js";
 import { rateLimit, rateLimits } from "./lib/limit.js";
 import { keyRoutes } from "./lib/key-routes.js";
 import { mcpResponse } from "./lib/mcp.js";
 import { marketplaceRoutes } from "./lib/marketplace.js";
 import { operationRoutes } from "./lib/operations.js";
 import { recordServiceCall } from "./lib/telemetry.js";
+export { runKumoFeedCollection } from "./lib/kumo-feed-store.js";
 export { runIntelligence } from "./lib/intelligence.js";
 export { runOfficialEvidence } from "./lib/catalysts.js";
 export { runDiscovery } from "./lib/discovery.js";
@@ -30,7 +32,7 @@ export { handleTelegramUpdate, runTelegramFeed } from "./lib/telegram.js";
 
 const app = new Hono();
 const restOperations = new Set(
-  [...newsRoutes.routes, ...marketRoutes.routes, ...agentRoutes.routes, ...btcPilotRoutes.routes]
+  [...newsRoutes.routes, ...marketRoutes.routes, ...agentRoutes.routes, ...btcPilotRoutes.routes, ...kumoFeedRoutes.routes]
     .filter(route => route.method === "GET" || route.method === "POST")
     .map(route => `${route.method} /v2${route.path}`),
 );
@@ -73,13 +75,14 @@ app.get("/", (c) =>
     service: "Rarebird",
     docs: "https://www.rarebird.network/docs",
     repo: "https://github.com/thepeternemec/rarebird",
-    routes: ["/v2/agent", "/v2/discovery", "/v2/research", "/v2/investment", "/v2/briefing", "/v2/forecasts", "/v2/btc-pilot", "/v2/tokens", "/v2/catalysts", "/v2/collection", "/v2/topics", "/v2/news", "/v2/changes", "/v2/watch", "/v2/brief", "/v2/stories", "/v2/summary", "/v2/intelligence", "/v2/opportunities", "/v2/tools", "/mcp", "/health", "/status", "/status/feed", "/keys/authorize"],
+    routes: ["/v2/agent", "/v2/discovery", "/v2/research", "/v2/investment", "/v2/briefing", "/v2/forecasts", "/v2/btc-pilot", "/v2/kumo-feeds", "/v2/tokens", "/v2/catalysts", "/v2/collection", "/v2/topics", "/v2/news", "/v2/changes", "/v2/watch", "/v2/brief", "/v2/stories", "/v2/summary", "/v2/intelligence", "/v2/opportunities", "/v2/tools", "/mcp", "/health", "/status", "/status/feed", "/keys/authorize"],
     rate_limits: rateLimits,
   }),
 );
 
 app.route("/v2", newsRoutes);
 app.route("/v2", btcPilotRoutes);
+app.route("/v2", kumoFeedRoutes);
 app.route("/v2", agentRoutes);
 app.route("/v2", marketRoutes);
   // Self-serve keys. Separate from /v2 because it is not a news route.
