@@ -41,7 +41,7 @@ def download(path, until, require_export=True):
         cap = 24000 if kind == "market_bar" else 12000 if kind == "news" else 4000
         coverage, status = {}, "warming_up"
         while len(records) < cap:
-            args = {"kind": kind, "since": since, "until": until, "limit": 1000}
+            args = {"kind": kind, "since": since, "until": until, "limit": 1000, "sampling": "hourly"}
             if cursor:
                 args["cursor"] = cursor
             url = "https://www.rarebird.network/api/v2/kumo-feeds?" + urllib.parse.urlencode(args)
@@ -95,7 +95,9 @@ def download(path, until, require_export=True):
             except Exception as error:
                 # Absence remains explicit; other source histories still train.
                 coverage[kind] = {"status": "unavailable", "records": 0, "truncated": False,
-                                  "error": type(error).__name__}
+                                  "error": type(error).__name__, "detail": str(error)[:180]}
+    for kind, state in coverage.items():
+        print("Feed", kind, "status", state["status"], "records", state["records"], "truncated", state["truncated"], "error", state.get("error"), flush=True)
     result = {"schema_version": "kumo-context-v1", "since": since, "until": until,
               "records": output, "coverage": coverage}
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -198,7 +200,7 @@ def attach(examples, data, btc_dataset):
 
 
 def table_specs(population):
-    """Freeze the source schema before outer held-out entities are introduced."""
+    """Freeze the source schema from training observations only."""
     specs = {}
     for kind in KINDS:
         rows = [r for e in population for r in e.get("context", {}).get(kind, [])]

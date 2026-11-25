@@ -222,8 +222,9 @@ def train(examples, cohorts, directory, expanded=False):
     kumo.configure(scratch_dir=str(directory / "scratch"))
     train_ids = {e["id"] for e in cohorts[0]}
     fitting = [e for cohort in cohorts[:3] for e in cohort]
-    context_specs = feed_context.table_specs(fitting) if expanded else {}
-    numerical_features = FEATURES + (feed_context.EXTRA_FEATURES if expanded else [])
+    context_specs = feed_context.table_specs(cohorts[0]) if expanded else {}
+    extra_names = [name for kind in context_specs for name in ("ctx_" + kind + "_count", "ctx_" + kind + "_present")]
+    numerical_features = FEATURES + extra_names
 
     def save_context(population):
         entities, tables = feed_context.graph_rows(population, context_specs)
@@ -237,7 +238,7 @@ def train(examples, cohorts, directory, expanded=False):
 
 
     def save_sources(population):
-        rows = [{"hour_id": e["id"], **e["features"], **(e.get("extra_features", {}) if expanded else {}),
+        rows = [{"hour_id": e["id"], **e["features"], **{name: e["extra_features"][name] for name in extra_names},
                  "large_move": bool(e["label"]) if e["id"] in train_ids else None} for e in population]
         frame = pd.DataFrame(rows)
         frame["large_move"] = pd.array(frame.large_move, dtype="boolean")
