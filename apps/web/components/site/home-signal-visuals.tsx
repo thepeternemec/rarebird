@@ -80,12 +80,9 @@ export function SetupTimeline() {
 
 export function AgentDelivery() {
   return (
-    <div className="rb-home-panel rb-home-delivery">
-      <div className="rb-home-delivery-brand"><FooterSignalMark /></div>
-      <dl>
-        <div><dt>MCP</dt><dd><SignalTiles cells="12344321" /><span>Your agent asks for setups and updates</span></dd></div>
-        <div><dt>Webhook</dt><dd><SignalTiles cells="01123344" /><span>Rarebird pushes alerts to your configured endpoint</span></dd></div>
-      </dl>
-    </div>
+    <dl className="rb-home-panel rb-home-delivery">
+      <div><dt>MCP</dt><dd><SignalTiles cells="12344321" /><span>Your agent asks for setups and updates</span></dd></div>
+      <div><dt>Webhook</dt><dd><SignalTiles cells="01123344" /><span>Rarebird pushes alerts to your configured endpoint</span></dd></div>
+    </dl>
   );
 }
