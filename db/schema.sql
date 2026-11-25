@@ -390,3 +390,10 @@ create table if not exists public.newsbeat_discovery_scans (
   scanned_at timestamptz not null,
   backlog boolean not null
 );
+
+-- Shared public feed snapshots, first-availability journal and collector health.
+create table if not exists public.newsbeat_kumo_feed_records (id text primary key,kind text not null,available_at timestamptz not null,record jsonb not null);
+create index if not exists newsbeat_kumo_feed_kind_time_idx on public.newsbeat_kumo_feed_records(kind,available_at desc,id desc);
+create index if not exists newsbeat_kumo_feed_retention_idx on public.newsbeat_kumo_feed_records(available_at);
+create table if not exists public.newsbeat_kumo_feed_health (kind text primary key,last_attempt_at timestamptz not null,last_success_at timestamptz,last_error text);
+create table if not exists public.newsbeat_kumo_feed_worker (id text primary key,token text,lease_until timestamptz);

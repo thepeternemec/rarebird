@@ -28,6 +28,10 @@
     {
       "path": "/api/cron/telegram",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/kumo-feeds",
+      "schedule": "2-59/10 * * * *"
     }
   ],
   "buildCommand": "cd ../.. && npm run build"
