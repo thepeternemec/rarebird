@@ -6,25 +6,25 @@ import MarketDirectionScene from "./market-direction-scene";
 
 const PERSPECTIVES = [
   {
-    id: "rising", label: "Markets rising", icon: ArrowUpRight,
-    title: "Is there substance behind the momentum?",
-    description: "Look beyond a rising market. Investigate the catalyst, check the original reporting and test what would need to hold for the story to continue.",
-    checks: ["What actually changed?", "Does the evidence support the story?", "What would weaken the outlook?"],
-    href: "/app", action: "Investigate the developments",
+    id: "rising", label: "Setup developing", icon: ArrowUpRight,
+    title: "A stock is starting to stand out.",
+    description: "Relative strength, unusual volume and the observed spread pass together. The first screen looks for developing long-side strength in four US stocks against SPY.",
+    checks: ["Does the stock stand out from SPY?", "Is participation above its baseline?", "Is the move already extended?"],
+    href: "/app/screener", action: "Inspect the stock screen",
   },
   {
-    id: "falling", label: "Markets falling", icon: ArrowDownRight,
-    title: "A change in the thesis, or a reason to look closer?",
-    description: "Separate company or token developments from the wider backdrop. Examine adverse evidence, missing confirmation and what would change the view.",
-    checks: ["Has the underlying story changed?", "What evidence points to more risk?", "What would support a reassessment?"],
-    href: "/ask", action: "Examine an asset’s outlook",
+    id: "falling", label: "Setup fading", icon: ArrowDownRight,
+    title: "An alert should come with an ending.",
+    description: "When measured conditions no longer qualify, the setup is invalidated. Stale or missing data puts it on hold. Each setup also has a maximum lifetime, so an old alert cannot keep looking current.",
+    checks: ["Are the latest measurements current?", "Did the qualifying conditions clear?", "Has the setup expired?"],
+    href: "/docs/connect#stock-screener", action: "Understand the alert lifecycle",
   },
   {
-    id: "sideways", label: "Markets sideways", icon: ArrowRight,
-    title: "What would make the next move meaningful?",
-    description: "A quiet market still has a story. Follow fresh developments, inspect the experimental move-risk forecasts and identify the evidence you’re waiting for.",
-    checks: ["Which new developments matter?", "What is still unconfirmed?", "What should be checked next?"],
-    href: "/app/forecasts", action: "Explore forecasts and outcomes",
+    id: "sideways", label: "Nothing qualifies", icon: ArrowRight,
+    title: "No setup is a useful answer too.",
+    description: "When current measurements do not pass the rules, Rarebird returns no qualifying setup. A disconnected feed, incomplete baseline or closed market is shown separately.",
+    checks: ["Is the US regular session open?", "Is today’s baseline complete?", "Is it a quiet scan or a data hold?"],
+    href: "/app/screener", action: "Check coverage and readiness",
   },
 ] as const;
 
@@ -35,7 +35,7 @@ export default function MarketPerspective() {
   const active = PERSPECTIVES[selected];
 
   return <div className="rb-perspective">
-    <div className="rb-perspective-tabs" role="tablist" aria-label="Explore a market condition">
+    <div className="rb-perspective-tabs" role="tablist" aria-label="Explore a stock setup state">
       {PERSPECTIVES.map((item, index) => <button key={item.id} type="button" role="tab"
         ref={node => { tabs.current[index] = node; }} id={id + "-" + item.id}
         aria-selected={selected === index} aria-controls={id + "-panel-" + item.id} tabIndex={selected === index ? 0 : -1}
@@ -54,7 +54,7 @@ export default function MarketPerspective() {
         <div className="rb-perspective-visual">
           <MarketDirectionScene active={active.id} id={`${id}-directions`} />
         </div>
-        <div className="rb-perspective-copy"><p className="rb-home-eyebrow">Research playbook</p><h3>{active.title}</h3><p>{active.description}</p>
+        <div className="rb-perspective-copy"><p className="rb-home-eyebrow">Setup lifecycle</p><h3>{active.title}</h3><p>{active.description}</p>
           <ol>{active.checks.map((check, i) => <li key={check}><span>0{i + 1}</span>{check}</li>)}</ol>
           <a className="rb-home-text-link" href={active.href}>{active.action}<ArrowRight size={17} aria-hidden="true" /></a>
         </div>

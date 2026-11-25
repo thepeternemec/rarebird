@@ -7,12 +7,13 @@ import MobileNavigation from "./mobile-navigation";
 import "./mobile-navigation.css";
 
 const LINKS = [
-  { href: "/for-agents", label: "Agent", description: "Connect Rarebird to your AI assistant" },
+  { href: "/for-agents", label: "For agents", description: "Bring stock setups into your AI agent" },
   { href: "/pricing", label: "Pricing", description: "See the Rarebird Pro membership" },
   { href: "/docs", label: "Developers", description: "Connect with MCP and REST" },
 ];
 
 const MOBILE_LINKS = [
+  { href: "/app/screener", label: "Stock screener", description: "Developing stock setups, alerts and outcomes" },
   { href: "/app", label: "News signals", description: "Follow news and price moves for stocks and crypto" },
   { href: "/ask", label: "Ticker research", description: "Research a stock or crypto asset" },
   { href: "/app/forecasts", label: "Forecasts", description: "Explore forecasts and recorded outcomes" },
@@ -32,8 +33,8 @@ export default function SiteNav({ active }: { active?: string }) {
           ))}
         </span>
         <span className="nav-desktop-theme"><ThemeToggle /></span>
-        <a className="nav-cta" href="/app" aria-current={active === "/app" ? "page" : undefined}>
-          Open app
+        <a className="nav-cta" href="/app/screener" aria-current={active === "/app/screener" ? "page" : undefined}>
+          Stock screener
         </a>
         <MobileNavigation links={MOBILE_LINKS} active={active} />
       </div>

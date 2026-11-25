@@ -21,21 +21,21 @@ const scenarios: Record<MarketDirection, MarketScenario> = {
     volume: [22, 30, 19, 29, 25, 38, 24, 42, 39, 25, 42, 87, 56, 69, 41, 49, 61, 43, 59, 66, 45, 73, 47, 57],
     ticks: [96, 102, 108, 114, 120],
     reference: { label: "Earlier high", lower: 105.2 },
-    checkpoint: { index: 11, label: "Breakout", detail: "Price clears an earlier high as trading activity picks up." },
+    checkpoint: { index: 11, label: "Strength develops", detail: "Illustrative price strength. A stock setup also needs relative strength, unusual volume and a reasonable spread." },
   },
   falling: {
     price: [100, 100.9, 100.6, 101.3, 100.2, 99.7, 100.5, 98.8, 99.2, 98.1, 98.4, 95.4, 96.7, 94.8, 93.9, 94.5, 92.3, 91.4, 92.8, 90.2, 89.8, 90.6, 88.1, 87.6],
     volume: [21, 29, 18, 32, 24, 38, 25, 44, 30, 52, 36, 94, 65, 76, 48, 34, 66, 59, 38, 69, 46, 42, 78, 63],
     ticks: [84, 89, 94, 99, 104],
     reference: { label: "Prior support", lower: 98.1 },
-    checkpoint: { index: 11, label: "Support breaks", detail: "A heavier trading session pushes the index below its earlier low." },
+    checkpoint: { index: 11, label: "Momentum fades", detail: "Illustrative fading momentum. The screener invalidates a setup when its measured conditions no longer qualify." },
   },
   sideways: {
     price: [100, 101.1, 102.1, 101.3, 99.6, 98.7, 97.4, 98, 99.9, 100.2, 101.8, 102.9, 101.5, 99.9, 98.2, 97.2, 98.7, 99.5, 100.8, 102.1, 102.5, 101.4, 100.2, 100.7],
     volume: [24, 28, 36, 27, 29, 31, 51, 28, 33, 18, 26, 42, 31, 23, 35, 53, 39, 27, 25, 32, 37, 24, 19, 27],
     ticks: [96, 98, 100, 102, 104],
     reference: { label: "Trading range", lower: 97, upper: 103 },
-    checkpoint: { index: 15, label: "Range test", detail: "Price tests the lower edge and stays inside the range." },
+    checkpoint: { index: 15, label: "No clear move", detail: "An illustrative price range. A current scan can return no qualifying setup; missing measurements are shown separately." },
   },
 };
 
