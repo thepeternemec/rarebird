@@ -27,7 +27,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
 const served = () => app.routes.map((r) => ({ method: r.method, path: r.path }));
 
 /** Any `/v2/foo` or `/mcp` or `/health` an author wrote down. */
-const routePattern = /\/(?:v\d\/[a-z]+|mcp|health)\b/g;
+const routePattern = /\/(?:v\d\/[a-z-]+|mcp|health)\b/g;
 
 /** Documents a client is expected to read and act on. */
 const ADVERTISING = ["AGENTS.md", "README.md", "apps/web/public/llms.txt", "apps/web/public/skill.md"];
