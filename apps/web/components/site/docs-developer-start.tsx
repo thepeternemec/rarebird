@@ -40,7 +40,7 @@ export default function DocsDeveloperStart() {
       <div className="docs-endpoint">
         <span><Terminal size={17} aria-hidden="true" /> REMOTE MCP</span>
         <code>{MCP}</code>
-        <CopyButton text={MCP} label="Copy endpoint" />
+        <CopyButton text={MCP} label="Copy MCP connection URL" copiedLabel="MCP URL copied" />
       </div>
       <div className="docs-example-tabs" role="tablist" aria-label="Integration example" onKeyDown={event => {
         let next = selected;

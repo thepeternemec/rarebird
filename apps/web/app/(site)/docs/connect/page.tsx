@@ -46,14 +46,17 @@ export default function DocsConnect() {
 
       <p>Want to check the data first? <a href="/docs/try">Try a live lookup</a> with no account, key or client setup.</p>
 
-      <h2 id="mcp">Remote MCP</h2>
+      <h2 id="mcp">One remote MCP connection</h2>
+      <p>All Rarebird MCP tools are available through this server. Add it once to access news, research, prices, filings, forecasts and market checks.</p>
+      <div className="docs-endpoint"><code>{API}/mcp</code><CopyButton text={`${API}/mcp`} label="Copy MCP connection URL" copiedLabel="MCP URL copied" /></div>
+      <p>Paste the URL into your assistant’s remote MCP server URL field and name the connection Rarebird.</p>
       <p>
         Use <code>{API}/mcp</code> with a host that supports Streamable HTTP.
         Public reads need no API key. Client configuration formats vary; for hosts that accept
         a <code>mcpServers</code> configuration:
       </p>
       <div className="code">
-        <div className="code-bar">MCP configuration <CopyButton text={MCP_CONFIG} label="configuration" /></div>
+        <div className="code-bar">MCP configuration <CopyButton text={MCP_CONFIG} label="Copy MCP configuration" /></div>
         <pre>{MCP_CONFIG}</pre>
       </div>
       <p>

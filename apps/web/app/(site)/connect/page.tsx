@@ -3,8 +3,9 @@
 import InteriorPage from "@/components/site/interior-page";
 import PageVisual from "@/components/site/page-visual";
 
-import { useEffect, useState } from "react";
-import { ArrowRight, Check, Copy } from "lucide-react";
+import { useState } from "react";
+import CopyButton from "@/components/site/copy-button";
+import { ArrowRight } from "lucide-react";
 import SiteNav from "@/components/site/site-nav";
 import SiteFooter from "@/components/site/site-footer";
 import LiveResponse from "@/components/site/live-response";
@@ -14,18 +15,18 @@ const API_BASE = "https://www.rarebird.network/api";
 const OPTIONS = [
   {
     id: "mcp",
-    title: "MCP",
-    blurb: "Point an assistant at one URL. Nothing to install.",
+    title: "MCP for assistants",
+    blurb: "One connection gives your assistant all Rarebird tools.",
   },
   {
     id: "http",
-    title: "HTTP",
+    title: "REST API for developers",
     blurb: "REST endpoints. Works in any language.",
   },
   {
     id: "tools",
     title: "Tool calling",
-    blurb: "Hand a model the schemas and let it decide when to look.",
+    blurb: "Use the tool schemas in your own model integration.",
   },
 ] as const;
 
@@ -56,41 +57,20 @@ curl -s "${API_BASE}/v2/market"`,
 const { tools } = await fetch("${API_BASE}/v2/tools").then((r) => r.json());
 
 // Pass them to your model, execute what it calls, send the results back.
-// News tools: rarebird_topics, rarebird_news, rarebird_changes,
-// rarebird_brief, rarebird_stories, rarebird_summary, rarebird_watch.`,
+// Start with rarebird_research for a market question.
+// The catalog also includes news, prices, filings, forecasts and market checks.`,
 };
 
 export default function Connect() {
   const [selected, setSelected] = useState<OptionId>("mcp");
-  const [copied, setCopied] = useState(false);
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState("");
   /** One entry per round trip, in milliseconds. Drawn as bars, tallest = slowest. */
   const [bars, setBars] = useState<number[]>([]);
 
-  const [apiBase, setApiBase] = useState(API_BASE);
-  useEffect(() => { setApiBase(`${window.location.origin}/api`); }, []);
-  const snippet = SNIPPETS[selected].replaceAll(API_BASE, apiBase);
+  const snippet = SNIPPETS[selected];
 
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(snippet);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setResult("Copy is unavailable in this browser. Select the text below instead.");
-    }
-  }
-
-  /**
-   * A real request, so "connected" means connected — then eight more, drawn as they
-   * land.
-   *
-   * The handshake alone answers "reachable?" with a sentence. Eight timed round trips
-   * answer "how does it feel?", which is what someone about to point an agent at this
-   * actually wants to know. Each bar is one request and its height is the latency, so
-   * a slow tail is visible rather than averaged away.
-   */
+  // Check the service handshake and show health request timings.
   async function verify() {
     setChecking(true);
     setResult("");
@@ -134,7 +114,7 @@ export default function Connect() {
       const worst = good.length ? Math.max(...good) : 0;
       setResult(
         good.length === 8
-          ? `Reached ${data.result.serverInfo.name} · 8 of 8 round trips · ${avg} ms average, ${worst} ms worst. Now ask it about a ticker.`
+          ? `Reached ${data.result.serverInfo.name} · 8 of 8 round trips · ${avg} ms average, ${worst} ms worst. Rarebird is responding. Save the MCP connection in your assistant to start asking questions.`
           : `Reached ${data.result.serverInfo.name}, but ${8 - good.length} of 8 round trips failed. Try again shortly.`,
       );
     } catch {
@@ -154,10 +134,10 @@ export default function Connect() {
           <div className="wrap intro-grid">
             <div className="intro-copy">
             <span className="sec-eyebrow">Connect</span>
-            <h1 className="sec-title">Start in one request.</h1>
+            <h1 className="sec-title">One connection. All Rarebird tools.</h1>
             <p className="sec-sub">
-              No key, no signup, and the anonymous tier is free. Point your agent at the endpoint below and ask it about
-              a ticker — 2,000+ equities and cryptos covered, refreshed every ten minutes.
+              Add Rarebird once to your assistant to access news, research, prices, filings, forecasts and market checks.
+              Public access needs no Rarebird account or API key.
             </p>
             <div className="hero-cta">
               <a className="btn-primary" href="/docs/quickstart">
@@ -165,9 +145,8 @@ export default function Connect() {
               </a>
               <LiveResponse />
             </div>
-            <p className="hero-tiny">
-                public MCP and REST access is free · optional seven-day keyed REST trial
-            </p>
+            <div className="code"><div className="code-bar">MCP server URL <CopyButton text={`${API_BASE}/mcp`} label="Copy MCP connection URL" copiedLabel="MCP URL copied" /></div><pre>{API_BASE}/mcp</pre></div>
+            <p className="hero-tiny">In your assistant’s settings, add a custom remote MCP server named Rarebird. Paste this URL into the server URL field, save, and enable its tools.</p>
             </div>
             <PageVisual kind="connect" />
           </div>
@@ -176,11 +155,11 @@ export default function Connect() {
         <section className="scaffold" id="ways">
           <div className="wrap">
             <div className="sec-head">
-              <span className="sec-eyebrow">Three ways in</span>
-              <h2 className="sec-title">Pick the one that fits.</h2>
+              <span className="sec-eyebrow">Developer integrations</span>
+              <h2 className="sec-title">Connect an assistant or build your own integration.</h2>
               <p className="sec-sub">
-                All three reach the same 16 tools. Nothing here is a client library —
-                there is no SDK to install, and no version to keep in step.
+                Choose MCP when connecting an AI assistant. REST and tool schemas let developers use Rarebird
+                inside their own applications. Every MCP tool is included in the single connection above.
               </p>
             </div>
 
@@ -200,7 +179,7 @@ export default function Connect() {
                   style={{ minHeight: 150, textAlign: "left" }}
                 >
                   <span className="feature-tag" style={{ marginTop: 0, paddingTop: 0 }}>
-                    {option.id === selected ? "selected" : `0${OPTIONS.indexOf(option) + 1}`}
+                    {option.id === "mcp" ? "For AI assistants" : "For developers"}
                   </span>
                   <h3 className="feature-title">{option.title}</h3>
                   <p className="feature-desc">{option.blurb}</p>
@@ -212,17 +191,14 @@ export default function Connect() {
             <div className="code" id="connection-code">
               <div className="code-bar">
                 {active.title}
-                <button type="button" className="copy-btn" onClick={copy} aria-label="Copy">
-                  {copied ? <Check size={13} /> : <Copy size={13} />}
-                  {copied ? "copied" : "copy"}
-                </button>
+                <CopyButton key={selected} text={snippet} label={selected === "mcp" ? "Copy MCP configuration" : "Copy code example"} />
               </div>
               <pre key={selected} className="snippet-content">{snippet}</pre>
             </div>
 
             <div className="oss-row">
               <button type="button" className="btn-primary" onClick={verify} disabled={checking}>
-                {checking ? "Checking…" : "Check the connection"}
+                {checking ? "Checking…" : "Check Rarebird service"}
                 {!checking && <ArrowRight size={14} />}
               </button>
             </div>
