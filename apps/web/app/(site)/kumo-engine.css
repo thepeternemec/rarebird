@@ -1,0 +1,87 @@
+.rb-home .rb-kumo-announcement {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 11px;
+  min-height: 44px;
+  margin-top: 15px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.rb-kumo-announcement strong { color: var(--text-primary); font-weight: 550; }
+.rb-kumo-announcement-tag {
+  flex: none;
+  padding: 3px 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  font: 10px/1.4 var(--font-mono);
+  letter-spacing: .025em;
+  text-transform: uppercase;
+}
+.rb-kumo-announcement > svg { flex: none; transition: transform .2s; }
+.rb-kumo-announcement:hover > svg { transform: translate(2px, 2px); }
+.rb-home .rb-kumo {
+  padding-top: 64px;
+  padding-bottom: 24px;
+  border-block: 1px solid var(--border-default);
+  scroll-margin-top: 96px;
+}
+.rb-kumo-main { display: grid; grid-template-columns: 1.35fr 1fr; align-items: center; gap: clamp(40px, 7vw, 104px); }
+.rb-kumo-copy { min-width: 0; }
+.rb-kumo-copy h2 { margin-top: 20px; }
+.rb-home .rb-kumo-description { max-width: 53ch; margin-top: 24px; color: var(--text-secondary); font-size: 16px; line-height: 1.8; }
+.rb-home .rb-kumo-direction { max-width: 53ch; margin-top: 15px; color: var(--text-secondary); font-size: 14px; line-height: 1.8; }
+.rb-kumo-links { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 25px; margin-top: 24px; }
+.rb-home .rb-kumo-links .rb-home-text-link { font-size: 13px; }
+.rb-kumo-brand { margin: 0; min-width: 0; }
+.rb-kumo-brand-label { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; color: var(--text-secondary); font: 10px/1.6 var(--font-mono); letter-spacing: .035em; text-transform: uppercase; }
+.rb-kumo-brand-label > span { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.rb-kumo-brand-surface {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 252px;
+  padding: 42px 26px;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: #fff;
+  color: #161616;
+}
+.rb-kumo-logo { display: block; width: min(280px, 100%); height: auto; }
+.rb-home .rb-kumo-engine-name { margin-top: 28px; font-size: 31px; font-weight: 550; line-height: 1.2; letter-spacing: -.035em; }
+.rb-kumo-brand-caption { margin-top: 14px; color: #5e5e5e; font-size: 11px; line-height: 1.6; text-align: center; }
+.rb-kumo-brand figcaption { margin-top: 15px; color: var(--text-secondary); font: 11px/1.8 var(--font-mono); }
+.rb-kumo-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 48px 0 0; padding: 26px 0; border-top: 1px solid var(--border-default); }
+.rb-kumo-facts > div { min-width: 0; padding-inline: 28px; border-left: 1px solid var(--border-subtle); }
+.rb-kumo-facts > div:first-child { border: 0; padding-left: 0; }
+.rb-kumo-facts dt { color: var(--text-primary); font-size: 31px; font-weight: 500; line-height: 1.2; letter-spacing: -.04em; }
+.rb-kumo-facts dd { margin: 8px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+.rb-home .rb-kumo-trademark { margin-top: 0; color: var(--text-tertiary, var(--text-secondary)); font-size: 10px; line-height: 1.7; }
+@media (max-width: 1000px) {
+  .rb-kumo-main { gap: 36px; grid-template-columns: 1.15fr 1fr; }
+  .rb-home .rb-kumo-copy h2 { font-size: 43px; }
+  .rb-kumo-brand-label { font-size: 9px; }
+  .rb-kumo-brand-surface { min-height: 232px; padding-inline: 20px; }
+}
+@media (max-width: 760px) {
+  .rb-home .rb-kumo { padding-top: 38px; padding-bottom: 22px; scroll-margin-top: 84px; }
+  .rb-kumo-main { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+  .rb-home .rb-kumo-copy h2 { font-size: clamp(32px, 7.2vw, 42px); }
+  .rb-home .rb-kumo-description { margin-top: 20px; font-size: 15px; line-height: 1.75; }
+  .rb-home .rb-kumo-direction { font-size: 14px; }
+  .rb-kumo-links { margin-top: 18px; gap: 0 20px; }
+  .rb-kumo-brand-surface { min-height: 210px; }
+  .rb-kumo-brand-label { font-size: 10px; }
+  .rb-kumo-brand figcaption { font-size: 10px; }
+  .rb-kumo-facts { margin-top: 30px; padding-block: 22px; }
+  .rb-kumo-facts > div { padding-inline: 15px; }
+  .rb-kumo-facts dt { font-size: clamp(24px, 6.4vw, 29px); }
+  .rb-kumo-facts dd { font-size: 11px; }
+  .rb-home .rb-kumo-announcement { gap: 7px 9px; font-size: 12px; margin-top: 12px; }
+  .rb-home .rb-home-graph-link { display: flex; width: fit-content; margin-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rb-kumo-announcement > svg { transition: none; }
+}

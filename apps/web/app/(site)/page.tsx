@@ -7,10 +7,12 @@ import BrandMark, { BrandWordmark } from "@/components/site/brand-mark";
 import MarketPerspective from "@/components/site/market-perspective";
 import SignalGraph from "@/components/site/signal-graph";
 import { EARLY_ACCESS_END } from "@/components/site/access-offer";
+import KumoEngineSection, { KumoEngineAnnouncement } from "@/components/site/kumo-engine";
 import "./rarebird-home.css";
+import "./kumo-engine.css";
 
 const TITLE = "Rarebird — Market intelligence for stocks and crypto";
-const DESCRIPTION = "Follow fresh market developments, research tickers and see what could change the outlook. Use the Rarebird app or connect your AI agent.";
+const DESCRIPTION = "Market intelligence for stocks and crypto. Connect your AI agent, research market signals, and explore our BTC pilot built with NVIDIA Kumo Engine.";
 const REPO = "https://github.com/thepeternemec/rarebird";
 
 export const metadata = {
@@ -65,6 +67,7 @@ export default async function Home({ searchParams }: {
             <a className="rb-home-text-link" href="/for-agents">Connect your agent <ArrowRight size={17} aria-hidden="true" /></a>
           </div>
           <p className="rb-home-access">App and agent free through {EARLY_ACCESS_END}.</p>
+          <KumoEngineAnnouncement />
           <a className="rb-home-text-link rb-home-graph-link" href="#signal-graph">Explore the signal graph <ArrowRight size={15} aria-hidden="true" /></a>
         </div>
         <div className="rb-home-sculpture" aria-hidden="true">
@@ -84,6 +87,8 @@ export default async function Home({ searchParams }: {
           <span className="rb-home-direction rb-home-direction-down"><ArrowDownRight size={20} /> Understand risk</span>
         </div>
       </section>
+
+      <KumoEngineSection />
 
       <section className="rb-signal-section rb-home-width" id="signal-graph" aria-labelledby="signal-graph-title">
         <header className="rb-signal-heading">
