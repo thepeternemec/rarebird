@@ -122,7 +122,10 @@ full article comprehension or verified causality.
 The model requests sampling=hourly so source caps preserve older training history.
 News keeps the first two arrivals per asset and at most 16 per hour. Other frequent
 feeds keep their first observation per entity and at most five per hour; interpreted
-and discovery events allow two per entity. Ties favor BTC or aggregate market
+and discovery events allow two per entity. Quotes, books and chain readings use
+the first capture in the last ten minutes of each hour, preserving freshness at
+the next hourly forecast. Collector last-success times remain visible even when
+sampled history is warming up. Ties favor BTC or aggregate market
 context. Filings and financials have a 100-record hourly cap. Market context uses
 the last three fixed five-minute candle slots of each hour. Later arrivals cannot
 displace earlier selections. Ordinary exports default to all records.

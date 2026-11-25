@@ -74,3 +74,25 @@ test("hourly feed sampling retains older training context and later arrivals can
     await assert.rejects(readKumoFeedPage({ kind: "news", sampling: "all", cursor: first.next_cursor! }), /invalid_feed_window/);
   } finally { await closeDb(); }
 });
+
+
+test("short-lived hourly samples retain a fresh reading for the next forecast", { skip: !connection, timeout: 45000 }, async () => {
+  process.env.DATABASE_URL = connection!;
+  const sql = db(), hour = Math.floor(Date.now() / 3600000) * 3600000 - 2 * 3600000;
+  const at = (minutes: number) => new Date(hour + minutes * 60000).toISOString();
+  try {
+    await sql.unsafe(readFileSync(new URL("../../../../db/schema.sql", import.meta.url), "utf8"));
+    await sql.unsafe("truncate public.newsbeat_kumo_feed_records,public.newsbeat_kumo_feed_health");
+    for (const minute of [2, 52]) {
+      const record = { id: "chain:sample:" + minute, kind: "chain", entity_id: "chain:ethereum", asset_class: "chain",
+        source: "test", source_url: "https://example.com", event_at: at(minute), available_at: at(minute),
+        expires_at: at(minute + 20), text: "", values: { block: minute }, categories: {}, related_ids: [] };
+      await sql.unsafe("insert into public.newsbeat_kumo_feed_records(id,kind,available_at,record) values($1,'chain',$2,$3::jsonb)", [record.id, record.available_at, JSON.stringify(record)]);
+    }
+    const page = await readKumoFeedPage({ kind: "chain", sampling: "hourly", since: at(0), until: at(61) });
+    assert.deepEqual(page.records.map(r => r.values.block), [52]);
+    assert.ok(Date.parse(page.records[0]!.available_at) <= Date.parse(at(61)));
+    assert.ok(Date.parse(page.records[0]!.expires_at) > Date.parse(at(61)));
+    assert.equal((await readKumoFeedPage({ kind: "chain", since: at(0), until: at(61) })).records.length, 2);
+  } finally { await closeDb(); }
+});

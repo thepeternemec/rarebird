@@ -73,11 +73,13 @@ def download(path, until, require_export=True):
         return records, {"status": status, "records": len(records), "truncated": bool(cursor), **coverage}
 
     if require_export:
-        probe = "https://www.rarebird.network/api/v2/kumo-feeds?kind=news&limit=1"
+        probe = "https://www.rarebird.network/api/v2/kumo-feeds?kind=news&limit=1&sampling=hourly"
         for attempt in range(13):
             try:
                 with urllib.request.urlopen(probe, timeout=15) as response:
-                    if json.load(response).get("schema_version") != "kumo-feeds-v1":
+                    probe_page = json.load(response)
+                    if (probe_page.get("schema_version") != "kumo-feeds-v1"
+                            or probe_page.get("coverage", {}).get("sampling") != "hourly"):
                         raise ValueError("The shared feed route has not deployed")
                 break
             except (OSError, ValueError):
