@@ -254,7 +254,7 @@ def train(examples, cohorts, directory):
     plan.training_job.refit_full = False
     plan.training_job.disable_explain = True
     plan.optimization.max_epochs = 3
-    trainer = kumo.Trainer(plan, accelerator="cpu")
+    trainer = kumo.Trainer(plan)
     trainer.fit(training_table, snapshot=snapshot)
 
     # Held-out entities and their context are added only after fitting finishes.
