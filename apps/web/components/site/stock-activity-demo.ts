@@ -1,28 +1,21 @@
-/** Illustration data only; never used by a market-data or screening path. */
-export const ACTIVITY_STOCKS = [
-  { symbol: "NVDA", name: "NVIDIA" }, { symbol: "AAPL", name: "Apple" },
-  { symbol: "MSFT", name: "Microsoft" }, { symbol: "GOOGL", name: "Alphabet" },
-] as const;
-export const ACTIVITY_CHECKS = ["Strength", "Volume", "Spread"] as const;
-export const ACTIVITY_COLUMNS = 30;
+/** Illustration data for the homepage. The screener never reads this sequence. */
 export const ACTIVITY_STEPS = [
-  { name: "Screen", title: "Keep checking the stocks.",
-    description: "Rarebird compares each stock with SPY, a broad US-market benchmark. It also checks traded volume and the spread between buying and selling prices.",
-    note: "Most checks lead to no alert. That is a useful result.", status: "Screening", column: 16 },
-  { name: "Qualify", title: "Wait for the checks to agree.",
-    description: "The stock must show unusual strength and trading activity, with a reasonable spread. A move that is already extended is held back.",
-    note: "In this example, all three checks align for the highlighted stock.", status: "Setup detected", column: 24 },
-  { name: "Notify", title: "Give your agent a reason to look.",
-    description: "The setup includes the stock, why it qualified, its reference measurements and any recent source-linked reporting. A configured webhook delivers the event to your agent.",
-    note: "MCP also lets your agent read the same setup and follow its changes.", status: "Agent update", column: 24 },
-  { name: "Follow", title: "Keep the ending in the story.",
-    description: "If the conditions fade, Rarebird invalidates the setup. Missing data puts it on hold. Later observations record what happened after 15 and 60 minutes.",
-    note: "One setup keeps one ID. Updates do not become duplicate alerts.", status: "Setup invalidated", column: 29 },
+  { label: "Scan", column: 10, duration: 2600, message: "Compare stock moves with the wider market." },
+  { label: "Build", column: 24, duration: 2700, message: "Strength and unusual volume start to line up." },
+  { label: "Qualify", column: 37, duration: 2200, message: "The spread passes the final check. A setup qualifies." },
+  { label: "Alert", column: 48, duration: 3400, message: "Example NVDA alert ready for the agent." },
 ] as const;
 
-export function activityLevel(asset: number, check: number, column: number, selectedAsset: number): 0 | 1 | 2 | 3 {
-  if (asset === selectedAsset && column >= 22 && column <= 26) return check === 2 || column >= 24 ? 3 : 2;
-  const seed = (asset * 41 + check * 17 + column * 11) % 31;
-  if (check === 2) return seed < 11 ? 1 : seed > 26 ? 2 : 0;
-  return seed > 27 ? 2 : seed > 17 ? 1 : 0;
-}
+export const ACTIVITY_GRID = Array.from({ length: 52 }, (_, column) => (
+  Array.from({ length: 7 }, (_, row) => {
+    const seed = ((column + 13) * 7919 ^ (row + 5) * 3571) % 97;
+    const base = seed < 37 ? 0 : seed < 65 ? 1 : seed < 86 ? 2 : 3;
+    return ACTIVITY_STEPS.map((step, index) => {
+      const distance = Math.abs(column - step.column) + Math.abs(row - 3) * 2;
+      const isAlert = index === 3 && column === step.column && row === 3;
+      const cluster = column <= step.column + 2 && distance <= 6 + index;
+      const level = cluster ? Math.max(base, distance <= 3 + index ? 4 : 2) : base;
+      return { level, cluster, isAlert };
+    });
+  })
+));
