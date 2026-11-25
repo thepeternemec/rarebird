@@ -14,11 +14,11 @@ const cursorSchema = z.object({ kind: KumoFeedKindSchema, sampling: z.enum(["all
 
 function baseQuery(kind: KumoFeedKind) {
   switch (kind) {
-    case "news": return "select 'news:'||id::text as id,greatest(published_at,first_indexed_at) as available_at,to_jsonb(a) as payload from public.news_articles a";
-    case "interpretation": return "select 'interpretation:'||r.event_id||':'||r.version::text as id,r.recorded_at as available_at,jsonb_build_object('signal',r.signal,'recorded_at',r.recorded_at) as payload from public.newsbeat_intelligence_revisions r";
+    case "news": return "select 'news:'||id::text as id,greatest(published_at,first_indexed_at) as available_at,beat_id as entity_id,null::jsonb as payload from public.news_articles a";
+    case "interpretation": return "select 'interpretation:'||r.event_id||':'||r.version::text as id,r.recorded_at as available_at,jsonb_build_object('signal',case when jsonb_typeof(r.signal)='string' then (r.signal#>>'{}')::jsonb else r.signal end,'recorded_at',r.recorded_at) as payload from public.newsbeat_intelligence_revisions r";
     case "discovery": return "select 'discovery:'||id as id,greatest(published_at,recorded_at) as available_at,to_jsonb(d) as payload from public.newsbeat_discovery_observations d";
     case "market_bar": return "select 'market_bar:'||instrument_id||':'||extract(epoch from started_at)::bigint::text as id,observed_at as available_at,to_jsonb(b) as payload from public.newsbeat_market_bars b where started_at+interval '5 minutes'<=observed_at";
-    default: return "select id,available_at,record as payload from public.newsbeat_kumo_feed_records where kind='" + kind + "'";
+    default: return "select id,available_at,case when jsonb_typeof(record)='string' then (record#>>'{}')::jsonb else record end as payload from public.newsbeat_kumo_feed_records where kind='" + kind + "'";
   }
 }
 /** Earliest arrivals cannot be displaced by a record that becomes available later. */
@@ -28,7 +28,7 @@ function sampleQuery(kind: KumoFeedKind, sampling: "all" | "hourly") {
   const input = ["market_book", "market_quote", "chain"].includes(kind)
     ? "select * from windowed where extract(minute from available_at at time zone 'UTC')>=50"
     : "select * from windowed";
-  const entity = "coalesce(payload->>'entity_id',payload->>'beat_id',payload->>'instrument_id',payload->'signal'->>'beat_id',id)";
+  const entity = kind === "news" ? "entity_id" : "coalesce(payload->>'entity_id',payload->>'beat_id',payload->>'instrument_id',payload->'signal'->>'beat_id',id)";
   const perEntity = kind === "news" || kind === "interpretation" || kind === "discovery" ? 2 : 1;
   const perHour = kind === "news" ? 16 : kind === "filing" || kind === "financial" ? 100 : 5;
   // Priority only breaks ties at the same availability time; later arrivals never replace earlier context.
@@ -79,7 +79,15 @@ export async function readKumoFeedPage(input: unknown, now = Date.now()): Promis
       "with records as (" + baseQuery(q.kind) + "), windowed as (select * from records where available_at >= $1 and available_at <= $2), chosen as (" + sampleQuery(q.kind, sampling) + ") select id,available_at,to_char(available_at at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') as cursor_at,payload from chosen where ($3::timestamptz is null or (available_at,id)<($3::timestamptz,$4::text)) order by available_at desc,id desc limit $5",
       [since, until, cursor?.at ?? null, cursor?.id ?? null, q.limit + 1]);
     const kept = rows.slice(0, q.limit);
-    page.records = kept.map(row => mapRecord(q.kind, row)).filter(row => Date.parse(row.available_at) <= Date.parse(until));
+    if (q.kind === "news" && kept.length) {
+      // Rank lightweight identities first. Only selected rows load headline payloads.
+      const articles = await db().unsafe<Array<{ id: string } & Record<string, unknown>>>(
+        "select id::text,beat_id,title,source,url,published_at,first_indexed_at from public.news_articles where id in (select jsonb_array_elements_text($1::jsonb)::bigint)",
+        [kept.map(row => row.id.slice(5)) as never]);
+      const byId = new Map(articles.map(article => [article.id, article]));
+      for (const row of kept) row.payload = byId.get(row.id.slice(5));
+    }
+    page.records = kept.filter(row => row.payload !== undefined).map(row => mapRecord(q.kind, row)).filter(row => Date.parse(row.available_at) <= Date.parse(until));
     page.status = page.records.length ? "ready" : "warming_up";
     if (rows.length > q.limit && kept.length) {
       const last = kept[kept.length - 1]!;
