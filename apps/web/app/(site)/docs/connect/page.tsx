@@ -71,6 +71,10 @@ export default function DocsConnect() {
       <div className="table-scroll"><table><thead><tr><th>I want to…</th><th>MCP tool</th><th>Example input</th></tr></thead><tbody>{RECOMMENDED.map(([task, name, input]) => <tr key={name}><td>{task}</td><td><code>{name}</code></td><td><code>{input}</code></td></tr>)}</tbody></table></div>
       <p className="docs-small">Need something more specific? Expand a group. All REST routes below start with <code>{API}</code>.</p>
       {GROUPS.map(group => <details className="docs-disclosure" key={group.title}><summary>{group.title}<span className="docs-disclosure-count">{group.names.length} tools</span></summary><div className="table-scroll"><table><thead><tr><th>Tool</th><th>Use it to</th><th>REST route</th></tr></thead><tbody>{TOOLS.filter(([name]) => group.names.includes(name)).map(([name, purpose, route]) => <tr key={name}><td><code>{name}</code></td><td>{purpose}</td><td><code>{route}</code></td></tr>)}</tbody></table></div></details>)}
+      <details className="docs-disclosure"><summary>Additional REST market data</summary><ul>
+        <li><code>GET /v2/markets</code> returns the crypto market board. Check <code>data.coverage</code>: a tracked-basket fallback has no market-cap ranks or seven-day series.</li>
+        <li><code>GET /v2/tvl?limit=12</code> returns chain DeFi total value locked and 24-hour changes. Keep the source and fetch time with each reading.</li>
+      </ul></details>
       <p className="docs-small">The full function schemas are available at <a href="/api/v2/tools"><code>/api/v2/tools</code></a>. Forecasts also have a REST read at <code>GET /api/v2/forecasts</code>.</p>
     </section>
 
