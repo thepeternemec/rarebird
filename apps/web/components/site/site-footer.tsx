@@ -1,6 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
-import { BrandWordmark } from "./brand-mark";
+import BrandMark from "./brand-mark";
 import { EARLY_ACCESS_END } from "./access-offer";
+import FooterSignalMark from "./footer-signal-mark";
 import "./site-footer.css";
 
 const links = [
@@ -40,13 +41,25 @@ const links = [
   },
 ] as const;
 
-export default function SiteFooter() {
-  return <footer className="site rb-site-footer">
+export default function SiteFooter({ landing = false }: { landing?: boolean }) {
+  return <footer className={`site rb-site-footer${landing ? " rb-site-footer-landing" : ""}`}>
     <div className="wrap">
+      {landing && (
+        <section className="rb-footer-banner" id="community" aria-labelledby="closing-title">
+          <div className="rb-footer-banner-copy">
+            <h2 id="closing-title">See what deserves<br /> <span>a closer look.</span></h2>
+            <a className="rb-footer-banner-cta" href="/app/screener">
+              Explore the stock screener <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
+          </div>
+          <FooterSignalMark />
+        </section>
+      )}
       <div className="rb-footer-grid">
         <div className="rb-footer-brand">
-          <a className="rb-footer-wordmark" href="/" aria-label="Rarebird home">
-            <BrandWordmark className="brand-wordmark" width={136} />
+          <a className="rb-footer-home" href="/" aria-label="Rarebird home">
+            <BrandMark size={38} />
+            <span>Rarebird</span>
           </a>
           <p>Stock setups. Agent alerts.</p>
         </div>

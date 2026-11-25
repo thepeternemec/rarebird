@@ -103,12 +103,6 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
 .rb-home-build p:last-child { font-size: 14px; line-height: 1.85; color: var(--text-secondary); max-width: 54ch; margin-top: 12px; }
 .rb-home-build nav { display: flex; flex-direction: column; justify-content: center; }
 .rb-home-build nav a { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12px; padding-block: 14px; }
-.rb-home .rb-home-close { padding-top: 80px; padding-bottom: 35px; text-align: center; }
-.rb-home-close > .rb-home-eyebrow { justify-content: center; }
-.rb-home-close h2 { font-size: clamp(42px,6vw,75px); margin-top: 22px; line-height: 1.06; }
-.rb-home-close .rb-home-button { margin-top: 26px; }
-.rb-home-signature { margin: 70px auto 0; opacity: .12; }
-.rb-home-signature svg { display: block; width: 100%; height: auto; }
 @media (prefers-reduced-motion: no-preference) { .rb-home-example-type > svg { animation: rb-home-alert-breathe 4s ease-in-out infinite; } }
 @keyframes rb-home-alert-breathe { 50% { opacity: .45; } }
 @media (max-width: 1080px) {
@@ -163,10 +157,6 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
   .rb-home-questions details p { font-size: 14px; padding-right: 5px; }
   .rb-home .rb-home-build { grid-template-columns: 1fr; gap: 20px; padding-block: 34px; }
   .rb-home-build h2 { font-size: 28px; }
-  .rb-home .rb-home-close { padding-top: 55px; padding-bottom: 27px; }
-  .rb-home-close h2 { font-size: clamp(39px,8vw,58px); }
-  .rb-home-close .rb-home-button { width: 100%; }
-  .rb-home-signature { margin-top: 47px; }
 }
 @media (max-width: 380px) { .rb-home .rb-home-eyebrow { font-size: 9px; } .rb-home h1 { font-size: 45px; } .rb-home-alert-example > header { gap: 7px; padding-inline: 14px; } .rb-home-alert-example > header > span:last-child { font-size: 8px; } .rb-home-example-body { padding: 21px; } .rb-home-start { padding: 23px; } }
 @media (prefers-reduced-motion: reduce) { .rb-home *, .rb-home *::before, .rb-home *::after { animation: none !important; transition: none !important; } }
