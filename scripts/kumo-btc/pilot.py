@@ -237,7 +237,7 @@ def train(examples, cohorts, directory):
     tables = {"hours": kumo.Table.from_source_table(connector["hours.parquet"], primary_key="hour_id")}
     edges = []
     if has_news:
-        tables["news"] = kumo.Table.from_source_table(connector["news.parquet"], primary_key="news_id").with_column("hour_id", stype=Stype.ID)
+        tables["news"] = kumo.Table.from_source_table(connector["news.parquet"], primary_key="news_id").with_column("hour_id", stype=Stype.ID).with_column("publisher", stype=Stype.categorical)
         edges = [kumo.Edge(src_table="news", fkey="hour_id", dst_table="hours")]
     graph = kumo.Graph(tables=tables, edges=edges)
     graph.validate()
