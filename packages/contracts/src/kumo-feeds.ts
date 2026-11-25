@@ -23,6 +23,6 @@ export const KumoFeedPageSchema = z.object({
   since: timestamp, until: timestamp, kind: KumoFeedKindSchema,
   status: z.enum(["ready", "warming_up", "unavailable"]),
   records: z.array(KumoFeedRecordSchema), next_cursor: z.string().nullable(),
-  coverage: z.object({ retained_days: z.literal(30), sampling: z.enum(["all", "hourly"]), source: z.string(), error: z.string().nullable() }),
+  coverage: z.object({ retained_days: z.literal(30), sampling: z.enum(["all", "hourly"]), last_success_at: timestamp.nullable().default(null), source: z.string(), error: z.string().nullable() }),
 });
 export type KumoFeedPage = z.infer<typeof KumoFeedPageSchema>;

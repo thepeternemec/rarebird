@@ -25,12 +25,15 @@ function baseQuery(kind: KumoFeedKind) {
 function sampleQuery(kind: KumoFeedKind, sampling: "all" | "hourly") {
   if (sampling === "all") return "select * from windowed";
   if (kind === "market_bar") return "select * from windowed where extract(minute from (payload->>'started_at')::timestamptz) in (45,50,55)";
+  const input = ["market_book", "market_quote", "chain"].includes(kind)
+    ? "select * from windowed where extract(minute from available_at at time zone 'UTC')>=50"
+    : "select * from windowed";
   const entity = "coalesce(payload->>'entity_id',payload->>'beat_id',payload->>'instrument_id',payload->'signal'->>'beat_id',id)";
   const perEntity = kind === "news" || kind === "interpretation" || kind === "discovery" ? 2 : 1;
   const perHour = kind === "news" ? 16 : kind === "filing" || kind === "financial" ? 100 : 5;
   // Priority only breaks ties at the same availability time; later arrivals never replace earlier context.
   const priority = "case when entity='b_06c91290de1c' or entity like 'macro:%' then 0 else 1 end";
-  return "select id,available_at,payload from (select *,row_number() over(partition by date_trunc('hour',available_at) order by available_at," + priority + ",id) as hour_n from (select *,row_number() over(partition by date_trunc('hour',available_at),entity order by available_at,id) as entity_n from (select *," + entity + " as entity from windowed) identities) ranked where entity_n<=" + (kind === "filing" ? 100 : kind === "financial" ? 10 : perEntity) + ") sampled where hour_n<=" + perHour;
+  return "select id,available_at,payload from (select *,row_number() over(partition by date_trunc('hour',available_at at time zone 'UTC') order by available_at," + priority + ",id) as hour_n from (select *,row_number() over(partition by date_trunc('hour',available_at at time zone 'UTC'),entity order by available_at,id) as entity_n from (select *," + entity + " as entity from (" + input + ") context_window) identities) ranked where entity_n<=" + (kind === "filing" ? 100 : kind === "financial" ? 10 : perEntity) + ") sampled where hour_n<=" + perHour;
 }
 function mapRecord(kind: KumoFeedKind, row: { id: string; available_at: unknown; payload: unknown }): KumoFeedRecord {
   const p = decode(row.payload);
@@ -68,7 +71,7 @@ export async function readKumoFeedPage(input: unknown, now = Date.now()): Promis
       || Date.parse(cursor.at) < Date.parse(since) || Date.parse(cursor.at) > Date.parse(until)))) throw new Error("invalid_feed_window");
   const page: KumoFeedPage = { schema_version: "kumo-feeds-v1", generated_at: iso(now), since, until, kind: q.kind,
     status: "unavailable", records: [], next_cursor: null, coverage: { retained_days: 30,
-      sampling,
+      sampling, last_success_at: null,
       source: ["news", "interpretation", "discovery", "market_bar"].includes(q.kind) ? "existing_observation_history" : "immutable_feed_journal", error: null } };
   if (!hasDatabaseEnv()) return page;
   try {
@@ -83,8 +86,9 @@ export async function readKumoFeedPage(input: unknown, now = Date.now()): Promis
       page.next_cursor = Buffer.from(JSON.stringify({ kind: q.kind, sampling, since, until, at: last.cursor_at, id: last.id })).toString("base64url");
     }
     if (page.coverage.source === "immutable_feed_journal") {
-      const health = await db().unsafe<Array<{ last_error: string | null }>>("select last_error from public.newsbeat_kumo_feed_health where kind=$1", [q.kind]);
+      const health = await db().unsafe<Array<{ last_error: string | null; last_success_at: Date | null }>>("select last_error,last_success_at from public.newsbeat_kumo_feed_health where kind=$1", [q.kind]);
       page.coverage.error = health[0]?.last_error ?? null;
+      page.coverage.last_success_at = health[0]?.last_success_at ? iso(health[0].last_success_at) : null;
     }
     return KumoFeedPageSchema.parse(page);
   } catch (error) {
