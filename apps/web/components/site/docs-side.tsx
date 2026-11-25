@@ -4,10 +4,10 @@ import BrandMark from "./brand-mark";
 
 import { useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Activity, ArrowUpRight, BookOpen, ChevronDown, Code2, FileText, GitBranch, CircleHelp, Mail, Play, Plug } from "lucide-react";
+import { Activity, ArrowUpRight, BookOpen, ChevronDown, Code2, FileText, GitBranch, CircleHelp, Mail, MessageSquare, Plug } from "lucide-react";
 import { DOC_PAGES } from "./docs-links";
 
-const ICONS = [BookOpen, Play, Plug, FileText, Code2, GitBranch, GitBranch];
+const ICONS = [BookOpen, Plug, MessageSquare, Code2, FileText, GitBranch];
 const LINKS = DOC_PAGES.map((page, index) => ({ ...page, icon: ICONS[index] }));
 const GROUPS = [
   {
@@ -15,9 +15,9 @@ const GROUPS = [
     links: LINKS.filter(page => page.group === "Start here"),
   },
   {
-    title: "Go deeper",
+    title: "Reference",
     links: [
-      ...LINKS.filter(page => page.group === "Go deeper"),
+      ...LINKS.filter(page => page.group === "Reference"),
       { href: "/faq", label: "Common questions", icon: CircleHelp },
     ],
   },

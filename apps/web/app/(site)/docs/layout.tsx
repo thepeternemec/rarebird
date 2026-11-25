@@ -6,6 +6,7 @@ import InteriorPage from "@/components/site/interior-page";
 import { DocsBreadcrumb, DocsPagination } from "@/components/site/docs-page-controls";
 import "@/components/site/docs-navigation.css";
 import "./docs.css";
+import "./docs-start.css";
 
 export const metadata = {
   title: "Documentation",

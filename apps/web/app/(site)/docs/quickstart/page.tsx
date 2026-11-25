@@ -1,100 +1,61 @@
-import { ArrowDown, ArrowRight, ArrowUpRight, CalendarClock, Check, CircleHelp, Link2, MessageSquare, Plug, Sparkles } from "lucide-react";
+import { ArrowUpRight, Check } from "lucide-react";
 import CopyButton from "@/components/site/copy-button";
 import AgentInstructions from "@/components/site/agent-instructions";
-import "./quickstart.css";
+import DocsMcpConnection from "@/components/site/docs-mcp-connection";
+import DocsAgentSetup from "@/components/site/docs-agent-setup";
+import { RAREBIRD_FIRST_QUESTION } from "@/components/site/connection-details";
 
-export const metadata = { title: "Use Rarebird with your assistant", description: "Connect Rarebird in three steps. Add the connection address, ask a news question, and get sources and dates in your assistant." };
-const MCP_URL = "https://www.rarebird.network/api/mcp";
-const FIRST_QUESTION = "Use Rarebird. What could explain Bitcoin’s latest move, and what should I check next?";
-const questions = [
-  { label: "Follow a company", text: "What are the main risks in Apple’s latest reporting?" },
-  { label: "Compare the coverage", text: "Compare recent news about Nvidia and AMD. Keep each company’s sources separate." },
-  { label: "Get a quick briefing", text: "Does Bitcoin’s latest news explain its market move? Separate evidence from possible explanations." },
-  { label: "Pick up where you left off", text: "What is new since our previous Nvidia check?" },
-];
-const help = [
-  { question: "I can’t find a place to add Rarebird", answer: <>Look in your assistant’s tools, connectors or integrations settings for a custom remote MCP connection. Availability varies by app and account. If your app does not support it, <a href="/docs/try">try a live lookup in your browser</a> or use the <a href="/docs/connect">developer integration guide</a>. Pasting the address into a chat does not enable the tools.</> },
-  { question: "My assistant isn’t using the connection", answer: <>Check that Rarebird is saved and enabled, including the tools you want to use. Then ask it to “use Rarebird” explicitly. You can <a href="/connect">check that the service is responding</a> here; this checks Rarebird, rather than the settings inside your assistant. If your app requires a sign-in flow that the public connection does not support, that connection method may not work yet.</> },
-  { question: "The company or its news is missing", answer: <>Try the company’s full name or ticker. It may be outside the supported catalog. If news is old or unavailable, ask for the last successful check time and retry later. If you hit the public request limit, pause and follow the retry time.</> },
-  { question: "The answer doesn’t include sources", answer: <>Ask whether the Rarebird lookup succeeded, then request the links, publishers and dates returned by the tool. Rarebird provides headlines and source links, so the answer should stay within what those headlines support.</> },
+export const metadata = {
+  title: "Connect your AI agent to Rarebird",
+  description: "Copy Rarebird’s MCP URL, follow the setup for Claude, ChatGPT, Cursor or Codex, and test your first lookup. No Rarebird account or API key needed.",
+};
+
+const HELP = [
+  { question: "Where do I paste the connection URL?", answer: <>In your assistant’s remote MCP server settings. Choose your assistant above for the exact steps. Pasting the URL into an ordinary chat message does not enable Rarebird.</> },
+  { question: "Do I need a Rarebird account or API key?", answer: <>Public MCP access needs neither. Choose <strong>None</strong> or <strong>No authentication</strong> when asked. Your assistant may have its own subscription or workspace requirements.</> },
+  { question: "My assistant answers without using Rarebird", answer: <>Enable Rarebird for the conversation and ask it to “use Rarebird” explicitly. Look for a tool call. If the connector is unavailable, check your assistant’s account and workspace permissions.</> },
+  { question: "The connection works but a lookup is empty", answer: <>Try the asset’s full name or ticker, and ask for its coverage and last successful check time. An empty result can mean there are no recent matching headlines. <a href="/status">Check service status</a> if the tool reports an error.</> },
 ];
 
 export default function DocsQuickstart() {
-  return (
-    <div className="quickstart-guide">
-      <header className="docs-head quickstart-head">
-        <div className="quickstart-eyebrow"><span>QUICKSTART</span><span>Free public access</span></div>
-        <h1>Connect once.<br /><span>Ask naturally.</span></h1>
-        <p className="docs-lead">Add Rarebird to your AI assistant. Ask about Bitcoin, a stock on your watchlist, or a move you want to understand, and get recent reporting with sources. One MCP connection includes news, research, prices, filings, forecasts and market checks.</p>
-        <div className="quickstart-assurances"><span><Check size={13} /> No Rarebird account</span><span><Check size={13} /> No API key</span></div>
-      </header>
+  return <div className="docs-onboarding docs-agent-guide">
+    <header className="docs-head">
+      <span className="sec-eyebrow">Agent setup</span>
+      <h1>Connect your AI agent.</h1>
+      <p className="docs-lead">Add Rarebird as an MCP connection to use its news, research and market tools from your assistant. Follow these three steps.</p>
+      <div className="docs-free-note"><Check size={14} aria-hidden="true" /> Free public access <span>·</span> No Rarebird account or API key</div>
+    </header>
 
-      <div className="quickstart-try">
-        <div><strong>Want to see the answer first?</strong><span>Enter a stock or crypto ticker for a source-linked brief in your browser.</span></div>
-        <a href="/ask">Try a live brief <ArrowUpRight size={14} aria-hidden="true" /></a>
-      </div>
+    <section className="docs-section" aria-labelledby="add-rarebird">
+      <h2 id="add-rarebird"><span className="docs-step-number">1</span> Copy the connection URL</h2>
+      <DocsMcpConnection />
+    </section>
 
-      <nav className="quickstart-route" aria-label="Setup steps">
-        <a href="#choose-assistant"><span>01</span> Choose your assistant <ArrowRight size={14} /></a>
-        <a href="#add-rarebird"><span>02</span> Add Rarebird <ArrowRight size={14} /></a>
-        <a href="#first-question"><span>03</span> Ask a question <ArrowDown size={14} /></a>
-      </nav>
+    <section className="docs-section" aria-labelledby="choose-assistant">
+      <h2 id="choose-assistant"><span className="docs-step-number">2</span> Choose your assistant</h2>
+      <p>Follow the instructions for the app you use.</p>
+      <DocsAgentSetup />
+    </section>
 
-      <div className="quickstart-steps">
-        <section className="quickstart-step" aria-labelledby="choose-assistant">
-          <div className="quickstart-step-heading"><span className="quickstart-number">01</span><div><span className="quickstart-kicker">START IN YOUR ASSISTANT</span><h2 id="choose-assistant">Choose your assistant.</h2></div><Plug className="quickstart-step-icon" size={22} /></div>
-          <div className="quickstart-step-body">
-            <p>Open your assistant’s settings and look for <strong>tools, connectors or integrations</strong>. You need an option to add a custom remote MCP server.</p>
-            <div className="quickstart-note"><CircleHelp size={16} /><p><strong>What is MCP?</strong> A standard way for an AI assistant to use a service like Rarebird. Support depends on your app and account.</p></div>
-            <a className="quickstart-text-link" href="/docs/try">No connector option? Try a company lookup in your browser <ArrowUpRight size={14} /></a>
-          </div>
-        </section>
+    <section className="docs-section" aria-labelledby="first-question">
+      <h2 id="first-question"><span className="docs-step-number">3</span> Test it in a new conversation</h2>
+      <p>Enable Rarebird in your chat, then send this question:</p>
+      <div className="docs-first-question"><p>“{RAREBIRD_FIRST_QUESTION}”</p><CopyButton text={RAREBIRD_FIRST_QUESTION} label="Copy test question" /></div>
+      <div className="docs-connection-success"><strong>You’re connected when you see:</strong><ul><li>A Rarebird tool call in your assistant</li><li>Headlines with source links and publication dates, or a clear report that no recent items are available</li></ul></div>
+      <p className="docs-small">A saved connector alone does not confirm a lookup worked. <a href="/connect">Check the Rarebird service</a> if your client cannot reach it; that check cannot verify your assistant’s settings.</p>
+    </section>
 
-        <section className="quickstart-step quickstart-connection" aria-labelledby="add-rarebird">
-          <div className="quickstart-step-heading"><span className="quickstart-number">02</span><div><span className="quickstart-kicker">ONE CONNECTION FOR ALL RAREBIRD TOOLS</span><h2 id="add-rarebird">Add the Rarebird connection.</h2></div><Link2 className="quickstart-step-icon" size={22} /></div>
-          <div className="quickstart-step-body">
-            <p>Add a new connection named <strong>Rarebird</strong>. Choose a remote MCP server and paste this URL into the <strong>server URL</strong> field. Save the connection and enable Rarebird’s tools.</p>
-            <div className="quickstart-endpoint">
-              <div className="quickstart-endpoint-top"><span>MCP SERVER URL</span><CopyButton text={MCP_URL} label="Copy MCP connection URL" copiedLabel="MCP URL copied" /></div>
-              <code>{MCP_URL}</code>
-              <dl><div><dt>Connection name</dt><dd>Rarebird</dd></div><div><dt>Transport</dt><dd>Streamable HTTP</dd></div><div><dt>Authentication</dt><dd>No API key needed</dd></div></dl>
-            </div>
-            <a className="quickstart-text-link" href="/docs/connect#mcp">Need a configuration file? Open developer setup <ArrowUpRight size={14} /></a>
-          </div>
-        </section>
+    <section className="docs-section" aria-labelledby="agent-instruction">
+      <h2 id="agent-instruction">Make Rarebird part of your research</h2>
+      <p>Try “What changed with NVIDIA?” or “What are the risks in Apple’s latest reporting?” For research questions, your assistant can choose the right Rarebird tool.</p>
+      <details className="docs-disclosure"><summary>Optional: tell your assistant when to use Rarebird</summary><p>Add this to your assistant’s instructions, or send it in the chat.</p><AgentInstructions /></details>
+      <p className="docs-small">For recurring briefings, set up a schedule in your assistant or workflow. Rarebird lookups do not create notifications or place trades.</p>
+    </section>
 
-        <section className="quickstart-step" aria-labelledby="first-question">
-          <div className="quickstart-step-heading"><span className="quickstart-number">03</span><div><span className="quickstart-kicker">BACK TO THE CONVERSATION</span><h2 id="first-question">Ask what’s happening.</h2></div><MessageSquare className="quickstart-step-icon" size={22} /></div>
-          <div className="quickstart-step-body">
-            <p>Try this in your chat to make your first lookup explicit.</p>
-            <div className="quickstart-prompt"><div><span>YOUR FIRST QUESTION</span><CopyButton text={FIRST_QUESTION} label="Copy question" /></div><p>“{FIRST_QUESTION}”</p></div>
-            <div className="quickstart-answer"><span>WHAT TO LOOK FOR</span><div><span><Check size={14} /> A Rarebird tool call</span><span><Check size={14} /> Source links</span><span><Check size={14} /> Dates &amp; freshness</span></div></div>
-            <p className="quickstart-small">If the assistant answers from memory, ask it to use the connected Rarebird tools.</p>
-          </div>
-        </section>
-      </div>
-
-      <section className="quickstart-autopilot" aria-labelledby="agent-instruction">
-        <div className="quickstart-section-label"><Sparkles size={16} /><span>MAKE IT FEEL NATURAL</span></div>
-        <h2 id="agent-instruction">You shouldn’t have to say “check the news.”</h2>
-        <p>Add a preference to your assistant’s instructions or the current chat so it knows when a news lookup would help.</p>
-        <details className="quickstart-instruction"><summary>Copy a ready-to-use instruction <span aria-hidden="true">+</span></summary><div><AgentInstructions /><p>“Help me research Microsoft” may need recent news. “Explain what a stock is” usually does not. Your assistant decides when to use tools based on its settings and the task.</p></div></details>
-      </section>
-
-      <section className="quickstart-explore" aria-labelledby="questions-to-try">
-        <div className="quickstart-section-label"><MessageSquare size={16} /><span>YOUR NEXT CONVERSATION</span></div>
-        <h2 id="questions-to-try">Start with a better question.</h2>
-        <div className="quickstart-question-grid">{questions.map(question => <div className="quickstart-question" key={question.label}><span>{question.label}</span><p>“{question.text}”</p><CopyButton text={question.text} label="Copy prompt" /></div>)}</div>
-        <p className="quickstart-small">For “since last time,” your assistant needs to retain the earlier check. If it cannot, it should start with the latest news and explain the gap.</p>
-        <div className="quickstart-schedule"><CalendarClock size={20} /><div><h3>Make it a regular briefing.</h3><p>If your assistant supports scheduled tasks, ask it to set up a recurring check. The host app or another workflow handles the schedule and delivery; Rarebird does not send notifications itself.</p></div></div>
-      </section>
-
-      <section className="quickstart-help" aria-labelledby="setup-help">
-        <div className="quickstart-section-label"><CircleHelp size={16} /><span>A LITTLE HELP, IF YOU NEED IT</span></div>
-        <h2 id="setup-help">Something not clicking?</h2>
-        <div className="quickstart-help-list">{help.map(item => <details key={item.question}><summary>{item.question}<span aria-hidden="true">+</span></summary><p>{item.answer}</p></details>)}</div>
-        <div className="quickstart-contact"><span>We’re here to help you get connected.</span><a href="mailto:contact@rarebird.network">Contact Rarebird <ArrowUpRight size={14} /></a></div>
-      </section>
-    </div>
-  );
+    <section className="docs-section" aria-labelledby="setup-help">
+      <h2 id="setup-help">Help with setup</h2>
+      {HELP.map(item => <details className="docs-disclosure" key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}
+      <a className="docs-text-action" href="mailto:contact@rarebird.network">Contact Rarebird <ArrowUpRight size={15} aria-hidden="true" /></a>
+    </section>
+  </div>;
 }

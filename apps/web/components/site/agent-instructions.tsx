@@ -7,7 +7,7 @@ export default function AgentInstructions() {
     <div className="code">
       <div className="code-bar">
         Instruction for your assistant
-        <CopyButton text={INSTRUCTION} label="instruction" />
+        <CopyButton text={INSTRUCTION} label="Copy instruction" />
       </div>
       <p style={{ padding: "16px 20px", margin: 0 }}>{INSTRUCTION}</p>
     </div>

@@ -1,0 +1,89 @@
+/* Setup stays readable before the technical reference. */
+.documentation-page .docs-onboarding .docs-head { padding-bottom: 28px; margin-bottom: 30px; }
+.documentation-page .docs-onboarding .docs-head h1 { max-width: 22ch; font-size: clamp(36px, 3.5vw, 48px); }
+.documentation-page .docs-onboarding .docs-lead { max-width: 57ch; font-size: 18px; line-height: 1.75; }
+.documentation-page .docs-onboarding .docs-section > h2 { margin: 0 0 20px; padding: 0; border: 0; font-size: 26px; line-height: 1.35; display: flex; align-items: baseline; gap: 12px; }
+.documentation-page .docs-onboarding .docs-section + .docs-section { margin-top: 40px; padding-top: 32px; }
+.documentation-page .docs-onboarding .docs-section > p { margin-bottom: 20px; }
+.documentation-page .docs-onboarding .docs-small, .documentation-page .docs-onboarding p.docs-small { font-size: 14px; line-height: 1.75; color: var(--text-secondary); }
+.documentation-page .docs-onboarding .docs-inline-note { margin: 18px 0 0; }
+.docs-onboarding .docs-small a { text-decoration: underline; text-underline-offset: 3px; }
+.docs-onboarding .docs-path-primary { border-color: var(--border-strong); }
+.docs-onboarding .docs-step-number { display: inline-grid; place-items: center; width: 30px; height: 30px; flex: none; border: 1px solid var(--border-strong); border-radius: 8px; font: 14px/1 var(--font-mono); color: var(--text-secondary); align-self: center; }
+.documentation-page .docs-mcp-card { min-width: 0; padding: 22px 24px 18px; border: 1px solid var(--border-strong); border-radius: 14px; background: var(--bg-base); margin: 22px 0 12px; }
+.docs-mcp-card-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.docs-mcp-card-heading > span { font: 12px/1.5 var(--font-mono); color: var(--text-secondary); }
+.documentation-page .docs-mcp-card .docs-mcp-url { display: block; padding: 16px 0 24px; background: none; font-size: 16px; overflow-wrap: anywhere; user-select: all; }
+.docs-mcp-fields { display: grid; grid-template-columns: .8fr 1.3fr 1fr; gap: 18px; border-top: 1px solid var(--border-default); margin: 0; padding: 18px 0; }
+.docs-mcp-fields > div { min-width: 0; }
+.docs-mcp-fields dt { font-size: 12px; color: var(--text-tertiary); margin-bottom: 5px; }
+.docs-mcp-fields dd { font-size: 14px; color: var(--text-primary); margin: 0; line-height: 1.5; }
+.documentation-page .docs-mcp-card .docs-mcp-caption { border-top: 1px solid var(--border-default); padding-top: 16px; margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.7; }
+.documentation-page .docs-mcp-card .copy-btn { margin: 0; font-size: 12px; }
+.docs-client-setup { min-width: 0; border: 1px solid var(--border-default); border-radius: 14px; background: var(--bg-base); overflow: hidden; }
+.docs-client-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 14px 0; border-bottom: 1px solid var(--border-default); }
+.docs-client-tabs button { min-height: 48px; padding: 10px 14px 14px; font: inherit; font-size: 14px; cursor: pointer; background: transparent; color: var(--text-secondary); border: 0; border-bottom: 2px solid transparent; transition: color .2s, background .2s; }
+.docs-client-tabs button[aria-selected="true"] { border-bottom-color: var(--text-primary); color: var(--text-primary); }
+.docs-client-tabs button:hover { background: var(--interior-wash); color: var(--text-primary); }
+.docs-client-panel { min-width: 0; padding: 24px; }
+.documentation-page .docs-client-panel h3 { font-size: 21px; margin: 0 0 18px; }
+.documentation-page .docs-client-panel .docs-setup-list { list-style: decimal; margin: 0 0 20px; padding-left: 24px; }
+.documentation-page .docs-client-panel .docs-setup-list li { padding-left: 6px; margin-bottom: 16px; font-size: 16px; line-height: 1.8; }
+.documentation-page .docs-client-panel .docs-setup-list li::before { display: none; }
+.documentation-page .docs-client-panel .code { margin: 20px 0; box-shadow: none; }
+.documentation-page .docs-client-panel .code pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.documentation-page .docs-client-panel .code pre code { white-space: pre-wrap; overflow-wrap: anywhere; }
+.docs-source-link { display: inline-flex; gap: 7px; align-items: center; min-height: 44px; font-size: 14px; color: var(--text-primary); }
+.docs-source-link svg { flex: none; }
+.docs-first-question { padding: 24px; border: 1px solid var(--border-strong); border-radius: 14px; background: var(--bg-base); display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.documentation-page .docs-first-question > p { font-size: 20px; line-height: 1.65; margin: 0; color: var(--text-primary); }
+.docs-first-question .copy-btn { margin: 0; }
+.docs-connection-success { margin: 22px 0; padding: 20px 22px; border-left: 2px solid var(--text-secondary); background: var(--interior-wash); }
+.docs-connection-success > strong { font-size: 15px; font-weight: 550; }
+.documentation-page .docs-connection-success ul { margin: 12px 0 0; }
+.documentation-page .docs-connection-success li { font-size: 15px; line-height: 1.8; }
+.docs-disclosure { border-block: 1px solid var(--border-default); margin: 14px 0; min-width: 0; }
+.docs-disclosure + .docs-disclosure { border-top: 0; margin-top: -14px; }
+.docs-disclosure > summary { position: relative; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 16px 32px 16px 0; list-style: none; cursor: pointer; font-size: 16px; line-height: 1.7; color: var(--text-primary); }
+.docs-disclosure > summary::-webkit-details-marker { display: none; }
+.docs-disclosure > summary::after { content: "+"; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 22px; font-weight: 300; }
+.docs-disclosure[open] > summary::after { content: "−"; }
+.documentation-page .docs-disclosure > p, .documentation-page .docs-disclosure > div > p { font-size: 15px; line-height: 1.85; }
+.docs-disclosure > :last-child:not(summary) { margin-bottom: 22px; }
+.docs-disclosure-count { flex: none; margin-left: auto; font: 12px var(--font-mono); color: var(--text-tertiary); }
+.documentation-page .docs-advanced-guide h3 { margin-top: 28px; font-size: 21px; }
+.docs-advanced-guide > div > h3:first-child { margin-top: 8px; }
+.docs-reference .docs-reference-start { margin-bottom: 36px; }
+.documentation-page .docs-reference .docs-reference-start p { font-size: 15px; }
+.documentation-page .docs-reference .table-scroll { margin-block: 20px; }
+.documentation-page .docs-reference table th { text-transform: none; letter-spacing: 0; font-size: 13px; }
+.docs-rest-base { display: grid; gap: 6px; padding: 18px 24px; border-bottom: 1px solid var(--border-default); }
+.docs-rest-base > span { font: 12px/1.6 var(--font-mono); color: var(--text-secondary); }
+.documentation-page .docs-rest-base > code { padding: 0; background: none; font-size: 14px; overflow-wrap: anywhere; }
+.documentation-page .docs-reference .docs-example-panel pre { min-height: 0; }
+.documentation-page .docs-agent-guide .docs-head { margin-bottom: 24px; }
+@media (max-width: 600px) {
+  .documentation-page .docs-onboarding .docs-head h1 { font-size: 36px; }
+  .documentation-page .docs-onboarding .docs-section > h2 { font-size: 23px; gap: 10px; }
+  .documentation-page .docs-onboarding .docs-section + .docs-section { margin-top: 30px; padding-top: 26px; }
+  .documentation-page .docs-mcp-card { padding: 16px; }
+  .docs-mcp-card-heading { align-items: flex-start; gap: 8px; }
+  .docs-mcp-card-heading > span { padding-top: 11px; font-size: 11px; }
+  .documentation-page .docs-mcp-card .copy-btn { min-height: 44px; padding-inline: 9px; font-size: 11px; }
+  .documentation-page .docs-mcp-card .docs-mcp-url { font-size: 14px; padding-block: 16px 20px; }
+  .docs-mcp-fields { gap: 12px; grid-template-columns: 1fr 1.4fr; }
+  .docs-mcp-fields dd { font-size: 13px; }
+  .docs-client-tabs { padding: 6px 8px 0; gap: 0; }
+  .docs-client-tabs button { font-size: 13px; padding-inline: 11px; min-height: 48px; }
+  .docs-client-panel { padding: 20px 16px; }
+  .documentation-page .docs-client-panel .docs-setup-list li { font-size: 15px; }
+  .docs-first-question { padding: 20px; }
+  .documentation-page .docs-first-question > p { font-size: 18px; }
+  .docs-disclosure > summary { font-size: 15px; }
+  .docs-disclosure-count { font-size: 10px; }
+  .docs-connection-success { padding: 18px; }
+  .docs-rest-base { padding: 18px 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .docs-client-tabs button { transition: none; }
+}
