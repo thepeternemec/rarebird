@@ -40,7 +40,7 @@ export async function readBtcPilotDataset(now = Date.now()): Promise<BtcPilotDat
 }
 
 export const btcPilotRoutes = new Hono();
-btcPilotRoutes.get("/experiments/btc/dataset", async c => {
+btcPilotRoutes.get("/btc-pilot", async c => {
   c.header("Cache-Control", "no-store");
   try {
     const dataset = await readBtcPilotDataset();

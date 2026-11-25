@@ -47,7 +47,7 @@ export default function DocsConnect() {
       <p>Want to check the data first? <a href="/docs/try">Try a live lookup</a> with no account, key or client setup.</p>
 
       <h2 id="btc-experiment">BTC model experiment</h2>
-      <p><code>GET /api/v2/experiments/btc/dataset</code> exports a bounded BTC dataset for the Kumo shadow pilot. It includes closed market candles, news availability times and recorded forecast outcomes. The hourly experiment reports Brier score, log loss and calibration in its GitHub workflow results.</p>
+      <p><code>GET /api/v2/btc-pilot</code> exports a bounded BTC dataset for the Kumo shadow pilot. It includes closed market candles, news availability times and recorded forecast outcomes. The hourly experiment reports Brier score, log loss and calibration in its GitHub workflow results.</p>
       <p><a href="https://github.com/thepeternemec/rarebird/blob/main/docs/BTC-KUMO.md">Read the experiment method and measurement limits</a>.</p>
       <h2 id="mcp">One remote MCP connection</h2>
       <p>All Rarebird MCP tools are available through this server. Add it once to access news, research, prices, filings, forecasts and market checks.</p>

@@ -52,7 +52,7 @@ def write_json(path, value):
 
 
 def download(path):
-    url = "https://www.rarebird.network/api/v2/experiments/btc/dataset"
+    url = "https://www.rarebird.network/api/v2/btc-pilot"
     for attempt in range(13):
         try:
             request = urllib.request.Request(url, headers={"User-Agent": "Rarebird-BTC-pilot/1"})

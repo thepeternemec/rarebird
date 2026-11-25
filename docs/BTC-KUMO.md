@@ -5,7 +5,7 @@ The experiment estimates whether Kraken BTC/USD's next hourly close is at least
 compared with the recorded spot-range-hourly-v1 probability and its historical
 base rate on identical labeled hours.
 
-GET /api/v2/experiments/btc/dataset is a read-only export of at most 30 days of
+GET /api/v2/btc-pilot is a read-only export of at most 30 days of
 closed BTC five-minute candles, 721 recorded BTC move-risk forecasts, and 6,000
 recent BTC news metadata records. Public market measurements and publisher
 metadata form its inputs. The existing worker owns collection.
