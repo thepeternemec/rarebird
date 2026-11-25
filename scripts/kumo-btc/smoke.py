@@ -17,8 +17,9 @@ cohorts = (examples[:120], examples[128:152], examples[160:184], examples[192:])
 pending = {**examples[-1], "id": "synthetic-btc-pending", "ref": 240 * HOUR, "label": None,
            "forecast": {"outcome": "pending", "issued_at": iso(240 * HOUR + 60)}}
 examples.append(pending)
-with tempfile.TemporaryDirectory(prefix="btc-kumo-smoke-") as directory:
-    scores, model = train(examples, cohorts, Path(directory))
+with tempfile.TemporaryDirectory(prefix="btc-kumo-smoke-", dir=Path.cwd()) as directory:
+    relative_directory = Path(directory).relative_to(Path.cwd())
+    scores, model = train(examples, cohorts, relative_directory)
     assert set(scores) == {e["id"] for e in cohorts[3]} | {pending["id"]}
     assert all(math.isfinite(p) and 0 <= p <= 1 for p in scores.values())
     print("Synthetic Kumo API integration passed with news relationships and a pending entity.")
