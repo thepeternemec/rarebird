@@ -20,3 +20,5 @@ export * from "./market-briefing.js";
 export * from "./catalysts.js";
 export * from "./discovery.js";
 export * from "./agent.js";
+
+export * from "./btc-pilot.js";
