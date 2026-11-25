@@ -1,159 +1,98 @@
 import { redirect } from "next/navigation";
 import { legacyMarketDestination } from "@/lib/legacy-market-link";
-import { ArrowDownRight, ArrowRight, ArrowUpRight, Bot, Radio, Terminal } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Bell, Check, ChevronDown, Radio, Terminal } from "lucide-react";
 import SiteNav from "@/components/site/site-nav";
 import SiteFooter from "@/components/site/site-footer";
 import BrandMark, { BrandWordmark } from "@/components/site/brand-mark";
-import MarketPerspective from "@/components/site/market-perspective";
-import SignalGraph from "@/components/site/signal-graph";
+import StockScreeningActivity from "@/components/site/signal-graph";
 import StockPilotReadiness from "@/components/site/stock-pilot-readiness";
+import CopyButton from "@/components/site/copy-button";
+import { RAREBIRD_MCP_URL } from "@/components/site/connection-details";
 import { EARLY_ACCESS_END } from "@/components/site/access-offer";
 import "./rarebird-home.css";
 
-const TITLE = "Rarebird — Stock opportunity screener for AI agents";
-const DESCRIPTION = "Screen stocks for developing setups. Give your AI agent relative-strength checks, source context, setup updates and measured outcomes.";
+const TITLE = "Rarebird — Your agent’s eyes on the stock market";
+const DESCRIPTION = "Rarebird screens stocks for developing strength and unusual trading activity. Give your AI agent the setup, source context and updates when conditions change.";
 const REPO = "https://github.com/thepeternemec/rarebird";
+const FIRST_QUESTION = "Use Rarebird to show current stock setups. Explain why each qualifies and whether its data is current.";
 
 export const metadata = {
-  title: TITLE,
-  description: DESCRIPTION,
-  alternates: { canonical: "/" },
+  title: TITLE, description: DESCRIPTION, alternates: { canonical: "/" },
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/", siteName: "Rarebird", type: "website" },
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
-const RESEARCH_PATHS = [
-  {
-    name: "Detect the setup",
-    title: "A move worth investigating.",
-    description: "Look for strength relative to SPY, unusual traded volume and a reasonable spread. A rising price alone is not enough. Already extended moves do not create a fresh setup.",
-    href: "/app/screener",
-    action: "Explore stock setups",
-  },
-  {
-    name: "Keep your agent informed",
-    title: "The update matters as much as the alert.",
-    description: "Give your agent a stable setup ID, the measurements and recent source-linked reporting. Follow changes through MCP or receive signed events at a configured webhook when a setup pauses, resumes, fades or expires.",
-    href: "/docs/connect#stock-screener",
-    action: "Connect your agent",
-  },
-  {
-    name: "Measure the follow-through",
-    title: "Did the setup hold up?",
-    description: "Keep the original stock and benchmark reference, then observe what happens after 15 and 60 minutes. Failed setups and missing observations stay in the record.",
-    href: "/docs/connect#stock-screener",
-    action: "Understand the outcomes",
-  },
+const BENEFITS = [
+  { number: "01", title: "Know which stock deserves a closer look.",
+    text: "Each setup names the stock and shows why it qualified: strength relative to the wider market, unusual volume and an acceptable spread. The reference measurements and check time stay attached.",
+    detail: "A clear reason to investigate" },
+  { number: "02", title: "Give your agent context it can check.",
+    text: "Recent reporting comes with original links and publication times when available. Your agent can inspect the evidence and ask a better follow-up question. A nearby headline does not prove why a price moved.",
+    detail: "Source context, with its limits" },
+  { number: "03", title: "Follow the setup beyond the first alert.",
+    text: "Your agent can see when a setup is active, held by missing data, invalidated or expired. The same ID connects its history. Forward observations after 15 and 60 minutes show what followed, including failed setups.",
+    detail: "Updates and an outcome record" },
+];
+const QUESTIONS = [
+  { question: "Which stocks does Rarebird watch?", answer: "The first screener follows NVIDIA (NVDA), Apple (AAPL), Microsoft (MSFT) and Alphabet (GOOGL) US shares, using SPY as the broad-market benchmark. More stocks and screening strategies are planned. The screener shows its current feed coverage and readiness." },
+  { question: "When does the screening run?", answer: "The pilot checks closed one-minute bars during the regular US trading session, once the stock feed is connected. It needs 66 aligned trading minutes to establish each day’s baseline. A closed market, incomplete baseline or stale feed is shown separately from a scan with no qualifying setup." },
+  { question: "Does connecting MCP turn on notifications?", answer: "MCP gives your agent tools to read setups and follow changes. Automatic delivery requires a separately configured webhook endpoint. The agent guide explains both options, and the screener shows whether delivery is configured." },
+  { question: "What should my agent do with an alert?", answer: "Use it as a prompt to investigate the stock, the measurements and the source context. Check that the setup is still current. The initial screening rules are experimental; a qualifying setup is not a return prediction. Rarebird does not place trades." },
 ];
 
-export default async function Home({ searchParams }: {
-  searchParams: Promise<{ beat?: string; market?: string }>;
-}) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ beat?: string; market?: string }> }) {
   const { beat, market } = await searchParams;
-  if (typeof beat === "string" || typeof market === "string") {
-    redirect(legacyMarketDestination(beat, market));
-  }
+  if (typeof beat === "string" || typeof market === "string") redirect(legacyMarketDestination(beat, market));
   return <>
     <SiteNav active="/" />
     <main className="rb-home">
       <section className="rb-home-hero rb-home-width" id="top" aria-labelledby="home-title">
         <div className="rb-home-hero-copy">
-          <p className="rb-home-eyebrow"><span className="rb-home-dot" /> Stock opportunity screener for AI agents</p>
-          <h1 id="home-title">Your agent’s<br /><span>eyes on the<br className="rb-home-desktop-break" /> stock market.</span></h1>
-          <p className="rb-home-lede">Rarebird screens stocks for developing strength and unusual volume. Give your agent the setup, the source context, and an update when conditions change.</p>
+          <p className="rb-home-eyebrow"><span className="rb-home-dot" /> Stock screening, built for AI agents</p>
+          <h1 id="home-title">Your agent’s<br /><span>eyes on the<br />stock market.</span></h1>
+          <p className="rb-home-lede">Rarebird watches for stocks showing unusual strength and trading activity. It gives your AI agent a reason to investigate, then updates the setup as the market changes.</p>
           <div className="rb-home-actions">
-            <a className="rb-home-button" href="/app/screener">Explore stock screener <ArrowUpRight size={19} aria-hidden="true" /></a>
-            <a className="rb-home-text-link" href="/docs/connect#stock-screener">Connect your agent <ArrowRight size={17} aria-hidden="true" /></a>
+            <a className="rb-home-button" href="/app/screener">Explore stock screener <ArrowUpRight size={17} aria-hidden="true" /></a>
+            <a className="rb-home-text-link" href="#connect-agent">Connect your agent <ArrowRight size={16} aria-hidden="true" /></a>
           </div>
-          <p className="rb-home-access">First pilot: NVDA · AAPL · MSFT · GOOGL. Benchmark: SPY.</p>
           <StockPilotReadiness />
-          <a className="rb-home-text-link rb-home-graph-link" href="#signal-graph">How the stock screen works <ArrowRight size={15} aria-hidden="true" /></a>
         </div>
-        <div className="rb-home-sculpture" aria-hidden="true">
-          <div className="rb-home-sculpture-grid" />
-          <div className="rb-home-orbit rb-home-orbit-outer" />
-          <div className="rb-home-orbit rb-home-orbit-inner" />
-          <svg className="rb-home-paths" viewBox="0 0 560 560" fill="none">
-            <path className="rb-home-path-shadow" d="M25 390 155 390 225 320 320 225 390 155 520 155" />
-            <path className="rb-home-path-shadow" d="M25 170 155 170 225 240 320 335 390 405 520 405" />
-            <path className="rb-home-path-up" d="M25 390 155 390 225 320 320 225 390 155 520 155" pathLength="1" />
-            <path className="rb-home-path-down" d="M25 170 155 170 225 240 320 335 390 405 520 405" pathLength="1" />
-            <path d="m508 143 12 12-12 12M508 393l12 12-12 12" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="25" cy="390" r="4" fill="currentColor" /><circle cx="25" cy="170" r="4" fill="currentColor" />
-          </svg>
-          <div className="rb-home-emblem"><BrandMark size={230} /></div>
-          <span className="rb-home-direction rb-home-direction-up"><ArrowUpRight size={20} /> Spot the setup</span>
-          <span className="rb-home-direction rb-home-direction-down"><ArrowDownRight size={20} /> Track the change</span>
-        </div>
-      </section>
-
-      <section className="rb-signal-section rb-home-width" id="signal-graph" aria-labelledby="signal-graph-title">
-        <header className="rb-signal-heading">
-          <div>
-            <p className="rb-home-eyebrow">How Rarebird works</p>
-            <h2 id="signal-graph-title">From developing move<br /><span>to agent alert.</span></h2>
+        <aside className="rb-home-alert-example" aria-label="Illustrative agent alert">
+          <header><span><BrandMark size={22} /> rarebird <i>/</i> stock watch</span><span>Example alert · Not live</span></header>
+          <div className="rb-home-example-body"><span className="rb-home-example-type"><Bell size={13} /> SETUP DETECTED</span><h2>NVDA is showing<br />unusual strength.</h2><p>A stock your agent should investigate.</p>
+            <dl><div><dt><Check size={14} /> Strength versus the market</dt><dd>Stands out</dd></div><div><dt><Check size={14} /> Traded volume</dt><dd>Above baseline</dd></div><div><dt><Check size={14} /> Observed spread</dt><dd>Within limit</dd></div></dl>
+            <div className="rb-home-example-context"><span>CONTEXT ATTACHED</span><p>Reference measurements, recent source links when available, and when the setup expires.</p></div>
           </div>
-          <p>See what passes the stock screen, what reaches your agent, and what gets measured afterward. Select a node to explore each step. Reporting adds context; it does not prove the cause of a move.</p>
-        </header>
-        <SignalGraph />
+          <footer><span>Rarebird <ArrowRight size={14} /> Your agent</span><span>Same setup ID. Every update.</span></footer>
+        </aside>
       </section>
 
-      <section className="rb-home-section rb-home-width rb-home-platform" id="agent-workflow" aria-labelledby="platform-title">
-        <header className="rb-home-section-heading">
-          <p className="rb-home-eyebrow">The app and the agent</p>
-          <h2 id="platform-title">One stock screen.<br /><span>You and your agent.</span></h2>
-        </header>
-        <div className="rb-home-product-grid">
-          <article className="rb-home-product-card">
-            <Terminal size={24} strokeWidth={1.4} aria-hidden="true" />
-            <h3>See the current setups</h3>
-            <p>See which stocks pass the screen, why they qualify, and when the measurements expire. Follow each setup through its history and outcomes.</p>
-            <a className="rb-home-text-link" href="/app/screener">Open stock screener <ArrowUpRight size={17} aria-hidden="true" /></a>
-          </article>
-          <article className="rb-home-product-card">
-            <Bot size={24} strokeWidth={1.4} aria-hidden="true" />
-            <h3>Put your agent on watch</h3>
-            <p>Use one MCP connection to read setups and follow their changes. For automatic delivery to your own agent, configure a signed webhook. The same setup ID follows the full lifecycle.</p>
-            <a className="rb-home-text-link" href="/docs/connect#stock-screener">Set up stock alerts <ArrowUpRight size={17} aria-hidden="true" /></a>
-          </article>
+      <div className="rb-home-scope rb-home-width" aria-label="First stock pilot coverage"><span>STARTING WITH</span><div><strong>NVDA</strong><span>NVIDIA</span></div><div><strong>AAPL</strong><span>Apple</span></div><div><strong>MSFT</strong><span>Microsoft</span></div><div><strong>GOOGL</strong><span>Alphabet</span></div><p>US shares<br /><span>Compared with SPY</span></p></div>
+
+      <section className="rb-home-section rb-home-width rb-home-how" id="signal-graph" aria-labelledby="how-title">
+        <header className="rb-home-section-heading rb-home-heading-split"><div><p className="rb-home-eyebrow">How Rarebird works</p><h2 id="how-title">A market watch,<br /><span>minute by minute.</span></h2></div><p>Rarebird checks stock moves against the wider market, looks at trading activity and spread, and creates a setup when the rules pass. Walk through an example below.</p></header>
+        <StockScreeningActivity />
+      </section>
+
+      <section className="rb-home-section rb-home-benefits" id="agent-workflow" aria-labelledby="benefits-title"><div className="rb-home-width">
+        <header className="rb-home-section-heading rb-home-heading-split"><div><p className="rb-home-eyebrow">What your agent receives</p><h2 id="benefits-title">The stock. The reason.<br /><span>What changes next.</span></h2></div><p>A useful market alert needs more than a ticker and a price move. Rarebird keeps the measurements, context and lifecycle together.</p></header>
+        <ol className="rb-home-benefit-list">{BENEFITS.map(item => <li key={item.number}><span>{item.number}</span><h3>{item.title}</h3><div><p>{item.text}</p><span>{item.detail}</span></div></li>)}</ol>
+      </div></section>
+
+      <section className="rb-home-section rb-home-width" id="connect-agent" aria-labelledby="start-title">
+        <header className="rb-home-section-heading"><p className="rb-home-eyebrow">Start here</p><h2 id="start-title">Use the screen yourself.<br /><span>Bring your agent along.</span></h2><p>See the current pilot in your browser, or give a compatible assistant access through one Rarebird connection.</p></header>
+        <div className="rb-home-start-grid">
+          <article className="rb-home-start"><Terminal size={23} strokeWidth={1.5} /><h3>Open the screener</h3><p>See current coverage, inspect a setup and follow its history.</p><ol><li><span>1</span>Check the four tracked stocks and feed status.</li><li><span>2</span>Open a setup to see why it qualified.</li><li><span>3</span>Follow updates and the 15 / 60-minute outcomes.</li></ol><a className="rb-home-text-link" href="/app/screener">Open stock screener <ArrowUpRight size={16} /></a></article>
+          <article className="rb-home-start rb-home-start-agent"><Radio size={23} strokeWidth={1.5} /><h3>Connect your AI agent</h3><p>Add Rarebird as a remote MCP server in a compatible assistant.</p><div className="rb-home-connection"><span>MCP CONNECTION URL</span><code>{RAREBIRD_MCP_URL}</code><CopyButton text={RAREBIRD_MCP_URL} label="Copy connection URL" className="rb-home-copy" /></div><div className="rb-home-first-question"><span>THEN ASK YOUR AGENT</span><p>“{FIRST_QUESTION}”</p></div><a className="rb-home-text-link" href="/docs/connect#stock-screener">Agent setup &amp; notifications <ArrowRight size={16} /></a><p className="rb-home-delivery-note">For automatic updates, configure a webhook destination. Connecting MCP gives your agent read access; notification setup is separate.</p></article>
         </div>
-        <p className="rb-home-offer">App and agent free through {EARLY_ACCESS_END}. <a href="/pricing">See pricing <ArrowRight size={15} aria-hidden="true" /></a></p>
+        <p className="rb-home-offer">App and agent free through {EARLY_ACCESS_END}. <a href="/pricing">See pricing <ArrowUpRight size={13} /></a></p>
       </section>
 
-      <section className="rb-home-section rb-home-capabilities" id="connect-agent" aria-labelledby="tools-title">
-        <div className="rb-home-width">
-          <header className="rb-home-section-heading">
-            <p className="rb-home-eyebrow">Screen. Notify. Measure.</p>
-            <h2 id="tools-title">Less scanning.<br /><span>More to investigate.</span></h2>
-          </header>
-          <div className="rb-home-capability-list">
-            {RESEARCH_PATHS.map(item => <article className="rb-home-capability" key={item.name}>
-              <div><p className="rb-home-eyebrow">{item.name}</p><h3>{item.title}</h3></div>
-              <div><p>{item.description}</p><a className="rb-home-text-link" href={item.href}>{item.action} <ArrowUpRight size={17} aria-hidden="true" /></a></div>
-            </article>)}
-          </div>
-          <p className="rb-home-roadmap"><strong>Starting with four US stocks.</strong> Regular-session screening on closed one-minute bars. Feed coverage, readiness and notification status are shown in the screener. More stocks and screening strategies are planned.</p>
-        </div>
-      </section>
+      <section className="rb-home-section rb-home-width rb-home-questions" aria-labelledby="questions-title"><header className="rb-home-section-heading"><p className="rb-home-eyebrow">A few useful details</p><h2 id="questions-title">Know what you’re<br /><span>connecting to.</span></h2></header><div>{QUESTIONS.map(item => <details key={item.question}><summary>{item.question}<ChevronDown size={17} aria-hidden="true" /></summary><p>{item.answer}</p></details>)}</div></section>
 
-      <section className="rb-home-section rb-home-width" id="market-perspective" aria-labelledby="perspective-title">
-        <header className="rb-home-section-heading">
-          <p className="rb-home-eyebrow">Know when to investigate</p>
-          <h2 id="perspective-title">A setup changes.<br /><span>Your agent should know.</span></h2>
-        </header>
-        <MarketPerspective />
-      </section>
+      <section className="rb-home-build rb-home-width" id="build-history" aria-labelledby="build-title"><div><p className="rb-home-eyebrow">Built in the open</p><h2 id="build-title">Inspect the rules.</h2><p>The screening policy and measurement methods are public. You can see exactly what qualifies and how outcomes are recorded.</p></div><nav aria-label="Open-source project"><a href={REPO + "/blob/main/docs/STOCK-SCREENER.md"}>Screening rules <ArrowUpRight size={15} /></a><a href={REPO}>Source code <ArrowUpRight size={15} /></a><a href={REPO + "/commits/main/"}>Build history <ArrowUpRight size={15} /></a></nav></section>
 
-      <section className="rb-home-build rb-home-width" id="build-history" aria-labelledby="build-title">
-        <div><p className="rb-home-eyebrow">Built in the open</p><h2 id="build-title">Check how it works.</h2><p>Inspect the stock-screening rules, see how outcomes are measured, and follow the work as it ships.</p></div>
-        <nav aria-label="Open-source project"><a href={REPO}>Explore the code <ArrowUpRight size={17} aria-hidden="true" /></a><a href={REPO + "/commits/main/"}>See the build history <ArrowUpRight size={17} aria-hidden="true" /></a><a href={REPO + "/blob/main/docs/STOCK-SCREENER.md"}>Read the screening rules <ArrowUpRight size={17} aria-hidden="true" /></a></nav>
-      </section>
-
-      <section className="rb-home-close rb-home-width" id="community" aria-labelledby="closing-title">
-        <h2 id="closing-title">Give your agent<br /><span>a market watch.</span></h2>
-        <a className="rb-home-button" href="/app/screener">Explore the stock screener <Radio size={18} aria-hidden="true" /></a>
-        <div className="rb-home-signature" role="img" aria-label="Rarebird"><BrandWordmark width={1040} /></div>
-      </section>
+      <section className="rb-home-close rb-home-width" id="community" aria-labelledby="closing-title"><p className="rb-home-eyebrow">Give your agent a market watch</p><h2 id="closing-title">See what deserves<br /><span>a closer look.</span></h2><a className="rb-home-button" href="/app/screener">Explore the stock screener <ArrowUpRight size={17} /></a><div className="rb-home-signature" role="img" aria-label="Rarebird"><BrandWordmark width={1040} /></div></section>
     </main>
     <SiteFooter />
   </>;
