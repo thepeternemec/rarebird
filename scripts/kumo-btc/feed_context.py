@@ -37,6 +37,7 @@ def download(path, until, require_export=True):
     since = iso(stamp(until) - 30 * 86400)
 
     def one(kind):
+        started = time.monotonic()
         records, cursor, seen = [], None, set()
         cap = 24000 if kind == "market_bar" else 12000 if kind == "news" else 4000
         coverage, status = {}, "warming_up"
@@ -70,7 +71,7 @@ def download(path, until, require_export=True):
             if cursor in seen:
                 raise ValueError("Feed pagination did not advance")
             seen.add(cursor)
-        return records, {"status": status, "records": len(records), "truncated": bool(cursor), **coverage}
+        return records, {"status": status, "records": len(records), "truncated": bool(cursor), "download_seconds": round(time.monotonic() - started, 3), **coverage}
 
     if require_export:
         probe = "https://www.rarebird.network/api/v2/kumo-feeds?kind=news&limit=1&sampling=hourly"
