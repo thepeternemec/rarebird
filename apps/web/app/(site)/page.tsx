@@ -70,7 +70,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ b
       <div className="rb-home-scope rb-home-width" aria-label="First stock pilot coverage"><span>STARTING WITH</span><div><strong>NVDA</strong><span>NVIDIA</span></div><div><strong>AAPL</strong><span>Apple</span></div><div><strong>MSFT</strong><span>Microsoft</span></div><div><strong>GOOGL</strong><span>Alphabet</span></div><p>US shares<br /><span>Compared with SPY</span></p></div>
 
       <section className="rb-home-section rb-home-width rb-home-how" id="signal-graph" aria-labelledby="how-title">
-        <header className="rb-home-section-heading rb-home-heading-split"><div><p className="rb-home-eyebrow">How Rarebird works</p><h2 id="how-title">A market watch,<br /><span>minute by minute.</span></h2></div><p>Rarebird checks stock moves against the wider market, looks at trading activity and spread, and creates a setup when the rules pass. Walk through an example below.</p></header>
+        <header className="rb-home-section-heading rb-home-heading-split"><div><p className="rb-home-eyebrow">How Rarebird works</p><h2 id="how-title">From developing move<br /><span>to agent alert.</span></h2></div><p>Watch the squares build into a signal as strength, volume and spread line up. When a setup qualifies, Rarebird can send it to your agent.</p></header>
         <StockScreeningActivity />
       </section>
 

@@ -89,8 +89,7 @@ test("the activity illustration links directly to the stock screener and cannot 
   const html = renderToStaticMarkup(createElement(StockScreeningActivity));
   assert.match(html, /<a[^>]*href="\/app\/screener"[^>]*>Open stock screener/);
   assert.match(html, /Illustrative example/);
-  assert.match(html, /Illustration only/);
-  assert.match(html, /not live data or a performance record/);
+  assert.match(html, /class="rb-signal-matrix" aria-hidden="true"/);
   assert.match(html, /data-playing="false"/, "the server-rendered fallback is static");
   assert.match(html, /aria-label="How stock screening works"/);
 });
