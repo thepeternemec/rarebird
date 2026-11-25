@@ -30,12 +30,14 @@ for e in examples:
             "related_ids": [], "known": cutoff - 60, "event": cutoff - 120, "expires": cutoff + 3600,
         }]
     e["extra_features"] = {name: 1 for name in feed_context.EXTRA_FEATURES}
+cohorts[1][-1]["context"]["funding"][0]["values"]["validation_only_measurement"] = 123.0
 with tempfile.TemporaryDirectory(prefix="btc-kumo-smoke-", dir=Path.cwd()) as directory:
     relative_directory = Path(directory).relative_to(Path.cwd())
     original, _ = train(examples, cohorts, relative_directory / "metadata")
     scores, model = train(examples, cohorts, relative_directory / "shared", expanded=True)
     assert set(original) == set(scores)
     assert set(model["context_tables"]) == set(feed_context.KINDS)
+    assert "validation_only_measurement" not in model["context_tables"]["funding"]["numbers"]
     assert model["text_encoder"] == "glove.6B-50d"
     assert "context_news.text" in model["text_columns"]
     assert "context_interpretation.text" in model["text_columns"]

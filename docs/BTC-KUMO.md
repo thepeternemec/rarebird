@@ -124,8 +124,10 @@ Exports are bounded to 12,000 recent catalog news records, 24,000 market bars an
 carries headline text to preserve BTC context when the catalog export is capped.
 Each report states export truncation, selected records, source states and
 training/held-out hours with each feed. Snapshot histories begin at deployment;
-they do not fill older examples retrospectively. A feed table needs observations
-in the fitting population before its fields can participate in a trained model.
+they do not fill older examples retrospectively. A feed table and its count/presence features need observations in the training
+partition before they can participate in a model. Columns and text availability
+are frozen from training observations; validation-only or held-out fields cannot
+introduce a new input branch.
 
 ## Paired model measurements
 
