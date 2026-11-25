@@ -17,22 +17,22 @@ import GridField from "@/components/site/grid-field";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.rarebird.network"),
-  title: "Rarebird — Know what’s worth watching",
+  title: "Rarebird — Stock opportunity screener for AI agents",
   description:
-    "Follow current market checks and source-linked developments in stocks and crypto.",
+    "Screen developing US-stock setups with relative-strength checks, source context and lifecycle updates for your AI agent.",
   openGraph: {
     type: "website",
     url: "https://www.rarebird.network",
     siteName: "Rarebird",
-    title: "Rarebird — Know what’s worth watching",
+    title: "Rarebird — Stock opportunity screener for AI agents",
     description:
-      "Explore issuer filings, measured market moves and the evidence behind review candidates.",
+      "Developing stock setups, agent alerts and measured follow-through. Starting with NVDA, AAPL, MSFT and GOOGL.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rarebird — Know what’s worth watching",
+    title: "Rarebird — Stock opportunity screener for AI agents",
     description:
-      "Read current market evidence and see what your agent should investigate next.",
+      "Give your agent the stock setup, the evidence and an update when conditions change.",
   },
 };
 

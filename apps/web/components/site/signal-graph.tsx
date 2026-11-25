@@ -4,8 +4,9 @@ import { useEffect, useId, useRef, useState } from "react";
 import {
   Activity, ArrowUpRight, Clock3, GitFork, Layers3, RefreshCw, ScanLine,
 } from "lucide-react";
-import type { OpportunityBrief } from "@rarebird/api";
-import { summarizePilot, type PilotSnapshot } from "./pilot-snapshot";
+import type { StockScreenerFeed } from "@rarebird/contracts";
+import type { PilotSnapshot } from "./pilot-snapshot";
+import { STOCK_PILOT_ENDPOINT, summarizeStockPilot } from "./stock-pilot-snapshot";
 import SignalGraphScene, { type SignalNode, type SignalStage } from "./signal-graph-scene";
 import "./signal-graph.css";
 
@@ -13,42 +14,42 @@ const STAGES = {
   anomaly: {
     name: "Anomaly", icon: Activity,
     title: "Spot a move that stands out.",
-    description: "Rarebird looks for unusual moves after adjusting for a market benchmark. It checks closed 15-, 30- and 60-minute windows against earlier observations.",
-    detail: "An unusual move starts a watch. Future scans check whether it persists or fades.",
-    href: "/app/asset-inspector", link: "Inspect a market anomaly",
+    description: "Rarebird checks five-minute stock strength against SPY, adjusted for the stock’s recent sensitivity to the market. The fit uses earlier closed minutes from the same session.",
+    detail: "The first screen follows NVDA, AAPL, MSFT and GOOGL US shares during the regular session.",
+    href: "/app/screener", link: "Inspect the stock screen",
   },
   evidence: {
     name: "Evidence", icon: Layers3,
     title: "Trace the event to its source.",
-    description: "Compare the move with time-stamped reporting and issuer filings. Evidence can support a possible explanation, contradict it, or leave the move unexplained.",
-    detail: "Source links and timestamps let you check what was known at the time.",
-    href: "/app", link: "Explore source evidence",
+    description: "Recent reporting already known at detection stays attached to the setup, with source links and publication times. It can suggest a question to investigate; it does not establish the cause of a move.",
+    detail: "Reporting is optional context. The measured stock screen can qualify without a news explanation.",
+    href: "/app?market=equity", link: "Explore stock reporting",
   },
   timing: {
     name: "Timing", icon: ScanLine,
-    title: "Check the market reaction.",
-    description: "The pilot checks relative moves, participation and trading costs alongside a fresh hypothesis about what changed.",
-    detail: "Stale inputs, weak confirmation or thin liquidity can hold a review.",
-    href: "/docs/intelligence#pilot-and-policy", link: "Read the review checks",
+    title: "Check strength and participation.",
+    description: "The stock must show relative strength and unusual traded volume with a reasonable spread. Already extended moves, old quotes and missing measurements cannot qualify as a fresh setup.",
+    detail: "IEX covers one exchange; SIP requires entitlement. The screener always shows which feed is in use.",
+    href: "/docs/connect#stock-screener", link: "Read the stock-screening guide",
   },
   decision: {
     name: "Decision", icon: GitFork,
-    title: "Review now or keep watching.",
-    description: "Rarebird flags a review when the evidence and timing checks pass. It keeps an independently detected anomaly on watch when there’s no qualifying review.",
-    detail: "A review records why it matters now, what could invalidate it, and what to check next.",
-    href: "/app#opportunities", link: "See reviews and filings",
+    title: "Send the setup. Follow the change.",
+    description: "A qualifying setup gets one stable ID. Your agent can read it through MCP or receive signed lifecycle events at a configured webhook. Continuation does not create duplicate alerts.",
+    detail: "A setup can pause, resume, invalidate or expire. A read does not configure a notification destination.",
+    href: "/docs/connect#stock-screener", link: "Connect your agent",
   },
   outcomes: {
     name: "Outcomes", icon: Clock3,
     title: "Measure what happened next.",
-    description: "Rarebird records the starting reference for tracked anomalies and reviews, then checks measured outcomes at 15, 60 and 240 minutes.",
-    detail: "The outcome record compares observed moves with a benchmark and shows when data was missing.",
-    href: "/docs/intelligence#optional-numbers", link: "See how outcomes are tracked",
+    description: "Each detected setup keeps its starting stock and SPY reference. Rarebird records forward observations at 15 and 60 minutes, including setups that later fail.",
+    detail: "Missing observations stay missing. These are measured outcomes, not filled trades or demonstrated profits.",
+    href: "/app/screener", link: "See setup history and outcomes",
   },
 } satisfies Record<SignalStage, {
   name: string; icon: typeof Activity; title: string; description: string; detail: string; href: string; link: string;
 }>;
-const ENDPOINT = `${process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api"}/v2/opportunities?limit=1`;
+const ENDPOINT = STOCK_PILOT_ENDPOINT;
 const dateTime = new Intl.DateTimeFormat(undefined, {
   month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short",
 });
@@ -70,10 +71,10 @@ export default function SignalGraph() {
 
   const stage = selected === "review" || selected === "watch" ? "decision" : selected;
   const info = STAGES[stage];
-  const title = selected === "review" ? "The evidence is ready for review."
-    : selected === "watch" ? "Track an unconfirmed move." : info.title;
-  const description = selected === "review" ? "The evidence and timing checks passed. Inspect the source, the observed reaction and what would invalidate the signal."
-    : selected === "watch" ? "A relative move stood out. Rarebird tracks whether it persists while it waits for evidence that qualifies for review." : info.description;
+  const title = selected === "review" ? "A stock setup passed the screen."
+    : selected === "watch" ? "Keep screening for a qualifying setup." : info.title;
+  const description = selected === "review" ? "Strength, volume and spread qualified together. Your agent gets the setup with its reference, linked context and expiry when delivery is configured."
+    : selected === "watch" ? "A current scan can return no setup. Data holds, incomplete baselines and a closed session are shown separately; none is a quiet-market result." : info.description;
   const snapshot = pilot.snapshot;
 
   async function readPilot() {
@@ -85,7 +86,7 @@ export default function SignalGraph() {
     try {
       const response = await fetch(ENDPOINT, { signal: controller.signal, cache: "no-store" });
       if (!response.ok) throw new Error("Pilot unavailable");
-      const next = summarizePilot(await response.json() as OpportunityBrief);
+      const next = summarizeStockPilot(await response.json() as StockScreenerFeed);
       if (request.current === controller) {
         setPilot({ status: "ready", snapshot: next });
         setSelected(current => current === selected ? (next.branch === "none" ? "decision" : next.branch) : current);
@@ -104,7 +105,7 @@ export default function SignalGraph() {
       <article className="rb-signal-inspector" id={`${uid}-details`} aria-live="polite">
         <div className="rb-signal-inspector-icon"><info.icon size={21} strokeWidth={1.45} aria-hidden="true" /></div>
         <div>
-          <p className="rb-signal-meta">{selected === "review" ? "Review now" : selected === "watch" ? "Keep watching" : info.name}</p>
+          <p className="rb-signal-meta">{selected === "review" ? "Alert your agent" : selected === "watch" ? "Keep watching" : info.name}</p>
           <h3>{title}</h3>
           <p className="rb-signal-description">{description}</p>
         </div>
@@ -120,17 +121,17 @@ export default function SignalGraph() {
           {snapshot.notice && <p className="rb-signal-live-notice">{snapshot.notice}</p>}
           <p className="rb-signal-live-time"><time dateTime={snapshot.asOf}>{dateTime.format(new Date(snapshot.asOf))}</time> · {snapshot.coverage}</p>
         </> : <>
-          <strong>Market pilot</strong>
-          <p>Open the current reviews and coverage, or preview a snapshot here.</p>
+          <strong>Four-stock screener pilot</strong>
+          <p>Open NVDA, AAPL, MSFT and GOOGL setups and feed status, or check a snapshot here.</p>
         </>}
         {pilot.status === "loading" && <p className="rb-signal-live-feedback">Checking the latest market evidence…</p>}
         {pilot.status === "failed" && <p className="rb-signal-live-feedback">{snapshot
-          ? "The refresh failed. The previous snapshot is still shown with its check time. Try again or open the live pilot."
-          : "The snapshot could not be loaded. Open the live pilot or try the preview again."}</p>}
+          ? "The refresh failed. The previous snapshot is still shown with its check time. Try again or open the stock screener."
+          : "The snapshot could not be loaded. Open the stock screener or try the preview again."}</p>}
       </div>
       <div className="rb-signal-live-actions">
-        <a className="rb-signal-open-pilot" href="/app#opportunities">
-          Check live pilot <ArrowUpRight size={15} aria-hidden="true" />
+        <a className="rb-signal-open-pilot" href="/app/screener">
+          Check stock screener <ArrowUpRight size={15} aria-hidden="true" />
         </a>
         <button className="rb-signal-preview" type="button" onClick={() => void readPilot()} disabled={pilot.status === "loading"} aria-busy={pilot.status === "loading"} aria-controls={`${uid}-pilot-status`}>
           <RefreshCw size={14} aria-hidden="true" />

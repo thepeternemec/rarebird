@@ -80,13 +80,43 @@ test("the full pilot view distinguishes available prices from review-ready cover
 });
 
 // The main action must navigate without waiting for a snapshot fetch or JavaScript.
+const stockSnapshotModule = compile("../components/site/stock-pilot-snapshot.ts");
 const SignalGraph = compile("../components/site/signal-graph.tsx", {
   "./signal-graph-scene": { default: () => null },
   "./pilot-snapshot": snapshotModule,
+  "./stock-pilot-snapshot": stockSnapshotModule,
 }).default;
-test("Check live pilot is a direct link; the optional preview is a separate control", () => {
+test("the stock screener is a direct link; the optional stock preview is a separate control", () => {
   const html = renderToStaticMarkup(createElement(SignalGraph));
-  assert.match(html, /<a[^>]*href="\/app#opportunities"[^>]*>Check live pilot/);
+  assert.match(html, /<a[^>]*href="\/app\/screener"[^>]*>Check stock screener/);
   assert.match(html, /<button[^>]*aria-controls="[^"]+-pilot-status"[^>]*>[\s\S]*?Preview snapshot<\/button>/);
-  assert.ok(!/<button[^>]*>Check live pilot/.test(html));
+  assert.ok(!/<button[^>]*>Check stock screener/.test(html));
+});
+
+
+const stockFeed = (extra = {}) => ({
+  generated_at: new Date(now).toISOString(), status: "monitoring", message: "Screening",
+  universe: ["NVDA", "AAPL", "MSFT", "GOOGL"].map(symbol => ({ symbol })),
+  coverage: ["NVDA", "AAPL", "MSFT", "GOOGL"].map(symbol => ({ symbol, state: "quiet" })),
+  active: [], source: { last_scan_at: new Date(now).toISOString() }, delivery: { configured: false }, ...extra,
+});
+test("stock landing distinguishes an unconnected feed from a complete quiet scan", () => {
+  const { summarizeStockPilot } = stockSnapshotModule;
+  const missing = summarizeStockPilot(stockFeed({ status: "not_configured", coverage: [], source: { last_scan_at: null } }), now);
+  assert.equal(missing.title, "Stock feed connection pending"); assert.equal(missing.branch, "none");
+  const quiet = summarizeStockPilot(stockFeed(), now);
+  assert.equal(quiet.title, "No qualifying stock setup"); assert.equal(quiet.branch, "watch");
+  assert.match(quiet.notice, /webhook is not configured/);
+  assert.equal(summarizeStockPilot(stockFeed({ coverage: [{ state: "data_hold" }] }), now).title, "Partial stock coverage");
+});
+test("stock landing never promotes stale scans or expired setups into an agent alert", () => {
+  const { summarizeStockPilot } = stockSnapshotModule;
+  const active = { symbol: "NVDA", state: "active", closed_at: null, valid_until: new Date(now + 60000).toISOString(), expires_at: new Date(now + 900000).toISOString() };
+  assert.equal(summarizeStockPilot(stockFeed({ active: [active] }), now).branch, "review");
+  const old = stockFeed({ active: [active], source: { last_scan_at: new Date(now - 91000).toISOString() } });
+  assert.equal(summarizeStockPilot(old, now).branch, "none");
+  assert.equal(summarizeStockPilot(stockFeed({ active: [{ ...active, valid_until: new Date(now - 1).toISOString() }] }), now).branch, "watch");
+  assert.equal(summarizeStockPilot(stockFeed({ status: "market_closed" }), now).title, "US regular market closed");
+  assert.equal(summarizeStockPilot(stockFeed({ status: "warming_up" }), now).title, "Building today’s stock baseline");
+  for (const payload of [null, {}, stockFeed({ generated_at: "invalid" })]) assert.throws(() => summarizeStockPilot(payload, now), /Stock pilot snapshot is invalid/);
 });

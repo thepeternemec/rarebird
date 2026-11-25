@@ -9,7 +9,7 @@ const links = [
     items: [
       { href: "/app", label: "Open app" },
       { href: "/for-agents", label: "For agents" },
-      { href: "/tokens", label: "Token contracts" },
+      { href: "/app/screener", label: "Stock screener" },
       { href: "/pricing", label: "Pricing" },
     ],
   },
@@ -48,7 +48,7 @@ export default function SiteFooter() {
           <a className="rb-footer-wordmark" href="/" aria-label="Rarebird home">
             <BrandWordmark className="brand-wordmark" width={136} />
           </a>
-          <p>Know what’s worth watching.</p>
+          <p>Stock setups. Agent alerts.</p>
         </div>
         <div className="rb-footer-links">
           {links.map(group => <nav key={group.title} aria-label={"Footer " + group.title}>

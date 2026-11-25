@@ -6,12 +6,12 @@ export type SignalNode = "anomaly" | "evidence" | "timing" | "review" | "watch" 
 export type SignalStage = Exclude<SignalNode, "review" | "watch"> | "decision";
 
 const nodes = [
-  { id: "anomaly", label: "Market anomaly", caption: "Relative price move", icon: Activity, x: 12, y: 23, mx: 23, my: 9 },
-  { id: "evidence", label: "Source evidence", caption: "News & filings", icon: Files, x: 12, y: 67, mx: 77, my: 9 },
-  { id: "timing", label: "Timing check", caption: "Reaction & liquidity", icon: null, x: 40, y: 43, mx: 50, my: 35 },
-  { id: "review", label: "Review now", caption: "Checks passed", icon: Check, x: 66, y: 23, mx: 23, my: 60 },
-  { id: "watch", label: "Keep watching", caption: "Anomaly on watch", icon: Eye, x: 66, y: 67, mx: 77, my: 60 },
-  { id: "outcomes", label: "Outcomes", caption: "15 / 60 / 240 min", icon: ChartNoAxesColumnIncreasing, x: 89, y: 43, mx: 50, my: 86 },
+  { id: "anomaly", label: "Developing move", caption: "Stock versus SPY", icon: Activity, x: 12, y: 23, mx: 23, my: 9 },
+  { id: "evidence", label: "Source context", caption: "Optional reporting", icon: Files, x: 12, y: 67, mx: 77, my: 9 },
+  { id: "timing", label: "Setup check", caption: "Strength, volume, spread", icon: null, x: 40, y: 43, mx: 50, my: 35 },
+  { id: "review", label: "Alert your agent", caption: "Delivery when configured", icon: Check, x: 66, y: 23, mx: 23, my: 60 },
+  { id: "watch", label: "Keep watching", caption: "No qualifying setup", icon: Eye, x: 66, y: 67, mx: 77, my: 60 },
+  { id: "outcomes", label: "Outcomes", caption: "15 / 60 min", icon: ChartNoAxesColumnIncreasing, x: 89, y: 43, mx: 50, my: 86 },
 ] as const;
 
 // Wires use the same node centers as the buttons. The portrait routes leave
@@ -44,7 +44,7 @@ export default function SignalGraphScene({ selected, detailsId, onSelect }: {
   detailsId: string;
   onSelect: (node: SignalNode) => void;
 }) {
-  return <div className="rb-signal-board" role="group" aria-label="Signal path from market evidence to measured outcomes">
+  return <div className="rb-signal-board" role="group" aria-label="Stock setup path from market measurements to agent alerts and outcomes">
     <div className="rb-map-field">
       <Traces selected={selected} />
       <Traces selected={selected} portrait />

@@ -1,4 +1,4 @@
-/* Rarebird's homepage is an editorial introduction. Live markets live in /app. */
+/* Stock-screening introduction. Source status and setups live in /app/screener. */
 body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: none; }
 .rb-home { position: relative; background: var(--bg-base); color: var(--text-primary); overflow: clip; }
 .rb-home, .rb-home * { box-sizing: border-box; }
@@ -161,3 +161,7 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
 @media (prefers-reduced-motion: reduce) {
   .rb-home *, .rb-home *::before, .rb-home *::after { animation: none !important; transition: none !important; }
 }
+
+.rb-home .rb-home-readiness { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 9px; margin-top: 12px; font-size: 11px; line-height: 1.6; color: var(--text-secondary); }
+.rb-home-readiness > span { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.rb-home-readiness > a { text-decoration: underline; text-underline-offset: 3px; min-height: 24px; display: inline-flex; align-items: center; margin-left: 3px; }
