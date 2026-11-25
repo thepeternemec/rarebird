@@ -13,6 +13,7 @@ Rarebird runs its website, REST API and MCP endpoint in one Next.js deployment. 
 | `apps/worker` | Provider requests, headline matching, normalization and ingestion |
 | `packages/contracts` | Shared Zod schemas, the asset catalog and tool definitions |
 | `packages/db` | Database access, account keys, rate limits and metering |
+| `scripts/kumo-btc` | Experimental BTC Kumo training, historical evaluation and prospective prediction journal |
 | `db/schema.sql` | Idempotent schema for news, analysis, market observations, alerts and evaluation |
 
 ## Read and update paths
@@ -52,6 +53,16 @@ The six-asset pilot keeps source-grounded interpretations and revisions in Postg
 The market worker collects Kraken xStock and crypto observations. Timing logic considers information delta, relative market movement, participation, liquidity and freshness. Qualifying review alerts are recorded with stable identities. Prospective observations support later evaluation.
 
 A model interpretation and an observed price move do not establish causality. Missing or unconfirmed evidence can hold a review alert. Read the [quantitative methodology](QUANTITATIVE.md) for the exact research policy.
+
+## Kumo Engine experiment
+
+The BTC pilot integrates NVIDIA Kumo Engine 1.0.0 through a Python job in GitHub Actions. The read-only `/api/v2/btc-pilot` export supplies closed market candles, news availability metadata and recorded forecast outcomes from PostgreSQL.
+
+The job freezes inputs at each forecast's issue time and connects market-hour entities to news metadata in Kumo's graph on disk. It trains and evaluates with chronological partitions, then retains an hourly prediction journal and scorecard in workflow artifacts. The model runtime uses CPU execution outside the Next.js deployment.
+
+BTC is the first validation target for this integration. The product direction extends across asset classes and data types, including market observations, reporting, filings, events and outcomes. Each extension will need its own data mapping, prediction target and measurements.
+
+[Experiment method](BTC-KUMO.md) · [Hourly workflow](../.github/workflows/btc-kumo.yml)
 
 ## Runtime configuration
 
