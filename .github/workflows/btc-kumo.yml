@@ -60,6 +60,8 @@ jobs:
           python -m pip install -r scripts/kumo-btc/requirements.txt
       - name: Exercise the Kumo graph, fit and prediction APIs on synthetic rows
         run: python scripts/kumo-btc/smoke.py
+      - name: Validate the candidate on the live public BTC export
+        run: python scripts/kumo-btc/pilot.py --download --dataset candidate/dataset.json --output candidate --retrospective-only
 
   measure:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

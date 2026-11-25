@@ -214,6 +214,7 @@ def train(examples, cohorts, directory):
 
     torch.manual_seed(42)
     torch.set_num_threads(2)
+    directory = directory.resolve()
     source = directory / "source"
     source.mkdir(parents=True, exist_ok=True)
     kumo.configure(scratch_dir=str(directory / "scratch"))
@@ -234,7 +235,10 @@ def train(examples, cohorts, directory):
     fitting = [e for cohort in cohorts[:3] for e in cohort]
     has_news = save_sources(fitting)
     connector = kumo.FileConnector(root_dir=str(source))
-    tables = {"hours": kumo.Table.from_source_table(connector["hours.parquet"], primary_key="hour_id")}
+    hours = kumo.Table.from_source_table(connector["hours.parquet"], primary_key="hour_id")
+    for name in FEATURES:
+        hours = hours.with_column(name, stype=Stype.numerical)
+    tables = {"hours": hours.with_column("large_move", stype=Stype.categorical)}
     edges = []
     if has_news:
         tables["news"] = kumo.Table.from_source_table(connector["news.parquet"], primary_key="news_id").with_column("hour_id", stype=Stype.ID).with_column("publisher", stype=Stype.categorical)
@@ -318,6 +322,8 @@ def run(args):
         issued = time.time()
         current = [e for e in examples if e["id"] in scores and e["forecast"]["outcome"] == "pending"
                    and e["ref"] <= issued <= e["ref"] + 480]
+        if args.retrospective_only:
+            current = []
         known_refs = {e["reference_at"] for e in journal["predictions"]}
         inserted = 0
         for e in current:
@@ -335,6 +341,10 @@ def run(args):
         write_json(output / "journal.json", journal)
     except Exception as error:
         report.update(status="model_error", reason=type(error).__name__ + ": " + str(error)[:500])
+        diagnostic = getattr(error, "private_output_tail", "")
+        if diagnostic:
+            # Inputs contain public BTC measurements and publisher metadata only.
+            report["ingest_diagnostic"] = diagnostic[-4000:]
         write_json(output / "report.json", report)
         raise
     write_json(output / "report.json", report)
@@ -348,5 +358,6 @@ if __name__ == "__main__":
     parser.add_argument("--state", default="previous/journal.json")
     parser.add_argument("--download", action="store_true")
     parser.add_argument("--prepare-only", action="store_true")
+    parser.add_argument("--retrospective-only", action="store_true")
     result = run(parser.parse_args())
     print(json.dumps(result, indent=2))
