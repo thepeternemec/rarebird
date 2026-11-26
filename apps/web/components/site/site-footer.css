@@ -42,7 +42,7 @@ footer.site.rb-site-footer {
 .rb-footer-brand-stacked .rb-footer-emblem { border-color: var(--site-line); }
 .rb-footer-brand-stacked .rb-footer-emblem rect { fill: var(--site-panel); }
 .rb-footer-brand-stacked .rb-footer-emblem path { fill: var(--site-green); }
-.rb-footer-brand-stacked p { margin-top: 12px; max-width: 25ch; }
+.rb-footer-brand-stacked p { margin-top: 12px; max-width: 25ch; text-wrap: balance; }
 .rb-footer-links {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
