@@ -8,6 +8,7 @@ import "./interior.css";
 import "./refinement.css";
 import "./rarebird-brand.css";
 import "./site-chrome.css";
+import "./public-site.css";
 import SoftAurora from "@/components/soft-aurora";
 import ScrollReveal from "@/components/scroll-reveal";
 import SmoothScroll from "@/components/smooth-scroll";
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     siteName: "Rarebird",
     title: "Rarebird — Stock opportunity screener for AI agents",
     description:
-      "Developing stock setups, agent alerts and measured follow-through. Starting with NVDA, AAPL, MSFT and GOOGL.",
+      "Developing stock setups, agent alerts and measured follow-through.",
   },
   twitter: {
     card: "summary_large_image",

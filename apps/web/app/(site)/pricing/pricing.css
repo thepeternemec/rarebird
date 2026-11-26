@@ -1,13 +1,23 @@
 .rb-pricing { padding-block: 144px 96px; }
-.rb-pricing .rb-pricing-intro { padding-bottom: 44px; }
-.rb-pricing-intro h1 { max-width: 22ch; margin: 18px 0 23px; font-size: clamp(42px, 6.5vw, 78px); font-weight: 500; line-height: 1.02; letter-spacing: -.06em; text-wrap: balance; }
-.rb-pricing-intro h1 > span, .rb-pricing-intro > p:last-child { color: var(--text-secondary); }
-.rb-pricing-intro > p:last-child { max-width: 58ch; }
+.rb-pricing .rb-pricing-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding-bottom: 44px;
+}
+.rb-pricing-intro h1 { margin: 18px 0 23px; font-size: clamp(44px, 5.25vw, 68px); font-weight: 550; line-height: 1.045; letter-spacing: -.058em; }
+.rb-pricing-intro h1 > span, .rb-pricing-intro > div:first-child > p:last-child { color: var(--text-secondary); }
+.rb-pricing-intro > div:first-child > p:last-child { max-width: 57ch; }
+.rb-price-art {
+  min-width: 0;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--site-green) 9%, transparent), transparent 70%);
+}
 .rb-price-kicker { color: var(--text-secondary); font: 11px/1.5 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
 .rb-pricing-offer { scroll-margin-top: 96px; }
-.rb-price-card { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); border: 1px solid var(--border-default); border-radius: 14px; overflow: hidden; color: var(--text-primary); background: var(--bg-raised); }
+.rb-price-card { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); border: 1px solid var(--site-line); border-radius: 14px; overflow: hidden; color: var(--text-primary); background: var(--bg-base); }
 .rb-price-plan, .rb-price-features { padding: clamp(24px, 4vw, 48px); }
-.rb-price-plan { border-right: 1px solid var(--border-default); background: color-mix(in srgb, var(--text-primary) 3%, var(--bg-base)); }
+.rb-price-plan { border-right: 1px solid var(--site-line); background: var(--site-panel); }
 .rb-price-plan > svg { display: block; margin-bottom: 28px; border: 1px solid #363636; border-radius: 11px; }
 .rb-price-plan h2 { margin: 12px 0 14px; font-size: clamp(30px, 4vw, 46px); font-weight: 500; letter-spacing: -.045em; line-height: 1.12; }
 .rb-price-plan .rb-price { margin: 12px 0 16px; font-variant-numeric: tabular-nums; }
@@ -28,6 +38,7 @@
 .rb-pricing-dev a { text-decoration: underline; text-underline-offset: 4px; }
 @media (max-width: 650px) {
   .rb-pricing { padding-block: 112px 68px; }
-  .rb-price-card { grid-template-columns: 1fr; }
-  .rb-price-plan { border-right: 0; border-bottom: 1px solid var(--border-default); }
+  .rb-pricing .rb-pricing-intro, .rb-price-card { grid-template-columns: minmax(0, 1fr); }
+  .rb-price-art { width: min(100%, 360px); justify-self: center; }
+  .rb-price-plan { border-right: 0; border-bottom: 1px solid var(--site-line); }
 }

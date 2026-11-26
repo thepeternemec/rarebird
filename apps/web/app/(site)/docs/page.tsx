@@ -1,6 +1,7 @@
 import { ArrowRight, Check, Code2, Plug } from "lucide-react";
 import CopyButton from "@/components/site/copy-button";
 import DocsMcpConnection from "@/components/site/docs-mcp-connection";
+import SignalTiles from "@/components/site/signal-tiles";
 import { RAREBIRD_FIRST_QUESTION } from "@/components/site/connection-details";
 
 export const metadata = {
@@ -20,6 +21,7 @@ export default function DocsOverview() {
       <h1>Get started with Rarebird.</h1>
       <p className="docs-lead">Give your AI assistant access to recent stock and crypto news, research and market data. Connect once, then ask in your own words.</p>
       <div className="docs-free-note"><Check size={14} aria-hidden="true" /> Free public access <span>·</span> No Rarebird account or API key</div>
+      <SignalTiles cells="101001223211112343232444" />
     </header>
 
     <section className="docs-section" aria-labelledby="choose-your-path">

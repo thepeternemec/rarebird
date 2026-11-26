@@ -1,0 +1,159 @@
+/* The public navigation marks the marketing and documentation pages.
+   The workspace has its own header and keeps its existing theme. */
+body:has(> .nav-site) {
+  --site-green: #8cdda3;
+  --site-action: #91dca5;
+  --site-action-hover: #b5ebbf;
+  --site-action-ink: #102518;
+  --site-panel: #0e1510;
+  --site-wash: #16221a;
+  --site-cell-0: #17251c;
+  --site-cell-1: #1d3926;
+  --site-cell-2: #275935;
+  --site-cell-3: #39894c;
+  --site-cell-4: #7fda96;
+  --site-line: color-mix(in srgb, var(--site-green) 24%, var(--border-default));
+  --footer-cell: #295f39;
+  --footer-mark-base: #379453;
+  --footer-mark-highlight: #b0f7bd;
+}
+[data-theme="light"] body:has(> .nav-site) {
+  --site-green: #226b3b;
+  --site-action: #236840;
+  --site-action-hover: #194e30;
+  --site-action-ink: #fff;
+  --site-panel: #f3f8f4;
+  --site-wash: #e6f2e8;
+  --site-cell-0: #e1eee4;
+  --site-cell-1: #c9e7d1;
+  --site-cell-2: #9ad5a9;
+  --site-cell-3: #54ad6b;
+  --site-cell-4: #287246;
+  --footer-cell: #abd9b6;
+  --footer-mark-base: #237340;
+  --footer-mark-highlight: #53b971;
+}
+body:has(> .nav-site) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: none; }
+
+body:has(> .nav-site) :is(.nav.nav-site .nav-cta, .interior-page .btn-primary, .rb-agent-primary, .rb-home-button, .try-guide .try-next) {
+  background: var(--site-action);
+  border-color: var(--site-action);
+  border-radius: 8px;
+  color: var(--site-action-ink);
+  font-weight: 600;
+  opacity: 1;
+}
+body:has(> .nav-site) :is(.nav.nav-site .nav-cta, .interior-page .btn-primary, .rb-agent-primary, .rb-home-button, .try-guide .try-next):hover {
+  background: var(--site-action-hover);
+  border-color: var(--site-action-hover);
+  color: var(--site-action-ink);
+}
+body:has(> .nav-site) :is(.btn-ghost, .copy-btn, .rb-home-copy, .rb-agent-run, .rb-footer-banner-cta) {
+  background: var(--site-panel);
+  border-color: var(--site-line);
+  color: var(--site-green);
+}
+body:has(> .nav-site) :is(.btn-ghost, .copy-btn, .rb-home-copy, .rb-agent-run, .rb-footer-banner-cta):hover:not(:disabled) {
+  background: var(--site-wash);
+  border-color: var(--site-green);
+  color: var(--site-green);
+}
+body:has(> .nav-site) > .nav-site .nav-link[aria-current="page"] {
+  color: var(--site-green);
+  background: var(--site-panel);
+}
+body:has(> .nav-site) > .rb-site-footer {
+  border-color: var(--site-line);
+}
+body:has(> .nav-site) .rb-footer-links a:hover { color: var(--site-green); }
+
+.rb-signal-tiles {
+  display: grid;
+  grid-template-columns: repeat(var(--tile-count), minmax(0, 1fr));
+  gap: clamp(2px, .3vw, 4px);
+}
+.rb-signal-tiles i { aspect-ratio: 1; border-radius: 22%; background: var(--site-cell-0); }
+.rb-signal-tiles i[data-level="1"] { background: var(--site-cell-1); }
+.rb-signal-tiles i[data-level="2"] { background: var(--site-cell-2); }
+.rb-signal-tiles i[data-level="3"] { background: var(--site-cell-3); }
+.rb-signal-tiles i[data-level="4"] { background: var(--site-cell-4); }
+
+body:has(> .nav-site) > .interior-page {
+  --interior-panel: var(--site-panel);
+  --interior-wash: var(--site-wash);
+  --interior-shadow: 0 24px 65px -35px color-mix(in srgb, var(--site-green) 15%, transparent);
+  background: var(--bg-base);
+}
+body:has(> .nav-site) :is(.interior-page:not(.documentation-page), .status-page, .rb-site-footer) .wrap {
+  max-width: 1280px;
+  padding-inline: clamp(20px, 4vw, 48px);
+}
+body:has(> .nav-site) .interior-page .page-head { padding-top: clamp(108px, 11.3vw, 144px); }
+body:has(> .nav-site) :is(.interior-page .sec-eyebrow, .status-heading .sec-eyebrow, .rb-agent-label, .rb-price-kicker) {
+  color: var(--site-green);
+  font: 11px/1.6 var(--font-mono);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+body:has(> .nav-site) .intro-copy > .sec-eyebrow::before {
+  background: var(--site-green);
+  border-radius: 1.5px;
+  width: 6px;
+  height: 6px;
+}
+body:has(> .nav-site) .interior-page .page-head .sec-title {
+  font-weight: 550;
+  letter-spacing: -.055em;
+}
+body:has(> .nav-site) :is(.intro-visual, .nb-market-illustration, .nb-check-record, .status-page .status-component, .status-page .status-overview) {
+  border-color: var(--site-line);
+  border-radius: 14px;
+  background: var(--site-panel);
+}
+body:has(> .nav-site) :is(.intro-visual .visual-top, .intro-visual .preview-route, .intro-visual .answer-preview svg, .rb-price-features article > svg) {
+  color: var(--site-green);
+}
+body:has(> .nav-site) .intro-visual .preview-route .rb-signal-tiles {
+  height: auto;
+  min-width: 0;
+  background: none;
+}
+body:has(> .nav-site) .intro-visual .preview-route svg { animation: none; }
+body:has(> .nav-site) :is(.intro-visual .question-preview, .connect-workbench .connect-option.is-active) { border-color: var(--site-green); }
+body:has(> .nav-site) .interior-page .faq details[open] summary::after { color: var(--site-green); border-color: var(--site-line); }
+
+body:has(> .nav-site) .documentation-page :is(.docs-navigation, .docs-path-primary, .docs-mcp-card, .docs-first-question, .quickstart-endpoint, .quickstart-try) {
+  background: var(--site-panel);
+  border-color: var(--site-line);
+}
+body:has(> .nav-site) .documentation-page :is(.docs-nav-mark, .docs-path-icon, .docs-step-number, .quickstart-step-number) {
+  background: var(--site-wash);
+  border-color: var(--site-line);
+  color: var(--site-green);
+}
+body:has(> .nav-site) .documentation-page :is(.docs-path-action, .docs-text-action, .docs-free-note, .docs-source-link) { color: var(--site-green); }
+body:has(> .nav-site) .documentation-page :is(.docs-nav-link[aria-current="page"], .docs-contents a[aria-current="location"]) {
+  background: var(--site-wash);
+  color: var(--site-green);
+}
+body:has(> .nav-site) .documentation-page .docs-nav-link[aria-current="page"]::before,
+body:has(> .nav-site) .documentation-page .reading-progress { background: var(--site-green); }
+body:has(> .nav-site) .documentation-page .docs-client-tabs button[aria-selected="true"] {
+  border-bottom-color: var(--site-green);
+  color: var(--site-green);
+}
+body:has(> .nav-site) .documentation-page .docs-head > .rb-signal-tiles {
+  width: min(100%, 290px);
+  margin-top: 24px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    :is(.rb-home-story, .rb-home-delivery, .intro-visual, .docs-head, .rb-agent-flow) .rb-signal-tiles {
+      animation: rb-site-tile-trail both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 30%;
+    }
+  }
+}
+@keyframes rb-site-tile-trail { from { clip-path: inset(0 92% 0 0); } to { clip-path: inset(0); } }
