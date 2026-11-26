@@ -1,5 +1,5 @@
 import {
-  STOCK_SCREENER_POLICY, STOCK_SCREENER_UNIVERSE,
+  STOCK_SCREENER_POLICY, STOCK_SCREENER_UNIVERSE, SP500_SNAPSHOT,
   type StockAlert, type StockBar, type StockFeed, type StockFrame, type StockScreenEvent, type StockScreenResult,
 } from "@rarebird/contracts";
 
@@ -106,7 +106,7 @@ export function evolveStockAlert(previous: StockAlert | null, screen: StockScree
   if (!previous) {
     if (screen.state !== "candidate" || !screen.metrics) return { alert: null, type: null };
     return { type: "created", alert: {
-      id, policy: STOCK_SCREENER_POLICY, symbol: screen.symbol, label: screen.label, beat_id: screen.beat_id,
+      id, policy: STOCK_SCREENER_POLICY, universe_version: SP500_SNAPSHOT.id, symbol: screen.symbol, label: screen.label, beat_id: screen.beat_id,
       version: 1, state: "active", created_at: iso(now), updated_at: iso(now), last_event_at: iso(now), closed_at: null,
       valid_until: iso(now + SCREEN_RULES.validity_ms), expires_at: iso(now + SCREEN_RULES.lifetime_ms),
       reason: screen.reason, feed, reference: screen.metrics, latest: screen.metrics, evidence: [],

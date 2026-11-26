@@ -4,7 +4,9 @@ The integration guide for agents. For people: [connect your assistant](https://w
 
 ## Stock screener
 
-Use `rarebird_stock_screener` or `GET /api/v2/stock-screener` for developing setups in NVDA, AAPL, MSFT and GOOGL US shares versus SPY. This is separate from the tokenized-equity pilot. Read source coverage (single-exchange IEX or entitled SIP), status and per-stock holds before interpreting results. Setups expire; never present a held/expired measurement as current. Save `next_cursor` after processing events, pass it as `after`, and page while `has_more`. Event IDs are stable; versions describe creation, hold, resumption, invalidation and expiry. Initial calls return a recent snapshot; `after: "0"` replays the retained 30-day journal. Reference measurements are frozen. Linked reporting is context, not proof of causality. Forward outcomes are observations, not filled trades or demonstrated profits.
+Use `rarebird_stock_screener` or `GET /api/v2/stock-screener` for developing setups across the observed S&P 500 security snapshot versus SPY. This is separate from the tokenized-equity pilot. Read source coverage (single-exchange IEX or entitled SIP), status and per-stock holds before interpreting results. Setups expire; never present a held/expired measurement as current. Save `next_cursor` after processing events, pass it as `after`, and page while `has_more`. Event IDs are stable; versions describe creation, hold, resumption, invalidation and expiry. Initial calls return a recent snapshot; `after: "0"` replays the retained 30-day journal. Reference measurements are frozen. Linked reporting is context, not proof of causality. Forward outcomes are observations, not filled trades or demonstrated profits.
+
+Read `universe_snapshot` for the membership source and version. The snapshot contains 503 securities observed on 26 November 2026 and is not historical index membership. Optional `prediction` fields contain an immutable Kumo Engine probability for a positive 15-minute beta-adjusted relative return after the stated cost scenario. Quote its target, model ID, training cutoff, issue time and validity. These are shadow estimates conditional on a detected setup. `model` reports paired forward Brier scores against the frozen training base rate once at least 20 matching outcomes are observed. A warming-up model has no published stock prediction. `GET /api/v2/stock-model` returns this scorecard and currently valid probabilities. Detection and lifecycle events continue independently of model training.
 
 Public reads do not start the worker or configure notifications. Signed webhook delivery is an explicitly configured operator feature; deduplicate event IDs, retain the greatest alert version and check current status/expiry before downstream use. The source can be `not_configured` until the operator connects US-share market data. [Stock setup and notification guide](docs/STOCK-SCREENER.md).
 
@@ -110,6 +112,8 @@ Base: `https://www.rarebird.network/api`
 
 | Route | Returns |
 | --- | --- |
+| `GET /v2/stock-screener` | S&P 500 setup records, evidence, expiry, lifecycle events and optional recorded Kumo probabilities |
+| `GET /v2/stock-model` | Kumo shadow predictions and matched forward evaluation |
 | `GET /v2/collection?beat_id=` | Read fast-collection status without starting it |
 | `POST /v2/collection` | Explicit start or token-protected stop of a 15-minute one-minute collection session |
 | `GET /v2/topics` | The catalog: `beat_id`, `label`, `status`, `last_success_at` |

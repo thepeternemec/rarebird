@@ -1,12 +1,14 @@
 import { z } from "zod";
+import { SEED_BEATS } from "./seed.js";
+import { SP500_MEMBERS, SP500_SNAPSHOT } from "./sp500.js";
+export { SP500_SNAPSHOT };
 
 export const STOCK_SCREENER_POLICY = "stock-relative-strength-v1";
-export const STOCK_SCREENER_UNIVERSE = [
-  { symbol: "NVDA", label: "NVIDIA", beat_id: "b_bb964843350e" },
-  { symbol: "AAPL", label: "Apple", beat_id: "b_7d5acdda6186" },
-  { symbol: "MSFT", label: "Microsoft", beat_id: "b_a723a1d2787f" },
-  { symbol: "GOOGL", label: "Alphabet", beat_id: "b_c0c3f9282a94" },
-] as const;
+export const STOCK_SCREENER_UNIVERSE: readonly { symbol: string; label: string; beat_id: string; sector: string; cik: string }[] = SP500_MEMBERS.map(member => {
+  const beat = SEED_BEATS.find(beat => beat.asset === "equity" && beat.ticker === member.symbol);
+  return { ...member, beat_id: beat?.beat_id ?? "" };
+});
+export const STOCK_SCREENER_PILOT = STOCK_SCREENER_UNIVERSE.filter(stock => ["NVDA", "AAPL", "MSFT", "GOOGL"].includes(stock.symbol));
 export type ScreenSymbol = (typeof STOCK_SCREENER_UNIVERSE)[number]["symbol"];
 export const StockScreenerQuerySchema = z.object({
   alert_id: z.string().regex(/^stock_[a-zA-Z0-9_-]{1,80}$/).optional(),
@@ -47,6 +49,8 @@ export interface StockAlert {
   id: string; policy: typeof STOCK_SCREENER_POLICY; symbol: ScreenSymbol; label: string; beat_id: string;
   version: number; state: StockAlertState; created_at: string; updated_at: string;
   last_event_at?: string;
+  universe_version?: string;
+  prediction?: StockPrediction;
   valid_until: string; expires_at: string; closed_at: string | null; reason: string;
   feed: StockFeed; reference: ScreenMetrics; latest: ScreenMetrics;
   evidence: ScreenerEvidence[];
@@ -72,6 +76,8 @@ export interface StockScreenerFeed {
   message: string; benchmark: "SPY";
   source: { provider: "alpaca"; feed: StockFeed; coverage: string; mode: "scheduled" | "streaming"; last_scan_at: string | null };
   delivery: { configured: boolean; pending: number; delivered: number; failed: number; skipped?: number };
+  universe_snapshot?: typeof SP500_SNAPSHOT;
+  model?: StockModelStatus;
   universe: readonly { symbol: string; label: string; beat_id: string }[];
   coverage: StockScreenResult[]; active: StockAlert[]; recent: StockAlert[]; events: StockScreenEvent[];
   event_delivery?: StockEventDelivery[];
@@ -80,4 +86,16 @@ export interface StockScreenerFeed {
     cohort?: { feed: StockFeed; policy: string; horizon_minutes: 15; retention_days: 30; from: string; to: string };
   };
   limitations: string[];
+}
+
+export interface StockPrediction {
+  model_id: string; engine: "kumo-engine"; probability: number; baseline_probability: number;
+  issued_at: string; valid_until: string; target: "positive_15m_cost_adjusted_relative_return";
+  training_cutoff: string; universe_version: string;
+}
+export interface StockModelStatus {
+  status: "warming_up" | "shadow" | "unavailable";
+  target: StockPrediction["target"];
+  issued: number; observed: number; missing: number;
+  brier: number | null; baseline_brier: number | null;
 }

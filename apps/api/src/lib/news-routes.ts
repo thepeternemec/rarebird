@@ -17,6 +17,7 @@ import { readTokenIntelligence } from "./token-intelligence.js";
 import { readMarketForecasts } from "./forecast-store.js";
 import { readMarketBriefing } from "./market-briefing.js";
 import { readDiscovery } from "./discovery.js";
+import { readStockModel } from "./stock-kumo-store.js";
 import { readStockScreener } from "./stock-screener-store.js";
 export const newsRoutes = new Hono();
 newsRoutes.onError((error, c) => { if (error instanceof NewsError)
@@ -25,6 +26,7 @@ const clamp = (raw: string | undefined, fallback: number, max: number) => {
     const n = Number.parseInt(raw ?? "", 10);
     return Number.isFinite(n) && n >= 0 ? Math.min(n, max) : fallback;
 };
+newsRoutes.get("/stock-model", async c => { c.header("Cache-Control", "no-store"); return c.json(await readStockModel({ dataset: c.req.query("dataset") === "1" })); });
 newsRoutes.get("/stock-screener", async c => {
     const limit = c.req.query("limit");
     const parsed = StockScreenerQuerySchema.safeParse({ alert_id: c.req.query("alert_id"), after: c.req.query("after"), limit: limit === undefined ? undefined : Number(limit) });

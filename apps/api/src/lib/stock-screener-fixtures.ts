@@ -1,4 +1,4 @@
-import { STOCK_SCREENER_UNIVERSE, type StockBar, type StockFrame } from "@rarebird/contracts";
+import { STOCK_SCREENER_PILOT, type StockBar, type StockFrame } from "@rarebird/contracts";
 
 /** Deterministic synthetic observations for tests only; never used by a serving path. */
 export function stockFixture(move = 0.00055, now = Date.parse("2026-11-25T16:00:00Z")): StockFrame {
@@ -14,7 +14,7 @@ export function stockFixture(move = 0.00055, now = Date.parse("2026-11-25T16:00:
   };
   return { provider: "alpaca", feed: "iex", mode: "scheduled", received_at: new Date(now).toISOString(),
     session_open: true, session_checked_at: new Date(now).toISOString(),
-    instruments: Object.fromEntries([...STOCK_SCREENER_UNIVERSE.map(s => s.symbol), "SPY"].map(symbol => {
+    instruments: Object.fromEntries([...STOCK_SCREENER_PILOT.map(s => s.symbol), "SPY"].map(symbol => {
       const series = bars(symbol !== "SPY"), close = series.at(-1)!.close;
       return [symbol, { symbol, asset_class: "us_equity", exchange: symbol === "SPY" ? "ARCA" : "NASDAQ", verified: true,
         bars: series, quote: { time: now - 1000, bid: close * 0.9999, ask: close * 1.0001, bid_size: 10, ask_size: 10 } }];

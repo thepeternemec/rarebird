@@ -67,6 +67,7 @@ export default function StockSetupRecord({ alert, revision, onClose }: { alert: 
       <tr><th>Bid–ask spread</th><td>{alert.reference.spread_bps.toFixed(2)} bp</td><td>{alert.latest.spread_bps.toFixed(2)} bp</td></tr>
       <tr><th>Measured at</th><td>{time(alert.reference.measured_at)}</td><td>{time(alert.latest.measured_at)}</td></tr>
     </tbody></table></div>
+    {alert.prediction && <section className="rb-screen-model-score"><h3>Recorded Kumo prediction</h3><p>{(alert.prediction.probability * 100).toFixed(1)}% probability of a positive 15-minute relative move after the cost scenario. Frozen base rate {(alert.prediction.baseline_probability * 100).toFixed(1)}%.</p><p className="rb-screen-small">Issued {time(alert.prediction.issued_at)} · Valid until {time(alert.prediction.valid_until)} · Training cutoff {time(alert.prediction.training_cutoff)}</p><code>{alert.prediction.model_id}</code></section>}
     <h3>Reporting known at detection</h3>
     {alert.evidence.length ? <ul className="rb-setup-sources">{alert.evidence.map(evidence => <li key={evidence.url}><a href={evidence.url} target="_blank" rel="noopener noreferrer">{evidence.title} <ArrowUpRight size={14} /></a>
       <small>{evidence.source} · Published {time(evidence.published_at)} · Available to Rarebird {time(evidence.known_at)}</small></li>)}</ul>
