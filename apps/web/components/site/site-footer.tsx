@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import BrandMark from "./brand-mark";
+import BrandMark, { BrandWordmark } from "./brand-mark";
 import { EARLY_ACCESS_END } from "./access-offer";
 import FooterSignalMark from "./footer-signal-mark";
 import "./site-footer.css";
@@ -41,7 +41,7 @@ const links = [
   },
 ] as const;
 
-export default function SiteFooter({ landing = false }: { landing?: boolean }) {
+export default function SiteFooter({ landing = false, compact = false }: { landing?: boolean; compact?: boolean }) {
   return <footer className={`site rb-site-footer${landing ? " rb-site-footer-landing" : ""}`}>
     <div className="wrap">
       {landing && (
@@ -56,12 +56,12 @@ export default function SiteFooter({ landing = false }: { landing?: boolean }) {
         </section>
       )}
       <div className="rb-footer-grid">
-        <div className="rb-footer-brand">
+        <div className={compact ? "rb-footer-brand" : "rb-footer-brand rb-footer-brand-stacked"}>
           <a className="rb-footer-home" href="/" aria-label="Rarebird home">
-            <BrandMark size={38} />
-            <span>Rarebird</span>
+            <BrandMark className="rb-footer-emblem" size={compact ? 38 : 44} />
+            {compact ? <span>Rarebird</span> : <BrandWordmark width={116} />}
           </a>
-          <p>Stock setups. Agent alerts.</p>
+          <p>{compact ? "Stock setups. Agent alerts." : "Your agent’s eyes on the stock market."}</p>
         </div>
         <div className="rb-footer-links">
           {links.map(group => <nav key={group.title} aria-label={"Footer " + group.title}>
