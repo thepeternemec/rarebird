@@ -26,13 +26,23 @@ footer.site.rb-site-footer {
   font-weight: 650;
   letter-spacing: -.025em;
 }
-.rb-footer-home svg { flex: none; border-radius: 8px; border: 1px solid var(--border-default); }
+.rb-footer-home svg { flex: none; }
+.rb-footer-emblem { border-radius: 8px; border: 1px solid var(--border-default); }
 .rb-footer-brand p {
   margin: 5px 0 0;
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.55;
 }
+.rb-footer-brand-stacked .rb-footer-home {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.rb-footer-brand-stacked .rb-footer-emblem { border-color: var(--site-line); }
+.rb-footer-brand-stacked .rb-footer-emblem rect { fill: var(--site-panel); }
+.rb-footer-brand-stacked .rb-footer-emblem path { fill: var(--site-green); }
+.rb-footer-brand-stacked p { margin-top: 12px; max-width: 25ch; }
 .rb-footer-links {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

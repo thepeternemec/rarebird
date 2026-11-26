@@ -32,7 +32,7 @@ export default function WorkspaceShell({ active, title, description, children }:
         {children}
       </main>
     </div>
-    <SiteFooter />
+    <SiteFooter compact />
   </>;
 }
 
