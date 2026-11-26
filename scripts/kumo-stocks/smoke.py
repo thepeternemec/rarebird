@@ -1,6 +1,6 @@
 """Exercise actual Kumo graph fitting and prediction on synthetic observations only."""
 import tempfile
-from predict import FEATURES, fit_model
+from predict import FEATURES, fit_model, iso
 
 cohorts = []
 for group in range(4):
@@ -8,7 +8,7 @@ for group in range(4):
     for index in range(16):
         rows.append({"id": f"smoke-{group}-{index}", "symbol": "NVDA" if index%2 else "AAPL",
                      "features": {key: float(index%2)+index*.001 for key in FEATURES},
-                     "news": [], "label": index%2, "issued": group*86400+index*60, "known": group*86400+index*60+1020,
+                     "news": [{"source": "synthetic-publisher", "known_at": iso(group*86400+index*60-30), "published_at": iso(group*86400+index*60-60)}], "label": index%2, "issued": group*86400+index*60, "known": group*86400+index*60+1020,
                      "active": False})
     cohorts.append(rows)
 with tempfile.TemporaryDirectory(prefix="rarebird-stock-kumo-") as directory:

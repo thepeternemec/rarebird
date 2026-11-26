@@ -1,7 +1,8 @@
 // Observed membership snapshot. Current membership must never be backfilled as historical membership.
 export const SP500_SNAPSHOT = {
-  "id": "sp500-observed-2026-11-26",
+  "id": "sp500-observed-2026-11-26-f1477b8b5c34",
   "observed_at": "2026-11-26T00:00:00Z",
+  "source_blob": "f1477b8b5c34dc73ac45df606c1ed688f3d494ac",
   "source": "https://github.com/datasets/s-and-p-500-companies/blob/main/data/constituents.csv"
 } as const;
 export const SP500_MEMBERS = [

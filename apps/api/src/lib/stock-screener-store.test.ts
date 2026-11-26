@@ -203,19 +203,19 @@ test("stock Kumo predictions are prospective, immutable and measured on the same
     const batch = { model_id: "kumo-stock-0123456789abcdef", universe_version: SP500_SNAPSHOT.id, feed: "iex",
       training_cutoff: new Date(now - 86400000).toISOString(), trained_at: new Date(now - 1000).toISOString(),
       baseline_probability: .5, predictions: [{ alert_id: alert.id, probability: .8 }] };
-    assert.equal((await publishStockPredictions(batch, { sql, now })).inserted, 1);
+    assert.equal((await publishStockPredictions(batch, { sql, now })).inserted, 1, "initial valid publication");
     assert.equal((await publishStockPredictions({ ...batch, predictions: [{ alert_id: alert.id, probability: .2 }] }, { sql, now })).inserted, 0);
     const read = await readStockScreener({}, { sql, now });
     assert.equal(read.active.find(row => row.id === alert.id)!.prediction!.probability, .8);
     assert.equal(read.model!.status, "shadow");
     assert.equal((await readStockModel({ sql, dataset: true, now })).setups!.length, 4);
-    assert.equal((await publishStockPredictions({ ...batch, predictions: [{ alert_id: feed.active[1]!.id, probability: .7 }] }, { sql, now: now + 121000 })).skipped, 1);
+    assert.equal((await publishStockPredictions({ ...batch, predictions: [{ alert_id: feed.active[1]!.id, probability: .7 }] }, { sql, now: now + 121000 })).skipped, 1, "aged validity is rejected");
     await assert.rejects(publishStockPredictions({ ...batch, training_cutoff: new Date(now + 1000).toISOString() }, { sql, now }), /provenance/);
     await assert.rejects(publishStockPredictions({ ...batch, predictions: [{ alert_id: alert.id, probability: 1.2 }] }, { sql, now }));
     const outcome = { ...alert, outcomes: alert.outcomes.map(row => row.minutes === 15 ? { ...row, status: "observed", measured_at: row.due_at, cost_scenario_bps: -10 } : row) };
     await sql.unsafe("update public.rarebird_stock_alerts set record=$2::jsonb where id=$1", [alert.id, JSON.stringify(outcome)]);
     const measured = await readStockModel({ sql, now: now + 1000000 });
-    assert.equal(measured.model.observed, 1); assert.equal(measured.model.brier, null);
+    assert.equal(measured.model.observed, 1, "settled matched cohort " + JSON.stringify(measured)); assert.equal(measured.model.brier, null);
     assert.equal(measured.model.baseline_brier, null, "small samples never become an aggregate performance claim");
   } finally { await sql.end(); process.env = saved; }
 });
