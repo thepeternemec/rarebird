@@ -80,7 +80,7 @@ Policy: `stock-relative-strength-v1`. These are initial fixed research rules, no
 2. Require a positive stock move, at least 25 bp of five-minute market-adjusted strength, a residual statistic of at least 2.5, and volume at least 1.8 times the median of the preceding twelve non-overlapping five-minute windows.
 3. Require fresh stock/SPY quotes within 30 seconds, aligned bars within 90 seconds and spreads no wider than 15 bp. Hold a quote more than 25 bp from its last closed-bar price until the next complete minute.
 4. Suppress fresh alerts if the residual statistic reaches 6, the five-minute residual reaches 100 bp, or the prior 25-minute relative move already exceeds 1%. These guards reduce chasing; they do not establish an entry advantage.
-5. Refresh a continuing setup’s two-minute validity without creating another alert. Close on a measured reset/extended move, or after 15 minutes. Missing measurements cause a hold. After closure, enforce a 20-minute cooldown before a new setup in that stock/feed/policy.
+5. Refresh a continuing setup’s two-minute validity without creating another alert. Publish a versioned continuation update every five minutes when a new measurement is available. Close on a measured reset/extended move, or after 15 minutes. Missing measurements cause a hold. After closure, enforce a 20-minute cooldown before a new setup in that stock/feed/policy.
 
 The baseline resets every session. Screening starts no earlier than 66 aligned trading minutes after the open; missing trades can delay it further. Beta/residual statistics use an intraday descriptive fit and a volatility floor; they are not calibrated probabilities. Volume’s comparison windows are intraday, not a historical time-of-day seasonality model. The first version detects long-side strength only.
 
@@ -135,3 +135,17 @@ The stock screen currently uses deterministic measurements and already-stored re
 ## Verification
 
 Pure tests cover relative-strength isolation, pre-window fitting, stale/bad feed rejection, episode identity/cooldown, reference stability and future/late-outcome exclusion. Disposable PostgreSQL tests cover atomic lifecycle storage, first-observation immutability, event pagination, resumed episodes, signed delivery/retries and expired-notification suppression. CI runs the persistence tests against its dedicated test database; fixtures are never used by the app or production worker.
+
+## Setup records and the first lifecycle milestone
+
+The default app route opens the stock screener. Existing asset and market query links continue to open research. Active setups, all recent setups and performance are separate views. Open a setup record to inspect frozen and latest measurements, source availability times, explicit validity and lifetime deadlines, lifecycle events, delivery receipts and both outcome horizons.
+
+Filter a retained record with `GET /api/v2/stock-screener?alert_id=stock_ID&after=0&limit=50` or `rarebird_stock_screener({alert_id: "stock_ID", after: "0"})`. Process every page before advancing its cursor. Filtering does not change the policy/feed cohort used for the performance summary. An unknown or out-of-retention ID returns empty records.
+
+`event_delivery` contains receipts for the returned event page. A delivered receipt means the configured endpoint returned 2xx. It does not verify downstream processing or execution. Pending, failed, skipped and not-queued events remain distinguishable. Endpoint URLs and secrets are never included in public responses.
+
+A `measured` event records each outcome settlement, including a missing observation. Like other events, it uses the setup's increasing version and the atomic outbox. Measure from the original reference even after invalidation or expiry. Continuing setups publish at most one heartbeat update per five minutes, only when there is a newer measurement. State changes publish immediately. Obsolete creation and update retries are skipped once a higher version exists.
+
+The integration test named “one setup is detected, delivered, updated, expired and measured through public replay” exercises one synthetic NVDA setup in the dedicated test database. It verifies HMAC signatures, a failed delivery and retry, hold/resumption, expiry, both observation horizons including an unfavourable result, per-event acknowledgements, frozen references, filtered pagination and withheld aggregate performance below 20 observations. Synthetic observations never enter the serving path or live performance record.
+
+A live milestone still requires connected US-share market data, a working scheduled or streaming worker, an explicitly configured HTTPS receiver and an eligible regular-session setup. The current deterministic policy is independent of generated explanations. Kumo ranking remains a future evaluation against the rules on the same forward policy/feed cohort.

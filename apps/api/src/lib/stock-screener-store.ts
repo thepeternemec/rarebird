@@ -35,7 +35,11 @@ function emptyFeed(now: number): StockScreenerFeed {
     benchmark: "SPY", source: { provider: "alpaca", feed: config.feed, coverage: config.coverage, mode: "scheduled", last_scan_at: null },
     delivery: { configured: stockWebhookConfig().configured, pending: 0, delivered: 0, failed: 0 }, universe: STOCK_SCREENER_UNIVERSE,
     coverage: coverageHold(config.configured ? "Waiting for the stock worker." : "Stock feed not connected."), active: [], recent: [], events: [], next_cursor: "0", has_more: false,
-    evaluation: { observed: 0, pending: 0, missing: 0, mean_cost_scenario_bps: null }, limitations };
+    event_delivery: [],
+    evaluation: { observed: 0, pending: 0, missing: 0, mean_cost_scenario_bps: null,
+      cohort: { feed: config.feed, policy: STOCK_SCREENER_POLICY, horizon_minutes: 15, retention_days: 30,
+        from: iso(now - 30 * 86400000), to: iso(now) },
+    }, limitations };
 }
 /** Stored, side-effect-free read for the app and agents. Never fetches prices or starts a worker. */
 export async function readStockScreener(input: unknown = {}, options: { sql?: Sql; now?: number } = {}): Promise<StockScreenerFeed> {
@@ -46,14 +50,14 @@ export async function readStockScreener(input: unknown = {}, options: { sql?: Sq
     const sql = options.sql ?? db(), params = [STOCK_SCREENER_POLICY, output.source.feed];
     const [workers, records, events, delivery, evaluation] = await Promise.all([
       sql.unsafe<Array<{ snapshot: unknown; last_error: string | null }>>("select snapshot,last_error from public.rarebird_stock_worker where id=$1", [output.source.feed]),
-      sql.unsafe<Array<{ record: unknown }>>("select record from public.rarebird_stock_alerts where policy=$1 and feed=$2 order by created_at desc,id limit 80", params),
+      sql.unsafe<Array<{ record: unknown }>>("select record from public.rarebird_stock_alerts where policy=$1 and feed=$2 and ($3::text is null or id=$3) and created_at>=to_timestamp($4)-interval '30 days' order by created_at desc,id limit 80", [...params, query.alert_id ?? null, now / 1000]),
       query.after !== undefined
-        ? sql.unsafe<Array<{ payload: unknown }>>("select payload from public.rarebird_stock_events where policy=$1 and feed=$2 and sequence>$3::bigint order by sequence limit $4", [...params, query.after, query.limit + 1])
-        : sql.unsafe<Array<{ payload: unknown }>>("select payload from (select sequence,payload from public.rarebird_stock_events where policy=$1 and feed=$2 order by sequence desc limit $3) recent order by sequence", [...params, query.limit]),
+        ? sql.unsafe<Array<{ payload: unknown }>>("select payload from public.rarebird_stock_events where policy=$1 and feed=$2 and sequence>$3::bigint and ($5::text is null or alert_id=$5) and recorded_at>=to_timestamp($6)-interval '30 days' order by sequence limit $4", [...params, query.after, query.limit + 1, query.alert_id ?? null, now / 1000])
+        : sql.unsafe<Array<{ payload: unknown }>>("select payload from (select sequence,payload from public.rarebird_stock_events where policy=$1 and feed=$2 and ($4::text is null or alert_id=$4) and recorded_at>=to_timestamp($5)-interval '30 days' order by sequence desc limit $3) recent order by sequence", [...params, query.limit, query.alert_id ?? null, now / 1000]),
       sql.unsafe<Array<{ status: string; count: string }>>("select o.status,count(*)::text from public.rarebird_stock_outbox o join public.rarebird_stock_events e on e.id=o.event_id where e.policy=$1 and e.feed=$2 group by o.status", params),
       sql.unsafe<Array<{ status: string; count: string; mean: number | null }>>(`select outcome->>'status' as status,count(*)::text,
         avg((outcome->>'cost_scenario_bps')::double precision) as mean from public.rarebird_stock_alerts,
-        jsonb_array_elements(record->'outcomes') outcome where policy=$1 and feed=$2 and outcome->>'minutes'='15' group by outcome->>'status'`, params),
+        jsonb_array_elements(record->'outcomes') outcome where policy=$1 and feed=$2 and created_at>=to_timestamp($3)-interval '30 days' and outcome->>'minutes'='15' group by outcome->>'status'`, [...params, now / 1000]),
     ]);
     const snapshot = workers[0]?.snapshot ? decode<Snapshot>(workers[0].snapshot) : null;
     if (snapshot) {
@@ -75,7 +79,19 @@ export async function readStockScreener(input: unknown = {}, options: { sql?: Sq
     output.has_more = query.after !== undefined && page.length > query.limit;
     output.events = page.slice(0, query.limit);
     output.next_cursor = output.events.at(-1)?.sequence ?? output.next_cursor;
-    for (const row of delivery) if (row.status === "pending" || row.status === "delivered" || row.status === "failed") output.delivery[row.status] = Number(row.count);
+    if (output.events.length) {
+      const receipts = await sql.unsafe<Array<{ event_id: string; status: "pending" | "delivered" | "failed" | "skipped"; attempts: number; delivered_at: Date | null }>>(
+        "select event_id,status,attempts,delivered_at from public.rarebird_stock_outbox where event_id=any($1::text[])",
+        [output.events.map(event => event.id)],
+      );
+      const byId = new Map(receipts.map(receipt => [receipt.event_id, receipt]));
+      output.event_delivery = output.events.map(event => {
+        const receipt = byId.get(event.id);
+        return { event_id: event.id, status: receipt?.status ?? "not_queued", attempts: receipt?.attempts ?? 0,
+          delivered_at: receipt?.delivered_at ? new Date(receipt.delivered_at).toISOString() : null };
+      });
+    }
+    for (const row of delivery) if (row.status === "pending" || row.status === "delivered" || row.status === "failed" || row.status === "skipped") output.delivery[row.status] = Number(row.count);
     for (const row of evaluation) {
       if (row.status === "observed" || row.status === "pending" || row.status === "missing") output.evaluation[row.status] = Number(row.count);
       if (row.status === "observed" && Number(row.count) >= 20) output.evaluation.mean_cost_scenario_bps = row.mean;
@@ -89,6 +105,24 @@ export async function readStockScreener(input: unknown = {}, options: { sql?: Sq
 async function saveAlert(sql: Sql, alert: StockAlert) {
   await sql.unsafe("insert into public.rarebird_stock_alerts(id,policy,feed,symbol,created_at,closed_at,next_due_at,record) values($1,$2,$3,$4,$5,$6,$7,$8::jsonb) on conflict(id) do update set closed_at=excluded.closed_at,next_due_at=excluded.next_due_at,record=excluded.record", [alert.id, alert.policy, alert.feed, alert.symbol, alert.created_at, alert.closed_at, nextDue(alert), json(alert)]);
 }
+
+async function appendEvent(sql: Sql, alert: StockAlert, type: StockScreenEvent["type"], now: number) {
+  const event: StockScreenEvent = { id: `${alert.id}:${alert.version}`, sequence: "0", type, recorded_at: iso(now), alert };
+  const inserted = await sql.unsafe<Array<{ sequence: string }>>(
+    "insert into public.rarebird_stock_events(id,alert_id,version,policy,feed,recorded_at,payload) values($1,$2,$3,$4,$5,$6,$7::jsonb) on conflict(alert_id,version) do nothing returning sequence::text",
+    [event.id, alert.id, alert.version, alert.policy, alert.feed, event.recorded_at, json(event)],
+  );
+  if (!inserted[0]) return 0;
+  event.sequence = inserted[0].sequence;
+  await sql.unsafe("update public.rarebird_stock_events set payload=$2::jsonb where id=$1", [event.id, json(event)]);
+  const webhook = stockWebhookConfig();
+  if (webhook.configured) await sql.unsafe(
+    "insert into public.rarebird_stock_outbox(event_id,destination_hash,next_attempt_at) values($1,$2,$3) on conflict do nothing",
+    [event.id, webhook.destination_hash, iso(now)],
+  );
+  return 1;
+}
+
 async function persistFrame(sql: Sql, frame: StockFrame, now: number) {
   for (const asset of Object.values(frame.instruments)) {
     const bars = asset.bars.filter(b => b.time + 60000 <= now && b.time > now - 24 * 3600000);
@@ -127,9 +161,13 @@ export async function runStockScreener(options: Dependencies = {}) {
       const pending = await tx.unsafe<Array<{ record: unknown }>>("select record from public.rarebird_stock_alerts where policy=$1 and feed=$2 and next_due_at<=to_timestamp($3) order by next_due_at limit 200", [STOCK_SCREENER_POLICY, feed, now / 1000]);
       for (const row of pending) {
         let record = decode<StockAlert>(row.record);
+        const before = record.outcomes.map(outcome => outcome.status).join(",");
         if (frame) record = settleStockOutcomes(record, frame, now);
         record.outcomes = record.outcomes.map(o => o.status === "pending" && now > Date.parse(o.due_at) + 120000 ? { ...o, status: "missing" } : o);
+        const measured = before !== record.outcomes.map(outcome => outcome.status).join(",");
+        if (measured) record = { ...record, version: record.version + 1, updated_at: iso(now), last_event_at: iso(now) };
         await saveAlert(tx as unknown as Sql, record);
+        if (measured) events += await appendEvent(tx as unknown as Sql, record, "measured", now);
       }
       for (const screen of coverage) {
         const previous = await tx.unsafe<Array<{ record: unknown }>>("select record from public.rarebird_stock_alerts where policy=$1 and feed=$2 and symbol=$3 order by created_at desc limit 1", [STOCK_SCREENER_POLICY, feed, screen.symbol]);
@@ -143,17 +181,7 @@ export async function runStockScreener(options: Dependencies = {}) {
           alerts++;
         }
         await saveAlert(tx as unknown as Sql, alert);
-        if (evolved.type) {
-          const event: StockScreenEvent = { id: `${alert.id}:${alert.version}`, sequence: "0", type: evolved.type, recorded_at: iso(now), alert };
-          const inserted = await tx.unsafe<Array<{ sequence: string }>>("insert into public.rarebird_stock_events(id,alert_id,version,policy,feed,recorded_at,payload) values($1,$2,$3,$4,$5,$6,$7::jsonb) on conflict(alert_id,version) do nothing returning sequence::text", [event.id, alert.id, alert.version, alert.policy, feed, event.recorded_at, json(event)]);
-          if (inserted[0]) {
-            event.sequence = inserted[0].sequence;
-            await tx.unsafe("update public.rarebird_stock_events set payload=$2::jsonb where id=$1", [event.id, json(event)]);
-            const webhook = stockWebhookConfig();
-            if (webhook.configured) await tx.unsafe("insert into public.rarebird_stock_outbox(event_id,destination_hash,next_attempt_at) values($1,$2,$3) on conflict do nothing", [event.id, webhook.destination_hash, iso(now)]);
-            events++;
-          }
-        }
+        if (evolved.type) events += await appendEvent(tx as unknown as Sql, alert, evolved.type, now);
       }
       // A disconnected streaming process must allow the scheduled REST fallback to take over.
       const snapshot: Snapshot = { at: iso(now), mode: frame?.mode ?? "scheduled", session_open: frame?.session_open ?? true, coverage };

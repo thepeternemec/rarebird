@@ -27,7 +27,7 @@ const clamp = (raw: string | undefined, fallback: number, max: number) => {
 };
 newsRoutes.get("/stock-screener", async c => {
     const limit = c.req.query("limit");
-    const parsed = StockScreenerQuerySchema.safeParse({ after: c.req.query("after"), limit: limit === undefined ? undefined : Number(limit) });
+    const parsed = StockScreenerQuerySchema.safeParse({ alert_id: c.req.query("alert_id"), after: c.req.query("after"), limit: limit === undefined ? undefined : Number(limit) });
     if (!parsed.success) throw new NewsError("invalid_request", "Use a numeric event cursor and a limit between 1 and 50.", 400);
     c.header("Cache-Control", "no-store");
     return c.json(await readStockScreener(parsed.data));

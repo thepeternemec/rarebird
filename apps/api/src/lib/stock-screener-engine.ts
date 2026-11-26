@@ -107,14 +107,14 @@ export function evolveStockAlert(previous: StockAlert | null, screen: StockScree
     if (screen.state !== "candidate" || !screen.metrics) return { alert: null, type: null };
     return { type: "created", alert: {
       id, policy: STOCK_SCREENER_POLICY, symbol: screen.symbol, label: screen.label, beat_id: screen.beat_id,
-      version: 1, state: "active", created_at: iso(now), updated_at: iso(now), closed_at: null,
+      version: 1, state: "active", created_at: iso(now), updated_at: iso(now), last_event_at: iso(now), closed_at: null,
       valid_until: iso(now + SCREEN_RULES.validity_ms), expires_at: iso(now + SCREEN_RULES.lifetime_ms),
       reason: screen.reason, feed, reference: screen.metrics, latest: screen.metrics, evidence: [],
       outcomes: ([15, 60] as const).map(minutes => ({ minutes, due_at: iso(now + minutes * MINUTE), status: "pending", measured_at: null, asset_return_bps: null, relative_return_bps: null, cost_scenario_bps: null })),
     } };
   }
   const change = (state: StockAlert["state"], type: StockScreenEvent["type"], reason: string) => ({ type, alert: {
-    ...previous!, state, reason, version: previous!.version + 1, updated_at: iso(now),
+    ...previous!, state, reason, version: previous!.version + 1, updated_at: iso(now), last_event_at: iso(now),
     closed_at: state === "expired" || state === "invalidated" ? iso(now) : null,
   } });
   if (now >= Date.parse(previous.expires_at)) return change("expired", "expired", "The setup reached its maximum lifetime.");
@@ -123,8 +123,12 @@ export function evolveStockAlert(previous: StockAlert | null, screen: StockScree
   }
   if (screen.state !== "candidate" || !screen.metrics) return change("invalidated", "invalidated", screen.reason);
   const resumed = previous.state === "data_hold";
-  return { type: resumed ? "updated" : null, alert: { ...previous, state: "active", reason: screen.reason,
-    latest: screen.metrics, updated_at: iso(now), version: previous.version + (resumed ? 1 : 0),
+  const heartbeat = Date.parse(screen.metrics.measured_at) > Date.parse(previous.latest.measured_at)
+    && now - Date.parse(previous.last_event_at ?? previous.created_at) >= 5 * MINUTE;
+  const publish = resumed || heartbeat;
+  return { type: publish ? "updated" : null, alert: { ...previous, state: "active", reason: screen.reason,
+    latest: screen.metrics, updated_at: iso(now), version: previous.version + (publish ? 1 : 0),
+    last_event_at: publish ? iso(now) : previous.last_event_at,
     valid_until: iso(Math.min(now + SCREEN_RULES.validity_ms, Date.parse(previous.expires_at))),
   } };
 }
