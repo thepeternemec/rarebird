@@ -145,3 +145,11 @@
   .rb-setup-deadlines > div { display: block; }
   .rb-setup-deadlines dd { text-align: left; margin-top: 4px; }
 }
+
+.rb-screen-readiness { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.rb-screen-coverage .rb-screen-universe { max-height: 440px; overflow-y: auto; }
+.rb-screen-coverage .rb-screen-universe > div { border-bottom: 1px solid var(--border-default); }
+.rb-screen-search { display: grid; gap: 8px; max-width: 380px; margin: 18px 0; color: var(--text-secondary); font-size: 12px; }
+.rb-screen-search input { width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid var(--screen-line); border-radius: 7px; background: var(--screen-panel); color: var(--text-primary); font: inherit; }
+.rb-screen-alert .rb-screen-model-score { padding: 12px; border: 1px solid var(--screen-line); border-radius: 7px; background: var(--screen-panel); font-size: 12px; }
+@media (max-width: 900px) { .rb-screen-readiness { grid-template-columns: minmax(0,1fr); } }

@@ -1,5 +1,5 @@
 /** Run after `npm run build:packages && npm run build -w @rarebird/api` on Node 22+. */
-import { stockFeedConfig, fetchStockFrame, readStockClock, parseStockBar, parseStockQuote, STOCK_SYMBOLS } from "../apps/api/dist/lib/stock-screener-provider.js";
+import { stockFeedConfig, fetchStockFrame, readStockClock, parseStockBar, parseStockQuote, readStockQuotes, STOCK_SYMBOLS } from "../apps/api/dist/lib/stock-screener-provider.js";
 import { runStockScreener } from "../apps/api/dist/lib/stock-screener-store.js";
 import { closeDb } from "@rarebird/db";
 
@@ -46,7 +46,7 @@ async function connect() {
           }
           if (message.T === "success" && message.msg === "authenticated") {
             authenticated = true; failures = 0;
-            socket.send(JSON.stringify({ action: "subscribe", quotes: STOCK_SYMBOLS, bars: STOCK_SYMBOLS }));
+            socket.send(JSON.stringify({ action: "subscribe", quotes: config.feed === "sip" ? STOCK_SYMBOLS : [], bars: STOCK_SYMBOLS }));
             console.log(`Stock screener connected to ${config.feed}; screening closed one-minute bars.`);
           }
           const asset = frame?.instruments[message.S];
@@ -92,5 +92,11 @@ async function stop() {
 process.once("SIGINT", () => void stop());
 process.once("SIGTERM", () => void stop());
 every(refreshClock, 45000);
+// Basic IEX caps quote subscriptions. Read fresh quotes without opening extra streams.
+every(async () => {
+  if (config.feed !== "iex" || !frame || !authenticated) return;
+  const quotes = await readStockQuotes(STOCK_SYMBOLS);
+  for (const symbol of STOCK_SYMBOLS) frame.instruments[symbol].quote = quotes[symbol] ?? null;
+}, 20000);
 every(scan, 30000);
 await connect();

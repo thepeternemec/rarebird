@@ -6,6 +6,7 @@ import { readStockScreener, runStockScreener } from "./stock-screener-store.js";
 
 test("stock adapter verifies actual US-share identities and pages symbols without a delayed fallback", async () => {
   const saved = { ...process.env };
+  const symbols = ["NVDA", "AAPL", "MSFT", "GOOGL", "SPY"];
   try {
     process.env.ALPACA_API_KEY = "test-key"; process.env.ALPACA_SECRET_KEY = "test-secret"; process.env.RAREBIRD_STOCK_FEED = "iex";
     const requests: string[] = [], now = Date.now();
@@ -15,16 +16,16 @@ test("stock adapter verifies actual US-share identities and pages symbols withou
       assert.ok(["paper-api.alpaca.markets", "data.alpaca.markets"].includes(url.hostname));
       let value: unknown;
       if (url.pathname === "/v2/clock") value = { is_open: true, timestamp: new Date(now).toISOString() };
-      else if (url.pathname.startsWith("/v2/assets/")) value = { symbol: url.pathname.split("/").at(-1), class: "us_equity", exchange: "NASDAQ", status: "active", tradable: true };
+      else if (url.pathname === "/v2/assets") value = symbols.map(symbol => ({ symbol, class: "us_equity", exchange: "NASDAQ", status: "active", tradable: true }));
       else if (url.pathname === "/v2/stocks/bars") {
         assert.equal(url.searchParams.get("feed"), "iex"); assert.equal(url.searchParams.get("end"), new Date(now).toISOString());
         value = { bars: { [url.searchParams.has("page_token") ? "SPY" : "NVDA"]: [{ t: new Date(now - 60000).toISOString(), o: 10, h: 11, l: 9, c: 10, v: 100 }] }, next_page_token: url.searchParams.has("page_token") ? null : "second" };
       } else value = { quotes: Object.fromEntries(STOCK_SYMBOLS.map(s => [s, { t: new Date(now).toISOString(), bp: 10, ap: 11, bs: 1, as: 1 }])) };
       return new Response(JSON.stringify(value));
     };
-    const frame = await fetchStockFrame(now, fetcher);
+    const frame = await fetchStockFrame(now, fetcher, symbols);
     assert.equal(frame.instruments.NVDA!.asset_class, "us_equity"); assert.equal(frame.instruments.SPY!.bars.length, 1);
-    assert.equal(requests.filter(r => r.startsWith("/v2/assets/")).length, 5);
+    assert.equal(requests.filter(r => r.startsWith("/v2/assets?")).length, 1);
     assert.equal(requests.filter(r => r.startsWith("/v2/stocks/bars")).length, 2);
     await assert.rejects(fetchStockFrame(now, async () => new Response("", { status: 403 })), /stock_feed_not_entitled/);
     await assert.rejects(fetchStockFrame(now, async input => new Response(JSON.stringify(String(input).includes("clock") ? { is_open: true, timestamp: new Date(now).toISOString() } : { symbol: "NVDAx", class: "crypto" }))), /stock_identity_invalid/);
@@ -39,7 +40,7 @@ test("unconfigured stock reads and workers are explicit no-ops, never a syntheti
     delete process.env.ALPACA_API_KEY; delete process.env.APCA_API_KEY_ID; delete process.env.DATABASE_URL;
     const output = await readStockScreener();
     assert.equal(output.status, "not_configured"); assert.equal(output.active.length, 0);
-    assert.equal(output.universe.length, 4); assert.ok(output.coverage.every(c => !c.metrics));
+    assert.equal(output.universe.length, 503); assert.ok(output.coverage.every(c => !c.metrics));
     assert.equal((await runStockScreener()).status, "not_configured");
   } finally { process.env = saved; }
 });
@@ -54,5 +55,33 @@ test("webhooks require explicit HTTPS configuration and use reproducible timesta
     assert.equal(stockWebhookConfig().configured, true);
     assert.equal(stockWebhookSignature("secret", "1", "{}"), stockWebhookSignature("secret", "1", "{}"));
     assert.notEqual(stockWebhookSignature("secret", "1", "{}"), stockWebhookSignature("secret", "2", "{}"));
+  } finally { process.env = saved; }
+});
+
+test("a full constituent scan uses bounded batches and one bulk identity read", async () => {
+  const saved = { ...process.env };
+  process.env.ALPACA_API_KEY = "test"; process.env.ALPACA_SECRET_KEY = "test"; process.env.RAREBIRD_STOCK_FEED = "iex";
+  let identities = 0, bars = 0, quotes = 0;
+  const now = Date.now();
+  try {
+    const fetcher: typeof fetch = async input => {
+      const url = new URL(String(input)), symbols = (url.searchParams.get("symbols") ?? "").split(",");
+      let body: unknown;
+      if (url.pathname === "/v2/clock") body = { is_open: true, timestamp: new Date(now).toISOString() };
+      else if (url.pathname === "/v2/assets") {
+        identities++;
+        body = STOCK_SYMBOLS.map(symbol => ({ symbol, class: "us_equity", status: "active", tradable: true, exchange: "NASDAQ" }));
+      } else {
+        assert.ok(symbols.length <= 50, "request size is bounded");
+        if (url.pathname.endsWith("/bars")) { bars++; body = { bars: {}, next_page_token: null }; }
+        else { quotes++; body = { quotes: {} }; }
+      }
+      return new Response(JSON.stringify(body));
+    };
+    const frame = await fetchStockFrame(now, fetcher);
+    assert.equal(Object.keys(frame.instruments).length, 504);
+    assert.equal(identities, 1);
+    assert.equal(bars, 11); assert.equal(quotes, 11);
+    assert.equal(frame.instruments["BRK.B"]!.verified, true);
   } finally { process.env = saved; }
 });

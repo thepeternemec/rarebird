@@ -29,4 +29,8 @@ create table if not exists public.rarebird_stock_outbox (
   lease_token text, lease_until timestamptz, delivered_at timestamptz
 );
 create index if not exists rarebird_stock_delivery_idx on public.rarebird_stock_outbox(next_attempt_at) where status='pending';
+create table if not exists public.rarebird_stock_predictions (
+  alert_id text primary key references public.rarebird_stock_alerts(id) on delete cascade,
+  prediction jsonb not null
+);
 `;

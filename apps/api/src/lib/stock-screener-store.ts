@@ -1,6 +1,7 @@
+import { readStockModel } from "./stock-kumo-store.js";
 import { randomUUID } from "node:crypto";
 import { db, hasDatabaseEnv, type Sql } from "@rarebird/db";
-import { STOCK_SCREENER_POLICY, STOCK_SCREENER_UNIVERSE, StockScreenerQuerySchema,
+import { STOCK_SCREENER_POLICY, STOCK_SCREENER_UNIVERSE, SP500_SNAPSHOT, StockScreenerQuerySchema,
   type StockAlert, type StockBar, type StockFrame, type StockScreenEvent, type StockScreenResult, type StockScreenerFeed } from "@rarebird/contracts";
 import { evolveStockAlert, screenStock, settleStockOutcomes } from "./stock-screener-engine.js";
 import { fetchStockFrame, stockFeedConfig } from "./stock-screener-provider.js";
@@ -14,7 +15,7 @@ const nextDue = (a: StockAlert) => a.outcomes.filter(o => o.status === "pending"
 type Snapshot = { at: string; mode: "scheduled" | "streaming"; session_open: boolean; coverage: StockScreenResult[] };
 type Dependencies = { sql?: Sql; now?: () => number; frame?: StockFrame; fetchFrame?: typeof fetchStockFrame; deliver?: boolean };
 const limitations = [
-  "Four US shares, regular session only. SPY is the benchmark; no crypto or tokenized shares.",
+  "Observed S&P 500 constituent snapshot, regular session only, versus SPY. Current membership must not be used as historical membership.",
   "A five-minute relative-strength screen with an intraday baseline; needs 66 aligned closed minutes after the open. Thresholds are experimental and are not calibrated return probabilities.",
   "IEX volume and quotes cover one exchange. SIP requires the appropriate market-data entitlement. Redistribution must follow your provider agreement.",
   "News is source-linked context known by detection time; it does not establish the cause of a price move.",
@@ -32,7 +33,7 @@ function emptyFeed(now: number): StockScreenerFeed {
   const config = stockFeedConfig();
   return { generated_at: iso(now), policy: STOCK_SCREENER_POLICY, status: config.configured ? "warming_up" : "not_configured",
     message: config.configured ? "The stock feed is configured. Waiting for the first successful scan." : "Stock price feed is not connected yet. No stock setups have been measured.",
-    benchmark: "SPY", source: { provider: "alpaca", feed: config.feed, coverage: config.coverage, mode: "scheduled", last_scan_at: null },
+    benchmark: "SPY", universe_snapshot: SP500_SNAPSHOT, source: { provider: "alpaca", feed: config.feed, coverage: config.coverage, mode: "scheduled", last_scan_at: null },
     delivery: { configured: stockWebhookConfig().configured, pending: 0, delivered: 0, failed: 0 }, universe: STOCK_SCREENER_UNIVERSE,
     coverage: coverageHold(config.configured ? "Waiting for the stock worker." : "Stock feed not connected."), active: [], recent: [], events: [], next_cursor: "0", has_more: false,
     event_delivery: [],
@@ -50,7 +51,7 @@ export async function readStockScreener(input: unknown = {}, options: { sql?: Sq
     const sql = options.sql ?? db(), params = [STOCK_SCREENER_POLICY, output.source.feed];
     const [workers, records, events, delivery, evaluation] = await Promise.all([
       sql.unsafe<Array<{ snapshot: unknown; last_error: string | null }>>("select snapshot,last_error from public.rarebird_stock_worker where id=$1", [output.source.feed]),
-      sql.unsafe<Array<{ record: unknown }>>("select record from public.rarebird_stock_alerts where policy=$1 and feed=$2 and ($3::text is null or id=$3) and created_at>=to_timestamp($4)-interval '30 days' order by created_at desc,id limit 80", [...params, query.alert_id ?? null, now / 1000]),
+      sql.unsafe<Array<{ record: unknown }>>("with retained as (select * from public.rarebird_stock_alerts where policy=$1 and feed=$2 and ($3::text is null or id=$3) and created_at>=to_timestamp($4)-interval '30 days') select record from retained where closed_at is null or id in (select id from retained order by created_at desc,id limit 80) order by created_at desc,id", [...params, query.alert_id ?? null, now / 1000]),
       query.after !== undefined
         ? sql.unsafe<Array<{ payload: unknown }>>("select payload from public.rarebird_stock_events where policy=$1 and feed=$2 and sequence>$3::bigint and ($5::text is null or alert_id=$5) and recorded_at>=to_timestamp($6)-interval '30 days' order by sequence limit $4", [...params, query.after, query.limit + 1, query.alert_id ?? null, now / 1000])
         : sql.unsafe<Array<{ payload: unknown }>>("select payload from (select sequence,payload from public.rarebird_stock_events where policy=$1 and feed=$2 and ($4::text is null or alert_id=$4) and recorded_at>=to_timestamp($5)-interval '30 days' order by sequence desc limit $3) recent order by sequence", [...params, query.limit, query.alert_id ?? null, now / 1000]),
@@ -69,7 +70,7 @@ export async function readStockScreener(input: unknown = {}, options: { sql?: Sq
       } else if (!snapshot.session_open) { output.status = "market_closed"; output.message = "The US regular trading session is closed. Screening resumes during the next session."; }
       else if (snapshot.coverage.every(c => c.state === "warming_up")) { output.status = "warming_up"; output.message = "Collecting today’s baseline. Screening starts after 66 aligned trading minutes."; }
       else if (snapshot.coverage.every(c => c.state === "data_hold" || c.state === "warming_up")) { output.status = "data_hold"; output.message = "Waiting for complete, current stock and benchmark measurements."; }
-      else { output.status = "monitoring"; output.message = "Screening four US stocks for developing relative strength. An empty list means no setup passed the current rules."; }
+      else { output.status = "monitoring"; output.message = `Screening ${STOCK_SCREENER_UNIVERSE.length} S&P 500 constituents. Check per-stock coverage before interpreting an empty result.`; }
       output.coverage = fresh && stockFeedConfig().configured && !workers[0]?.last_error ? snapshot.coverage : coverageHold(output.message);
     }
     output.recent = records.map(r => visibleStockAlert(decode<StockAlert>(r.record), now))
@@ -96,6 +97,10 @@ export async function readStockScreener(input: unknown = {}, options: { sql?: Sq
       if (row.status === "observed" || row.status === "pending" || row.status === "missing") output.evaluation[row.status] = Number(row.count);
       if (row.status === "observed" && Number(row.count) >= 20) output.evaluation.mean_cost_scenario_bps = row.mean;
     }
+    const model = await readStockModel({ sql, now, predictionIds: output.recent.map(alert => alert.id) });
+    output.model = model.model;
+    output.recent = output.recent.map(alert => ({ ...alert, prediction: model.predictions[alert.id] }));
+    output.active = output.active.map(alert => ({ ...alert, prediction: model.predictions[alert.id] }));
     return output;
   } catch (error) {
     if ((error as { code?: string }).code !== "42P01") console.warn("stock screener read unavailable");
@@ -124,15 +129,19 @@ async function appendEvent(sql: Sql, alert: StockAlert, type: StockScreenEvent["
 }
 
 async function persistFrame(sql: Sql, frame: StockFrame, now: number) {
-  for (const asset of Object.values(frame.instruments)) {
-    const bars = asset.bars.filter(b => b.time + 60000 <= now && b.time > now - 24 * 3600000);
-    await sql.unsafe(`insert into public.rarebird_stock_bars(feed,symbol,started_at,observed_at,bar)
-      select $1,$2,to_timestamp(b.time/1000),to_timestamp(coalesce(b.observed_at,$4)/1000),to_jsonb(b)
-      from jsonb_to_recordset($3::jsonb) as b(time double precision,open double precision,high double precision,low double precision,close double precision,volume double precision,observed_at double precision)
-      on conflict(feed,symbol,started_at) do nothing`, [frame.feed, asset.symbol, json(bars), now]);
-    const rows = await sql.unsafe<Array<{ bar: unknown; observed_at: Date }>>("select bar,observed_at from public.rarebird_stock_bars where feed=$1 and symbol=$2 and started_at>=to_timestamp($3)-interval '24 hours' order by started_at", [frame.feed, asset.symbol, now / 1000]);
-    asset.bars = rows.map(r => ({ ...decode<StockBar>(r.bar), observed_at: new Date(r.observed_at).getTime() }));
-  }
+  const rows = Object.values(frame.instruments).flatMap(asset => asset.bars
+    .filter(bar => bar.time + 60000 <= now && bar.time > now - 100 * 60000)
+    .map(bar => ({ symbol: asset.symbol, time: bar.time, observed_at: bar.observed_at ?? now, bar })));
+  await sql.unsafe(`insert into public.rarebird_stock_bars(feed,symbol,started_at,observed_at,bar)
+    select $1,b.symbol,to_timestamp(b.time/1000),to_timestamp(b.observed_at/1000),b.bar
+    from jsonb_to_recordset($2::jsonb) as b(symbol text,time double precision,observed_at double precision,bar jsonb)
+    on conflict(feed,symbol,started_at) do nothing`, [frame.feed, json(rows)]);
+  const stored = await sql.unsafe<Array<{ symbol: string; bar: unknown; observed_at: Date }>>(
+    "select symbol,bar,observed_at from public.rarebird_stock_bars where feed=$1 and symbol=any($2::text[]) and started_at>=to_timestamp($3)-interval '100 minutes' order by symbol,started_at",
+    [frame.feed, Object.keys(frame.instruments), now / 1000],
+  );
+  for (const asset of Object.values(frame.instruments)) asset.bars = [];
+  for (const row of stored) frame.instruments[row.symbol]!.bars.push({ ...decode<StockBar>(row.bar), observed_at: new Date(row.observed_at).getTime() });
 }
 /** Explicit scheduled/stream worker, leased across processes. No LLM calls or trade endpoints. */
 export async function runStockScreener(options: Dependencies = {}) {
@@ -158,7 +167,7 @@ export async function runStockScreener(options: Dependencies = {}) {
       if (frame && frame.feed !== feed) throw new Error("stock_feed_changed");
       if (frame) await persistFrame(tx as unknown as Sql, frame, now);
       const coverage = frame ? STOCK_SCREENER_UNIVERSE.map(s => screenStock(frame!, s.symbol, now)) : coverageHold("The US-share feed is unavailable; the setup is on hold.");
-      const pending = await tx.unsafe<Array<{ record: unknown }>>("select record from public.rarebird_stock_alerts where policy=$1 and feed=$2 and next_due_at<=to_timestamp($3) order by next_due_at limit 200", [STOCK_SCREENER_POLICY, feed, now / 1000]);
+      const pending = await tx.unsafe<Array<{ record: unknown }>>("select record from public.rarebird_stock_alerts where policy=$1 and feed=$2 and next_due_at<=to_timestamp($3) order by next_due_at limit 5000", [STOCK_SCREENER_POLICY, feed, now / 1000]);
       for (const row of pending) {
         let record = decode<StockAlert>(row.record);
         const before = record.outcomes.map(outcome => outcome.status).join(",");
@@ -169,9 +178,13 @@ export async function runStockScreener(options: Dependencies = {}) {
         await saveAlert(tx as unknown as Sql, record);
         if (measured) events += await appendEvent(tx as unknown as Sql, record, "measured", now);
       }
-      for (const screen of coverage) {
-        const previous = await tx.unsafe<Array<{ record: unknown }>>("select record from public.rarebird_stock_alerts where policy=$1 and feed=$2 and symbol=$3 order by created_at desc limit 1", [STOCK_SCREENER_POLICY, feed, screen.symbol]);
-        const evolved = evolveStockAlert(previous[0] ? decode<StockAlert>(previous[0].record) : null, screen, now, feed, `stock_${randomUUID()}`);
+      const latest = await tx.unsafe<Array<{ record: unknown }>>("select distinct on (symbol) record from public.rarebird_stock_alerts where policy=$1 and feed=$2 order by symbol,created_at desc", [STOCK_SCREENER_POLICY, feed]);
+      const previousBySymbol = new Map(latest.map(row => { const alert = decode<StockAlert>(row.record); return [alert.symbol, alert]; }));
+      const currentSymbols = new Set(coverage.map(stock => stock.symbol));
+      const lifecycle = [...coverage, ...Array.from(previousBySymbol.values()).filter(alert => !alert.closed_at && !currentSymbols.has(alert.symbol))
+        .map(alert => ({ symbol: alert.symbol, label: alert.label, beat_id: alert.beat_id, state: "data_hold" as const, reason: "This stock is outside the current constituent snapshot.", metrics: null }))];
+      for (const screen of lifecycle) {
+        const evolved = evolveStockAlert(previousBySymbol.get(screen.symbol) ?? null, screen, now, feed, `stock_${randomUUID()}`);
         if (!evolved.alert) continue;
         const alert = evolved.alert;
         if (evolved.type === "created") {

@@ -91,3 +91,5 @@ app.route("/v2", marketRoutes);
 app.all("/mcp", (c) => mcpResponse(c.req.raw));
 
 export default app;
+
+export { publishStockPredictions } from "./lib/stock-kumo-store.js";

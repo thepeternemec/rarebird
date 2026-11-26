@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import { test } from "node:test";
 import postgres from "postgres";
+import { SP500_SNAPSHOT } from "@rarebird/contracts";
+import { readStockModel, publishStockPredictions } from "./stock-kumo-store.js";
 import type { StockFrame } from "@rarebird/contracts";
 import { stockFixture } from "./stock-screener-fixtures.js";
 import { STOCK_SCREENER_SCHEMA } from "./stock-screener-schema.js";
@@ -13,7 +15,7 @@ if (connection) {
   const url = new URL(connection);
   if (!["localhost", "127.0.0.1"].includes(url.hostname) || url.pathname !== "/rarebird_intelligence_test") throw new Error("Stock tests require the dedicated localhost test database.");
 }
-const reset = "truncate public.rarebird_stock_outbox,public.rarebird_stock_events,public.rarebird_stock_alerts,public.rarebird_stock_worker,public.rarebird_stock_bars restart identity";
+const reset = "truncate public.rarebird_stock_predictions,public.rarebird_stock_outbox,public.rarebird_stock_events,public.rarebird_stock_alerts,public.rarebird_stock_worker,public.rarebird_stock_bars restart identity";
 function configure() {
   process.env.ALPACA_API_KEY = "synthetic-test"; process.env.ALPACA_SECRET_KEY = "synthetic-test";
   process.env.RAREBIRD_STOCK_FEED = "iex";
@@ -186,5 +188,34 @@ test("one setup is detected, delivered, updated, expired and measured through pu
     assert.equal(next.events[0]!.type, "data_hold", "filtered replay preserves event order and cursor");
     const absent = await readStockScreener({ alert_id: "stock_absent", after: "0" }, { sql, now });
     assert.equal(absent.recent.length, 0); assert.equal(absent.events.length, 0);
+  } finally { await sql.end(); process.env = saved; }
+});
+
+test("stock Kumo predictions are prospective, immutable and measured on the same cohort", { skip: !connection, timeout: 45000 }, async () => {
+  const saved = { ...process.env }, sql = postgres(connection!, { prepare: false, max: 3, onnotice: () => {} });
+  configure();
+  const now = Date.parse("2026-11-25T16:00:00Z");
+  try {
+    await sql.unsafe(STOCK_SCREENER_SCHEMA); await sql.unsafe(reset);
+    await runStockScreener({ sql, frame: stockFixture(), now: () => now, deliver: false });
+    const feed = await readStockScreener({}, { sql, now });
+    const alert = feed.active[0]!;
+    const batch = { model_id: "kumo-stock-0123456789abcdef", universe_version: SP500_SNAPSHOT.id, feed: "iex",
+      training_cutoff: new Date(now - 86400000).toISOString(), trained_at: new Date(now - 1000).toISOString(),
+      baseline_probability: .5, predictions: [{ alert_id: alert.id, probability: .8 }] };
+    assert.equal((await publishStockPredictions(batch, { sql, now })).inserted, 1);
+    assert.equal((await publishStockPredictions({ ...batch, predictions: [{ alert_id: alert.id, probability: .2 }] }, { sql, now })).inserted, 0);
+    const read = await readStockScreener({}, { sql, now });
+    assert.equal(read.active.find(row => row.id === alert.id)!.prediction!.probability, .8);
+    assert.equal(read.model!.status, "shadow");
+    assert.equal((await readStockModel({ sql, dataset: true, now })).setups!.length, 4);
+    assert.equal((await publishStockPredictions({ ...batch, predictions: [{ alert_id: feed.active[1]!.id, probability: .7 }] }, { sql, now: now + 121000 })).skipped, 1);
+    await assert.rejects(publishStockPredictions({ ...batch, training_cutoff: new Date(now + 1000).toISOString() }, { sql, now }), /provenance/);
+    await assert.rejects(publishStockPredictions({ ...batch, predictions: [{ alert_id: alert.id, probability: 1.2 }] }, { sql, now }));
+    const outcome = { ...alert, outcomes: alert.outcomes.map(row => row.minutes === 15 ? { ...row, status: "observed", measured_at: row.due_at, cost_scenario_bps: -10 } : row) };
+    await sql.unsafe("update public.rarebird_stock_alerts set record=$2::jsonb where id=$1", [alert.id, JSON.stringify(outcome)]);
+    const measured = await readStockModel({ sql, now: now + 1000000 });
+    assert.equal(measured.model.observed, 1); assert.equal(measured.model.brier, null);
+    assert.equal(measured.model.baseline_brier, null, "small samples never become an aggregate performance claim");
   } finally { await sql.end(); process.env = saved; }
 });
