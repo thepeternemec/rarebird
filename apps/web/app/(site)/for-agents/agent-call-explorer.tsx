@@ -1,11 +1,27 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, CircleDot, FileText, Play, Terminal } from "lucide-react";
-import type { CatalystRadar, DiscoveryFeed, PricesPayload, Sourced } from "@rarebird/contracts";
+import { ArrowRight, ArrowUpRight, CircleDot, FileText, Play, ScanLine, Terminal } from "lucide-react";
+import type { CatalystRadar, DiscoveryFeed, PricesPayload, Sourced, StockScreenerFeed } from "@rarebird/contracts";
 import CopyButton from "@/components/site/copy-button";
 
 const examples = [
+  {
+    id: "setups",
+    title: "Stock setups",
+    scope: "Current screener results",
+    icon: ScanLine,
+    tool: "rarebird_stock_screener",
+    args: { limit: 3 },
+    path: "/api/v2/stock-screener?limit=3",
+    fields: [["status", "Whether the screener can check for setups"], ["source", "Feed coverage and last scan time"], ["active", "Current setups, with a reason and expiry"]],
+    excerpt(data: unknown) {
+      const { status, message, source, active } = data as StockScreenerFeed;
+      return { status, message, source, active: active.slice(0, 2).map(({ symbol, state, reason, valid_until }) => ({
+        symbol, state, reason, valid_until,
+      })) };
+    },
+  },
   {
     id: "news",
     title: "News signals",

@@ -1,7 +1,8 @@
-import { ArrowDown, ArrowRight, ArrowUpRight, Braces, Cable } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, Braces, Cable, ListChecks, MessageSquareText, Radio } from "lucide-react";
 import CopyButton from "@/components/site/copy-button";
 import SiteFooter from "@/components/site/site-footer";
 import SiteNav from "@/components/site/site-nav";
+import SignalTiles from "@/components/site/signal-tiles";
 import AgentCallExplorer from "./agent-call-explorer";
 import "./for-agents.css";
 
@@ -13,6 +14,7 @@ export const metadata = {
 
 const origin = "https://www.rarebird.network";
 const tools = [
+  { view: "Stock screener", detail: "Developing setups, screening measurements and updates as conditions change.", mcp: ["rarebird_stock_screener"], rest: ["GET /v2/stock-screener"] },
   { view: "News and signals", detail: "Grouped reporting, original links and publication times.", mcp: ["rarebird_stories", "rarebird_discovery"], rest: ["GET /v2/stories", "GET /v2/discovery"] },
   { view: "Prices and market data", detail: "Reference quotes, crypto prices, and ranked market snapshots.", mcp: ["rarebird_research", "rarebird_prices"], rest: ["POST /v2/research", "GET /v2/prices", "GET /v2/markets"] },
   { view: "Filings and reported figures", detail: "SEC disclosures and comparable reported periods for four issuers.", mcp: ["rarebird_catalysts"], rest: ["GET /v2/catalysts"] },
@@ -27,16 +29,27 @@ export default function ForAgents() {
     <SiteNav active="/for-agents" />
     <main className="rb-agent-page">
       <section className="rb-agent-hero" aria-labelledby="agent-title">
-        <p className="rb-agent-label">Rarebird for agents</p>
-        <h1 id="agent-title">One connection.<br />All of Rarebird’s tools.</h1>
-        <p className="rb-agent-lede">Connect Rarebird once to give your assistant news, research, prices, filings, forecasts and market checks. Your assistant chooses the tools it needs for each question.</p>
-        <div className="rb-agent-actions">
-          <CopyButton text={origin + "/api/mcp"} label="Copy MCP connection URL" copiedLabel="MCP URL copied" className="rb-agent-primary" />
-          <a className="rb-agent-secondary" href="/docs/quickstart">Setup instructions <ArrowUpRight size={17} aria-hidden="true" /></a>
-          <a className="rb-agent-secondary" href="#tool-explorer">Try a live request <ArrowDown size={17} aria-hidden="true" /></a>
+        <div>
+          <p className="rb-agent-label">Rarebird for agents</p>
+          <h1 id="agent-title">One connection.<br /><span>All of Rarebird’s tools.</span></h1>
+          <p className="rb-agent-lede">Give your assistant access to stock setups, news, filings and market data through a single MCP connection. Public access needs no API key.</p>
+          <div className="rb-agent-actions">
+            <CopyButton text={origin + "/api/mcp"} label="Copy MCP connection URL" copiedLabel="MCP URL copied" className="rb-agent-primary" />
+            <a className="rb-agent-secondary" href="/docs/quickstart">Setup instructions <ArrowUpRight size={17} aria-hidden="true" /></a>
+          </div>
+          <div className="rb-agent-endpoint"><code>{origin}/api/mcp</code></div>
+          <p className="rb-agent-setup-note">In your assistant’s settings, add a remote MCP server named Rarebird and paste this URL.</p>
         </div>
-        <div className="rb-agent-endpoint"><code>{origin}/api/mcp</code></div>
-        <p className="rb-agent-lede">In your assistant’s settings, add a custom remote MCP server named <strong>Rarebird</strong> and paste the URL into the server URL field. Public access needs no API key.</p>
+        <div className="rb-agent-flow">
+          <h2>From question to evidence</h2>
+          <ol>
+            <li><MessageSquareText aria-hidden="true" size={19} /><div><strong>You ask</strong><p>“What stock setups are developing?”</p></div></li>
+            <li><Radio aria-hidden="true" size={19} /><div><strong>Your agent calls Rarebird</strong><code>rarebird_stock_screener</code></div></li>
+            <li><ListChecks aria-hidden="true" size={19} /><div><strong>Rarebird returns the screening result</strong><p>Feed readiness and any active setups, with reasons and expiry.</p></div></li>
+          </ol>
+          <SignalTiles cells="010013211232243432234444" />
+          <a className="rb-agent-secondary" href="#tool-explorer">Try a live request <ArrowDown size={16} aria-hidden="true" /></a>
+        </div>
       </section>
 
       <AgentCallExplorer origin={origin} />

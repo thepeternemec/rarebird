@@ -3,6 +3,7 @@ import InteriorPage from "@/components/site/interior-page";
 import SiteNav from "@/components/site/site-nav";
 import SiteFooter from "@/components/site/site-footer";
 import BrandMark from "@/components/site/brand-mark";
+import FooterSignalMark from "@/components/site/footer-signal-mark";
 import { EARLY_ACCESS_END, PRO_MONTHLY_PRICE } from "@/components/site/access-offer";
 import "./pricing.css";
 
@@ -17,9 +18,12 @@ export default function Pricing() {
     <SiteNav active="/pricing" />
     <InteriorPage className="pricing-page rb-pricing">
       <section className="wrap rb-pricing-intro" aria-labelledby="pricing-title">
-        <p className="rb-price-kicker">Pricing</p>
-        <h1 id="pricing-title">The app and the agent.<br /><span>One membership.</span></h1>
-        <p>Research stocks and crypto in the Rarebird workspace or through a connected AI assistant. Both are free through {EARLY_ACCESS_END}.</p>
+        <div>
+          <p className="rb-price-kicker">Pricing</p>
+          <h1 id="pricing-title">The app and the agent.<br /><span>One membership.</span></h1>
+          <p>Research stocks and crypto in the Rarebird workspace or through a connected AI assistant. Both are free through {EARLY_ACCESS_END}.</p>
+        </div>
+        <div className="rb-price-art"><FooterSignalMark /></div>
       </section>
 
       <section className="wrap rb-pricing-offer" id="later" aria-labelledby="pro-title">

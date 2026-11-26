@@ -34,7 +34,7 @@
 }
 
 .rb-signal-phases span[data-current="true"] {
-  color: var(--home-green);
+  color: var(--site-green);
 }
 
 .rb-signal-phases span[data-current="true"]::after {
@@ -42,7 +42,7 @@
   position: absolute;
   inset: auto 0 -1px;
   height: 1px;
-  background: var(--home-green);
+  background: var(--site-green);
   transform-origin: left center;
 }
 
@@ -128,7 +128,7 @@
   width: 22px;
   display: grid;
   place-items: center;
-  color: var(--home-green);
+  color: var(--site-green);
 }
 
 .rb-signal-icon i {

@@ -30,7 +30,7 @@ export default function SiteNav({ active }: { active?: string }) {
         </a>
         <span className="nav-links">
           {LINKS.map(link => (
-            <a key={link.href} className="nav-link" href={link.href} aria-current={active === link.href ? "page" : undefined} style={active === link.href ? { color: "var(--text-primary)" } : undefined}>{link.label}</a>
+            <a key={link.href} className="nav-link" href={link.href} aria-current={active === link.href ? "page" : undefined}>{link.label}</a>
           ))}
         </span>
         <span className="nav-desktop-theme"><ThemeToggle /></span>

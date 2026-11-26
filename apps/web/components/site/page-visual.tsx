@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowRight, Check, FileText, KeyRound, Radio, ShieldCheck } from "lucide-react";
 import CopyButton from "./copy-button";
+import SignalTiles from "./signal-tiles";
 
 type Kind = "connect" | "pricing" | "keys" | "faq" | "reference" | "legal";
 
@@ -33,7 +34,7 @@ export default function PageVisual({ kind }: { kind: Kind }) {
     <aside className="intro-visual connection-preview" aria-label="From your question to a sourced answer">
       <div className="visual-top"><Radio size={15} /> From question to context <span className="visual-tag">MCP + API</span></div>
       <div className="question-preview"><span>YOU ASK</span><p>“What happened<br />with Nvidia?”</p></div>
-      <div className="preview-route" aria-hidden="true"><span /><ArrowDown size={16} /><span /></div>
+      <div className="preview-route" aria-hidden="true"><SignalTiles cells="001122344" /><ArrowDown size={16} /><SignalTiles cells="443221100" /></div>
       <div className="answer-preview"><span>RAREBIRD BRINGS</span><div><Check size={14} /> Recent headlines</div><div><Check size={14} /> Publisher links</div><div><Check size={14} /> Dates & freshness</div></div>
       {kind === "connect" ? <div className="visual-endpoint"><code>www.rarebird.network/api/mcp</code><CopyButton text="https://www.rarebird.network/api/mcp" label="MCP address" /></div> : <a className="visual-bottom visual-link" href="mailto:contact@rarebird.network">Still have a question? Contact us <ArrowRight size={14} /></a>}
     </aside>

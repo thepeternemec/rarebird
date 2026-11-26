@@ -1,6 +1,6 @@
-import type { CSSProperties } from "react";
 import { Bell, Check, Clock3, FileText, ScanLine } from "lucide-react";
 import FooterSignalMark from "./footer-signal-mark";
+import SignalTiles from "./signal-tiles";
 
 const SCREENING_CHECKS = [
   { label: "Relative strength", result: "Above market", cells: "00100112123344" },
@@ -13,16 +13,6 @@ const ALERT_DETAILS = [
   { icon: FileText, label: "Relevant reporting", text: "Original source links and publication times, when available", cells: "01223344" },
   { icon: Clock3, label: "When it’s valid", text: "Detection time, data freshness and expiry", cells: "00122344" },
 ];
-
-function SignalTiles({ cells }: { cells: string }) {
-  return (
-    <span className="rb-home-tiles" aria-hidden="true" style={{ "--tile-count": cells.length } as CSSProperties}>
-      {Array.from(cells, (level, index) => (
-        <i key={index} data-level={level} style={{ "--tile-delay": `${index * 46}ms` } as CSSProperties} />
-      ))}
-    </span>
-  );
-}
 
 export function ScreeningPreview() {
   return (

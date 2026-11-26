@@ -1,7 +1,4 @@
-/* The stock-screening introduction uses its own quiet, GitHub-inspired canvas. */
-body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: none; }
-.rb-home { --home-green: #8cdda3; --home-cell-0: #17251c; --home-cell-1: #1d3926; --home-cell-2: #275935; --home-cell-3: #39894c; --home-cell-4: #7fda96; --home-panel: #0e1510; --footer-cell: #295f39; --footer-mark-base: #379453; --footer-mark-highlight: #b0f7bd; position: relative; background: var(--bg-base); color: var(--text-primary); overflow: clip; }
-:root[data-theme="light"] .rb-home { --home-green: #226b3b; --home-cell-0: #e1eee4; --home-cell-1: #c9e7d1; --home-cell-2: #9ad5a9; --home-cell-3: #54ad6b; --home-cell-4: #287246; --home-panel: #f3f8f4; --footer-cell: #abd9b6; --footer-mark-base: #237340; --footer-mark-highlight: #53b971; }
+.rb-home { position: relative; background: var(--bg-base); color: var(--text-primary); overflow: clip; }
 .rb-home, .rb-home * { box-sizing: border-box; }
 .rb-home .rb-home-width { width: min(100%,1280px); margin-inline: auto; padding-inline: 48px; }
 .rb-home :where(h1,h2,h3,p) { margin: 0; }
@@ -9,15 +6,15 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
 .rb-home a { text-decoration: none; }
 .rb-home :focus-visible { outline: 2px solid var(--text-primary); outline-offset: 5px; }
 .rb-home .rb-home-eyebrow { display: flex; align-items: center; gap: 9px; color: var(--text-secondary); font: 10px/1.6 var(--font-mono); letter-spacing: .07em; text-transform: uppercase; }
-.rb-home-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--home-green); }
+.rb-home-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--site-green); }
 .rb-home .rb-home-hero { display: grid; grid-template-columns: minmax(0,1.12fr) minmax(0,1fr); gap: 64px; align-items: center; padding-top: 144px; padding-bottom: 52px; }
 .rb-home-hero-copy { min-width: 0; }
 .rb-home h1 { font-size: clamp(54px,5.7vw,76px); letter-spacing: -.058em; line-height: 1.045; font-weight: 550; margin: 24px 0; }
 .rb-home h1 > span { color: var(--text-secondary); }
 .rb-home .rb-home-lede { max-width: 43ch; font-size: 17px; line-height: 1.8; color: var(--text-secondary); }
 .rb-home-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 16px 22px; margin-top: 29px; }
-.rb-home .rb-home-button { display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 49px; padding: 13px 20px; border: 1px solid var(--text-primary); border-radius: 7px; background: var(--text-primary); color: var(--bg-base); font-size: 13px; font-weight: 550; transition: transform .2s, opacity .2s; }
-.rb-home .rb-home-button:hover { opacity: .86; transform: translateY(-2px); }
+.rb-home .rb-home-button { display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 49px; padding: 13px 20px; border: 1px solid var(--site-action); border-radius: 8px; background: var(--site-action); color: var(--site-action-ink); font-size: 13px; font-weight: 550; transition: transform .2s, opacity .2s; }
+.rb-home .rb-home-button:hover { transform: translateY(-2px); }
 .rb-home .rb-home-text-link { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; color: var(--text-primary); font-size: 13px; font-weight: 500; }
 .rb-home-text-link svg { flex: none; }
 .rb-home .rb-home-readiness { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 9px; margin-top: 23px; font-size: 11px; line-height: 1.6; color: var(--text-secondary); }
@@ -25,17 +22,17 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
 .rb-home-readiness > a { text-decoration: underline; text-underline-offset: 3px; min-height: 24px; display: inline-flex; align-items: center; margin-left: 3px; }
 .rb-home-panel {
   min-width: 0;
-  border: 1px solid color-mix(in srgb, var(--home-green) 22%, var(--border-default));
+  border: 1px solid color-mix(in srgb, var(--site-green) 22%, var(--border-default));
   border-radius: 14px;
-  background: var(--home-panel);
+  background: var(--site-panel);
 }
-.rb-home-preview { margin: 0; overflow: hidden; box-shadow: 0 24px 75px color-mix(in srgb, var(--home-green) 7%, transparent); }
+.rb-home-preview { margin: 0; overflow: hidden; box-shadow: 0 24px 75px color-mix(in srgb, var(--site-green) 7%, transparent); }
 .rb-home-preview-art {
   position: relative;
   display: grid;
   place-items: center;
   padding-block: 12px;
-  background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--home-green) 10%, transparent), transparent 68%);
+  background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--site-green) 10%, transparent), transparent 68%);
 }
 .rb-home-preview-art .rb-footer-art { width: min(100%, 480px); }
 .rb-home-preview-heading {
@@ -49,17 +46,17 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
 }
 .rb-home-example-label { display: block; color: var(--text-secondary); font-size: 12px; margin-bottom: 5px; }
 .rb-home-preview-heading strong { font-size: clamp(17px, 2.2vw, 26px); font-weight: 550; letter-spacing: -.035em; }
-.rb-home-preview-heading strong span { color: var(--home-green); padding-inline: 3px; }
+.rb-home-preview-heading strong span { color: var(--site-green); padding-inline: 3px; }
 .rb-home-alert-icon, .rb-home-evidence-icon {
   flex: none;
   display: grid;
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid color-mix(in srgb, var(--home-green) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--site-green) 28%, transparent);
   border-radius: 8px;
-  color: var(--home-green);
-  background: color-mix(in srgb, var(--home-green) 8%, transparent);
+  color: var(--site-green);
+  background: color-mix(in srgb, var(--site-green) 8%, transparent);
 }
 .rb-home-preview-checks { margin: 0; padding: 10px 24px 20px; }
 .rb-home-preview-checks > div {
@@ -71,28 +68,14 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
   font-size: 12px;
 }
 .rb-home-preview-checks dd { display: grid; grid-template-columns: minmax(0, 1fr) 112px; align-items: center; gap: 12px; margin: 0; }
-.rb-home-preview-checks dd > span:last-child { display: flex; align-items: center; gap: 5px; color: var(--home-green); }
+.rb-home-preview-checks dd > span:last-child { display: flex; align-items: center; gap: 5px; color: var(--site-green); }
 .rb-home-preview-checks dd svg { flex: none; }
-.rb-home-tiles { display: grid; grid-template-columns: repeat(var(--tile-count), minmax(0, 1fr)); gap: clamp(2px, .3vw, 4px); }
-.rb-home-tiles i { aspect-ratio: 1; border-radius: 22%; background: var(--home-cell-0); }
-.rb-home-tiles i[data-level="1"] { background: var(--home-cell-1); }
-.rb-home-tiles i[data-level="2"] { background: var(--home-cell-2); }
-.rb-home-tiles i[data-level="3"] { background: var(--home-cell-3); }
-.rb-home-tiles i[data-level="4"] { background: var(--home-cell-4); }
 @media (prefers-reduced-motion: no-preference) {
-  .rb-home-preview .rb-home-tiles i { animation: rb-home-tile-fill .5s both; animation-delay: calc(200ms + var(--tile-delay)); }
+  .rb-home-preview .rb-signal-tiles i { animation: rb-home-tile-fill .5s both; animation-delay: calc(200ms + var(--tile-delay)); }
   .rb-home-preview .rb-home-alert-icon { animation: rb-home-alert-enter .45s .85s both; }
-  @supports (animation-timeline: view()) {
-    :is(.rb-home-story, .rb-home-delivery) .rb-home-tiles {
-      animation: rb-home-tile-trail both;
-      animation-timeline: view();
-      animation-range: entry 5% cover 30%;
-    }
-  }
 }
-@keyframes rb-home-tile-fill { from { background: var(--home-cell-0); } }
+@keyframes rb-home-tile-fill { from { background: var(--site-cell-0); } }
 @keyframes rb-home-alert-enter { from { opacity: .4; transform: scale(.87); } }
-@keyframes rb-home-tile-trail { from { clip-path: inset(0 92% 0 0); } to { clip-path: inset(0); } }
 .rb-home .rb-home-section { padding-top: 88px; padding-bottom: 88px; scroll-margin-top: 86px; }
 .rb-home h2 { font-size: clamp(32px,3.6vw,45px); font-weight: 500; line-height: 1.14; letter-spacing: -.045em; }
 .rb-home h2 > span { color: var(--text-secondary); }
@@ -110,8 +93,8 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
 .rb-home-evidence strong, .rb-home-checkpoints strong { font-size: 13px; line-height: 1.35; font-weight: 550; display: block; }
 .rb-home-evidence p { color: var(--text-secondary); font-size: 12px; line-height: 1.5; margin-top: 3px; }
 .rb-home-checkpoints { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 30px 0 12px; }
-.rb-home-checkpoints li { border-left: 1px solid var(--home-cell-3); padding-left: 10px; }
-.rb-home-checkpoints li > span { display: block; font-size: 12px; color: var(--home-green); margin-bottom: 5px; }
+.rb-home-checkpoints li { border-left: 1px solid var(--site-cell-3); padding-left: 10px; }
+.rb-home-checkpoints li > span { display: block; font-size: 12px; color: var(--site-green); margin-bottom: 5px; }
 .rb-home-timeline > .rb-home-timeline-note { padding-top: 14px; margin-top: 20px; border-top: 1px solid var(--border-default); font-size: 13px; }
 .rb-home-delivery {
   display: grid;
@@ -127,12 +110,12 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
   padding: 14px clamp(16px, 2.5vw, 34px);
 }
 .rb-home-delivery > div + div { border-left: 1px solid var(--border-default); }
-.rb-home-delivery dt { font: 13px/1.5 var(--font-mono); color: var(--home-green); }
+.rb-home-delivery dt { font: 13px/1.5 var(--font-mono); color: var(--site-green); }
 .rb-home-delivery dd { display: grid; grid-template-columns: minmax(38px, 76px) minmax(0, 1fr); gap: 15px; align-items: center; margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.55; }
 .rb-home-start-grid { display: grid; grid-template-columns: 1fr 1fr; margin-top: 15px; border: 1px solid var(--border-default); border-radius: 12px; overflow: hidden; }
 .rb-home-start { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; padding: 34px; }
 .rb-home-start + .rb-home-start { border-left: 1px solid var(--border-default); }
-.rb-home-start > svg { color: var(--home-green); margin-bottom: 23px; }
+.rb-home-start > svg { color: var(--site-green); margin-bottom: 23px; }
 .rb-home-start h3 { font-size: 25px; line-height: 1.3; font-weight: 500; letter-spacing: -.03em; }
 .rb-home-start > p { font-size: 14px; line-height: 1.8; color: var(--text-secondary); margin-top: 11px; }
 .rb-home-start > .rb-home-text-link { margin-top: 14px; }
@@ -151,7 +134,7 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
 .rb-home-questions summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 18px; cursor: pointer; padding-block: 22px; font-size: 14px; line-height: 1.5; }
 .rb-home-questions summary::-webkit-details-marker { display: none; }
 .rb-home-questions summary > svg { flex: none; color: var(--text-secondary); }
-.rb-home-questions details[open] summary > svg { color: var(--home-green); transform: rotate(180deg); }
+.rb-home-questions details[open] summary > svg { color: var(--site-green); transform: rotate(180deg); }
 .rb-home-questions details a { text-decoration: underline; text-underline-offset: 3px; }
 .rb-home-questions details p { font-size: 14px; line-height: 1.85; color: var(--text-secondary); padding: 0 30px 24px 0; }
 .rb-home .rb-home-build { display: grid; grid-template-columns: 1.5fr 1fr; gap: 80px; padding-top: 40px; padding-bottom: 40px; position: relative; scroll-margin-top: 90px; }
@@ -208,6 +191,6 @@ body:has(.rb-home) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: 
   .rb-home-preview-checks dd { grid-template-columns: minmax(0, 1fr) 91px; }
   .rb-home-evidence li { grid-template-columns: auto minmax(0, 1fr) 46px; gap: 8px; }
   .rb-home-delivery dd { grid-template-columns: 1fr; }
-  .rb-home-delivery dd > .rb-home-tiles { width: 64px; }
+  .rb-home-delivery dd > .rb-signal-tiles { width: 64px; }
 }
 @media (prefers-reduced-motion: reduce) { .rb-home *, .rb-home *::before, .rb-home *::after { animation: none !important; transition: none !important; } }
