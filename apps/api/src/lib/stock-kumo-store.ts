@@ -72,7 +72,7 @@ export async function publishStockPredictions(input: unknown, options: { sql?: S
       const prediction: StockPrediction = { model_id: batch.model_id, engine: "kumo-engine", probability: value.probability,
         baseline_probability: batch.baseline_probability, target: STOCK_KUMO_TARGET, issued_at: new Date(now).toISOString(),
         valid_until: alert.valid_until, training_cutoff: batch.training_cutoff, universe_version: batch.universe_version };
-      const insertedRows = await tx.unsafe("insert into public.rarebird_stock_predictions(alert_id,prediction) values($1,$2::jsonb) on conflict(alert_id) do nothing returning alert_id", [alert.id, JSON.stringify(prediction)]);
+      const insertedRows = await tx.unsafe("insert into public.rarebird_stock_predictions(alert_id,prediction) values($1,$2::jsonb) on conflict(alert_id) do nothing returning alert_id", [alert.id, prediction]);
       inserted += insertedRows.length;
     }
     return { inserted, skipped };
