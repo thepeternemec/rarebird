@@ -83,3 +83,16 @@ test("forward outcomes exclude future bars, late backfills and mismatched feeds;
   const inactive: StockAlert = { ...first, state: "invalidated", closed_at: new Date(now + 60000).toISOString() };
   assert.equal(settleStockOutcomes(inactive, frame, due + 180000).outcomes[0]!.status, "missing", "failed setups remain in the measurement cohort");
 });
+
+test("continuing setups publish bounded updates only for fresh measurement windows", () => {
+  const first = start(), screen = screenStock(stockFixture(), "NVDA", now);
+  const unchanged = evolveStockAlert(first, screen, now + 5 * 60000, "iex", "unused");
+  assert.equal(unchanged.type, null, "old measurements do not produce a heartbeat");
+  const fresh = { ...screen, metrics: { ...screen.metrics!, measured_at: new Date(now + 5 * 60000).toISOString() } };
+  const update = evolveStockAlert(first, fresh, now + 5 * 60000, "iex", "unused");
+  assert.equal(update.type, "updated");
+  assert.equal(update.alert!.version, 2);
+  assert.equal(update.alert!.id, first.id);
+  assert.deepEqual(update.alert!.reference, first.reference);
+  assert.equal(evolveStockAlert(update.alert, fresh, now + 6 * 60000, "iex", "unused").type, null);
+});

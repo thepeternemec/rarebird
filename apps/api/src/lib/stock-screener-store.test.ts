@@ -113,3 +113,78 @@ test("Postgres freezes first observations, scores closed setups and does not rep
     assert.equal(sends, 0);
   } finally { await sql.end(); process.env = saved; }
 });
+
+test("one setup is detected, delivered, updated, expired and measured through public replay", { skip: !connection, timeout: 45000 }, async () => {
+  const saved = { ...process.env }, sql = postgres(connection!, { prepare: false, max: 3, onnotice: () => {} });
+  configure();
+  let now = Date.parse("2026-11-25T16:00:00Z");
+  const issued = now, frame = stockFixture();
+  for (const asset of Object.values(frame.instruments)) {
+    if (!["NVDA", "SPY"].includes(asset.symbol)) asset.verified = false;
+  }
+  const deps = { sql, now: () => now, fetchFrame: async () => frame, deliver: false };
+  const received = new Map<string, number>();
+  let retryCreation = true;
+  const receiver: typeof fetch = async (_url, init) => {
+    const body = String(init!.body), headers = init!.headers as Record<string, string>;
+    assert.equal(headers["X-Rarebird-Signature"], "v1=" + createHmac("sha256", process.env.RAREBIRD_STOCK_SCREENER_WEBHOOK_SECRET!)
+      .update(`${headers["X-Rarebird-Timestamp"]}.${body}`).digest("hex"));
+    const event = JSON.parse(body);
+    assert.equal(event.alert.symbol, "NVDA");
+    received.set(event.id, (received.get(event.id) ?? 0) + 1);
+    if (event.type === "created" && retryCreation) { retryCreation = false; return new Response(null, { status: 503 }); }
+    return new Response(null, { status: 204 });
+  };
+  try {
+    await sql.unsafe(STOCK_SCREENER_SCHEMA); await sql.unsafe(reset);
+    assert.equal((await runStockScreener(deps)).alerts, 1);
+    const first = (await readStockScreener({}, { sql, now })).active[0]!;
+    const query = { alert_id: first.id, after: "0", limit: 1 };
+    await deliverStockEvents(sql, { now: () => now, fetcher: receiver });
+    let page = await readStockScreener(query, { sql, now });
+    assert.equal(page.event_delivery![0]!.status, "pending");
+    now += 31000;
+    await deliverStockEvents(sql, { now: () => now, fetcher: receiver });
+    page = await readStockScreener(query, { sql, now });
+    assert.equal(page.event_delivery![0]!.status, "delivered");
+    assert.equal(page.event_delivery![0]!.attempts, 2);
+    assert.ok(page.event_delivery![0]!.delivered_at);
+
+    await runStockScreener({ ...deps, fetchFrame: async () => { throw new Error("stock_feed_unavailable"); } });
+    await deliverStockEvents(sql, { now: () => now, fetcher: receiver });
+    now += 1000; refresh(frame, now);
+    await runStockScreener(deps);
+    await deliverStockEvents(sql, { now: () => now, fetcher: receiver });
+
+    for (const horizon of [15, 60]) {
+      now = issued + horizon * 60000 + 1000;
+      for (const asset of Object.values(frame.instruments)) {
+        const close = asset.symbol === "SPY" ? first.reference.benchmark_price : first.reference.price * (horizon === 15 ? 1.01 : .99);
+        asset.bars.push({ time: issued + (horizon - 1) * 60000, open: close, high: close, low: close, close, volume: 1000, observed_at: now });
+      }
+      refresh(frame, now);
+      await runStockScreener(deps);
+      await deliverStockEvents(sql, { now: () => now, fetcher: receiver });
+    }
+    const result = await readStockScreener({ alert_id: first.id, after: "0", limit: 50 }, { sql, now });
+    assert.equal(result.active.length, 0);
+    assert.equal(result.recent.length, 1);
+    const final = result.recent[0]!;
+    assert.equal(final.id, first.id);
+    assert.deepEqual(final.reference, first.reference);
+    assert.equal(final.state, "expired");
+    assert.ok(final.outcomes.every(outcome => outcome.status === "observed"));
+    assert.ok(final.outcomes[1]!.relative_return_bps! < 0, "unfavourable follow-through remains visible");
+    assert.deepEqual(result.events.map(event => event.type), ["created", "data_hold", "updated", "measured", "expired", "measured"]);
+    assert.deepEqual(result.events.map(event => event.alert.version), [1, 2, 3, 4, 5, 6]);
+    assert.ok(result.event_delivery!.every(receipt => receipt.status === "delivered"));
+    assert.equal(received.size, 6);
+    assert.equal(result.evaluation.observed, 1);
+    assert.equal(result.evaluation.mean_cost_scenario_bps, null);
+    assert.equal(result.evaluation.cohort!.feed, "iex");
+    const next = await readStockScreener({ ...query, after: page.next_cursor }, { sql, now });
+    assert.equal(next.events[0]!.type, "data_hold", "filtered replay preserves event order and cursor");
+    const absent = await readStockScreener({ alert_id: "stock_absent", after: "0" }, { sql, now });
+    assert.equal(absent.recent.length, 0); assert.equal(absent.events.length, 0);
+  } finally { await sql.end(); process.env = saved; }
+});

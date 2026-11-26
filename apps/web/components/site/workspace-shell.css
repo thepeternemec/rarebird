@@ -102,3 +102,9 @@
   .rb-app-nav > a { font-size: 12px; padding-inline: 7px; }
   .rb-app-heading > p { font-size: 15px; }
 }
+
+.rb-app-nav > a[aria-current="page"] { color: var(--text-primary); background: var(--bg-raised); }
+@media (max-width: 440px) {
+  .rb-workspace-header .brand-wordmark { width: 110px; }
+  .rb-app-nav > a { font-size: 11px; padding-inline: 6px; }
+}

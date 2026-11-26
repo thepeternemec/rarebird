@@ -39,9 +39,9 @@ export async function deliverStockEvents(sql: Sql, options: { fetcher?: typeof f
   // Retries may arrive after a newer version. Receivers retain the greatest alert version.
   for (const row of rows) {
     const now = clock();
-    const event = (typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload) as { type: string };
-    const current = (typeof row.current === "string" ? JSON.parse(row.current) : row.current) as { state: string; valid_until: string };
-    const obsolete = ["created", "updated"].includes(event.type) && (current.state !== "active" || now >= Date.parse(current.valid_until));
+    const event = (typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload) as { type: string; alert: { version: number } };
+    const current = (typeof row.current === "string" ? JSON.parse(row.current) : row.current) as { state: string; valid_until: string; version: number };
+    const obsolete = ["created", "updated"].includes(event.type) && (current.state !== "active" || now >= Date.parse(current.valid_until) || event.alert.version < current.version);
     if (obsolete || row.destination_hash !== config.destination_hash || now - new Date(row.recorded_at).getTime() > 5 * 60000) {
       await sql.unsafe("update public.rarebird_stock_outbox set status='skipped',lease_until=null where event_id=$1 and lease_token=$2", [row.event_id, token]);
       continue;
