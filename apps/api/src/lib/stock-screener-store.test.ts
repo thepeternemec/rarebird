@@ -214,7 +214,7 @@ test("stock Kumo predictions are prospective, immutable and measured on the same
     await assert.rejects(publishStockPredictions({ ...batch, training_cutoff: new Date(now + 1000).toISOString() }, { sql, now }), /provenance/);
     await assert.rejects(publishStockPredictions({ ...batch, predictions: [{ alert_id: alert.id, probability: 1.2 }] }, { sql, now }));
     const outcome = { ...alert, outcomes: alert.outcomes.map(row => row.minutes === 15 ? { ...row, status: "observed", measured_at: row.due_at, cost_scenario_bps: -10 } : row) };
-    await sql.unsafe("update public.rarebird_stock_alerts set record=$2::jsonb where id=$1", [alert.id, outcome]);
+    await sql.unsafe("update public.rarebird_stock_alerts set record=$2::jsonb where id=$1", [alert.id, JSON.parse(JSON.stringify(outcome))]);
     const measured = await readStockModel({ sql, now: now + 1000000 });
     assert.equal(measured.model.observed, 1, "settled matched cohort " + JSON.stringify(measured)); assert.equal(measured.model.brier, null);
     assert.equal(measured.model.baseline_brier, null, "small samples never become an aggregate performance claim");
