@@ -4,10 +4,13 @@ import { ArrowUpRight, ChevronDown } from "lucide-react";
 import SiteFooter from "./site-footer";
 import BrandMark, { BrandWordmark } from "./brand-mark";
 import ThemeToggle from "./theme-toggle";
+import MobileNavigation from "./mobile-navigation";
+import { AGENT_SETUP_HREF, NAVIGATION_LINKS, WORKSPACE_LINKS } from "@/lib/navigation";
+import "./mobile-navigation.css";
 import "./workspace-shell.css";
 
 export default function WorkspaceShell({ active, title, description, children }: {
-  active: "/app" | "/app/screener" | "/tokens";
+  active: "/app/research" | "/app/screener" | "/tokens";
   title?: string;
   description?: string;
   children: ReactNode;
@@ -19,12 +22,13 @@ export default function WorkspaceShell({ active, title, description, children }:
         <div className="rb-workspace-header-inner">
           <a className="rb-workspace-brand" href="/" aria-label="Rarebird home"><BrandMark className="rb-workspace-emblem" size={32} /><BrandWordmark className="brand-wordmark" width={122} /></a>
           <nav className="rb-app-nav" aria-label="Rarebird workspace">
-            <Link href="/app" aria-current={active === "/app/screener" ? "page" : undefined}>Setups</Link>
-            <Link href="/app?market=equity" aria-current={active === "/app" ? "page" : undefined}>Research</Link>
+            {WORKSPACE_LINKS.map(link => <Link key={link.href} href={link.href} aria-current={active === link.href ? "page" : undefined}>{link.label}</Link>)}
           </nav>
           <div className="rb-workspace-header-actions">
-            <Link className="rb-workspace-guide" href="/docs/connect#stock-screener">Connect your agent <ArrowUpRight size={14} aria-hidden="true" /></Link>
+            <Link className="rb-workspace-docs" href="/docs">Docs</Link>
+            <Link className="rb-workspace-guide" href={AGENT_SETUP_HREF}>Connect your agent <ArrowUpRight size={14} aria-hidden="true" /></Link>
             <ThemeToggle />
+            <MobileNavigation variant="workspace" links={NAVIGATION_LINKS} active={active} />
           </div>
         </div>
       </header>

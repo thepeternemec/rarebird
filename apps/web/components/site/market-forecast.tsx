@@ -78,7 +78,7 @@ export function MarketForecastPanel({ outlook, now, unavailable, compact = false
         </article>;
       })}
     </div> : <p className="rb-forecast-meta">{unavailable || outlook ? "Forecasts temporarily unavailable." : "Checking the latest forecasts…"}</p>}
-    {compact ? <a className="rb-brief-detail" href="/app/forecasts">Forecast evidence and results <ArrowUpRight size={13} aria-hidden="true" /></a>
+    {compact ? <a className="rb-brief-detail" href="/app/research?market=crypto#forecasts">Forecast evidence and results <ArrowUpRight size={13} aria-hidden="true" /></a>
       : <a className="rb-brief-source" href="https://github.com/thepeternemec/rarebird/blob/main/docs/QUANTITATIVE.md#historical-replay">Method and historical results <ArrowUpRight size={12} aria-hidden="true" /></a>}
   </section>;
 }

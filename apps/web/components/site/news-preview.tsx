@@ -259,7 +259,7 @@ export default function NewsPreview({ cryptoFirst = false }: { cryptoFirst?: boo
       </div>
       <div className="news-preview-footer">
         <p>Real headlines. The same feed your agent can use.</p>
-        <a href="/dashboard">
+        <a href="/app/research#news">
           Explore more news <ArrowRight size={13} />
         </a>
       </div>

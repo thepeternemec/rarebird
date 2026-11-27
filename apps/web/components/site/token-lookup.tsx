@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { parseTokenAsset, TOKEN_ADDRESS_ERROR, TOKEN_CHAINS, TOKENIZED_EQUITIES,
   type TokenChain, type TokenIntelligence } from "@rarebird/contracts/token-intelligence";
+import { workspaceAssetHref, workspaceSearchHref } from "@/lib/workspace-links";
 import CopyButton from "./copy-button";
 import { API_BASE } from "./content";
 import "./token-lookup.css";
@@ -116,7 +117,7 @@ export default function TokenLookup({ initial }: { initial: { chain: TokenChain;
         {report.registry && <section className="token-card" aria-labelledby="token-company">
           <div className="token-section-head">
             <h3 id="token-company">Underlying company · {report.registry.ticker}</h3>
-            <a href={"/ask?" + new URLSearchParams({ ticker: report.registry.ticker, ...(report.underlying_news ? { beat_id: report.underlying_news.beat_id } : {}) })}>Research {report.registry.ticker} <ArrowUpRight size={14} aria-hidden="true" /></a>
+            <a href={report.underlying_news ? workspaceAssetHref(report.underlying_news.beat_id) + "#brief" : workspaceSearchHref(report.registry.ticker)}>Research {report.registry.ticker} <ArrowUpRight size={14} aria-hidden="true" /></a>
           </div>
           <p className="token-muted">{report.registry.issuer} · {report.registry.isin} · <a href={report.registry.source_url} target="_blank" rel="noreferrer">Issuer record</a> checked {report.registry.checked_on}</p>
           {report.underlying_news?.items.length ? <ul className="token-reports">{report.underlying_news.items.map(item => <li key={item.url}>

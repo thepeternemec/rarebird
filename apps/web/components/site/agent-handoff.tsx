@@ -24,7 +24,7 @@ export default function AgentHandoff() {
           <pre>{active.prompt}</pre>
         </div>
       </div>
-      <p className="bs-handoff-note">Copy a prompt into an agent connected through MCP. This playbook does not run tasks or send messages. <a href="/dashboard">Build a brief from current coverage →</a></p>
+      <p className="bs-handoff-note">Copy a prompt into an agent connected through MCP. This playbook does not run tasks or send messages. <a href="/app/research#news">Build a brief from current coverage →</a></p>
     </div>
   );
 }

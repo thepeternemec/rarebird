@@ -4,12 +4,13 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { BrandWordmark } from "./brand-mark";
 import ThemeToggle from "./theme-toggle";
+import { SCREENER_HREF } from "@/lib/navigation";
 
 type NavigationLink = { href: string; label: string; description: string };
 
 /** Native modal behavior keeps focus and scrolling inside the mobile menu. */
 export default function MobileNavigation({ links, active, variant = "site" }: {
-  links: NavigationLink[];
+  links: readonly NavigationLink[];
   active?: string;
   variant?: "site" | "workspace";
 }) {
@@ -40,26 +41,26 @@ export default function MobileNavigation({ links, active, variant = "site" }: {
   return (
     <>
       <button ref={trigger} type="button" className={workspace ? "rb-app-more-toggle" : "nav-menu-toggle"}
-        aria-label={workspace ? "Open workspace tools" : "Open navigation menu"} aria-haspopup="dialog" aria-expanded={open} aria-controls={id}
-        onClick={() => setOpen(true)}><Menu size={20} aria-hidden="true" />{workspace && <span>Tools</span>}</button>
+        aria-label={workspace ? "Open workspace menu" : "Open navigation menu"} aria-haspopup="dialog" aria-expanded={open} aria-controls={id}
+        onClick={() => setOpen(true)}><Menu size={20} aria-hidden="true" />{workspace && <span>Menu</span>}</button>
       <dialog ref={dialog} id={id} className="mobile-nav-dialog" aria-labelledby={id + "-title"} data-lenis-prevent onCancel={() => setOpen(false)} onClose={() => setOpen(false)} onClick={event => { if (event.target === event.currentTarget) setOpen(false); }}>
         <div className="mobile-nav-panel">
           <div className="mobile-nav-heading">
             <a className="nav-logo" href="/" aria-label="Rarebird home" onClick={() => setOpen(false)}>
               <BrandWordmark className="brand-wordmark" />
             </a>
-            <h2 id={id + "-title"} className="mobile-nav-title">{workspace ? "Workspace tools" : "Navigation"}</h2>
+            <h2 id={id + "-title"} className="mobile-nav-title">{workspace ? "Workspace navigation" : "Navigation"}</h2>
             <button type="button" className="nav-menu-close" aria-label="Close navigation menu" onClick={() => setOpen(false)} autoFocus><X size={20} aria-hidden="true" /></button>
           </div>
           <nav className="mobile-nav-links" aria-label="Mobile navigation">
             {links.map(link => (
-              <a key={link.href} href={link.href} aria-current={active === link.href.split("#")[0] ? "page" : undefined} onClick={() => setOpen(false)}>
+              <a key={link.href} href={link.href} aria-current={active === link.href ? "page" : undefined} onClick={() => setOpen(false)}>
                 <span><strong>{link.label}</strong><span>{link.description}</span></span><ArrowRight size={16} aria-hidden="true" />
               </a>
             ))}
           </nav>
           <div className="mobile-nav-bottom">
-            {!workspace && <a className="mobile-nav-primary" href="/app" onClick={() => setOpen(false)}>Open app<ArrowRight size={16} aria-hidden="true" /></a>}
+            {!workspace && <a className="mobile-nav-primary" href={SCREENER_HREF} onClick={() => setOpen(false)}>Open stock screener<ArrowRight size={16} aria-hidden="true" /></a>}
             <div className="mobile-nav-appearance"><span>Appearance</span><ThemeToggle /></div>
           </div>
         </div>

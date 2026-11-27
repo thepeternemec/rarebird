@@ -2,22 +2,23 @@ import { ArrowUpRight } from "lucide-react";
 import BrandMark, { BrandWordmark } from "./brand-mark";
 import { EARLY_ACCESS_END } from "./access-offer";
 import FooterSignalMark from "./footer-signal-mark";
+import { AGENT_SETUP_HREF, RESEARCH_HREF, SCREENER_HREF } from "@/lib/navigation";
 import "./site-footer.css";
 
 const links = [
   {
     title: "Product",
     items: [
-      { href: "/app", label: "Open app" },
+      { href: SCREENER_HREF, label: "Stock screener" },
+      { href: RESEARCH_HREF, label: "Research" },
       { href: "/for-agents", label: "For agents" },
-      { href: "/app/screener", label: "Stock screener" },
       { href: "/pricing", label: "Pricing" },
     ],
   },
   {
     title: "Developers",
     items: [
-      { href: "/docs/quickstart", label: "Quickstart" },
+      { href: AGENT_SETUP_HREF, label: "Connect your agent" },
       { href: "/docs", label: "Documentation" },
       { href: "/keys", label: "Get a key" },
       { href: "/llms", label: "llms.txt" },
