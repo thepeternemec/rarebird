@@ -10,7 +10,7 @@ Use Node.js 22 or 24 and npm:
 
 ```bash
 git clone https://github.com/thepeternemec/rarebird.git
-cd Rarebird
+cd rarebird
 npm ci
 npm run build
 npm test
@@ -76,7 +76,7 @@ A successful collection can contain no matching articles. Freshness describes th
 
 | Capability | Configuration |
 | --- | --- |
-| Generated summaries and pilot analysis | Server-side Vercel AI Gateway credentials; `AI_GATEWAY_API_KEY` outside Vercel, or the deployment's OIDC identity on Vercel |
+| Explicit question research and pilot analysis | Server-side Vercel AI Gateway credentials; `AI_GATEWAY_API_KEY` outside Vercel, or the deployment's OIDC identity on Vercel |
 | Pilot scheduled routes | `CRON_SECRET`; send the matching bearer authorization when invoking them |
 | Manual general ingestion | `RAREBIRD_CRON_SECRET` |
 | GitHub-issued account keys | `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`; callback at your local origin's `/api/keys/callback` |
@@ -106,3 +106,7 @@ CI runs the same build and standard suite, plus persistence checks in a disposab
 | Intelligence is pending or unavailable | Check analysis timestamps and worker configuration; news collection alone does not create interpretations |
 
 [Architecture](ARCHITECTURE.md) · [Intelligence design](INTELLIGENCE.md) · [Market methodology](QUANTITATIVE.md)
+
+## Stock screening and predictions
+
+For Alpaca credentials, the stock detector, signed delivery, the Python 3.12 Kumo worker and activation checks, follow [STOCK-OPERATIONS.md](STOCK-OPERATIONS.md). The shared [feed catalog](DATA-FEEDS.md) distinguishes source availability from model inputs.
