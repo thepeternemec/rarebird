@@ -39,6 +39,8 @@ docker compose --env-file /secure/rarebird-stock.env -f deploy/stock-kumo.compos
 
 The named volume keeps model bundles and reports. Creating this manifest does not provision or pay for a host. Run one worker against that volume. An output-directory lock prevents accidental duplicate local processes.
 
+The web project stays rooted at `apps/web` on Vercel. A separate Vercel project rooted at `scripts/kumo-stocks` does not run this continuous worker: Vercel Functions have finite invocation durations. Deploy the Docker service on the persistent host instead. The API endpoints continue to live in the web deployment. See [Vercel's duration documentation](https://vercel.com/docs/functions/configuring-functions/duration).
+
 The worker retries failed requests, fitting and publication with bounded backoff. It refreshes the active population after fitting, skips already-published episodes and avoids hourly refitting when fitting data is unchanged. It refreshes an unchanged model before the publication age limit. Redirects are refused, including authenticated uploads. Reports and batches are written atomically; public errors use fixed codes rather than exception strings that might contain secrets.
 
 The health check reads the local status file. A background heartbeat continues during fitting and is recorded on the API with server time. The app shows a disconnected worker after three minutes without a heartbeat. A healthy container can still be **blocked** by an unconfigured feed or warming up for observations; liveness does not establish readiness or predictive accuracy.

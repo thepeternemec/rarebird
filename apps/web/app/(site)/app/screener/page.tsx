@@ -3,7 +3,7 @@ import StockScreener from "@/components/site/stock-screener";
 
 export const metadata = {
   title: "Stock screener | Rarebird",
-  description: "Developing setups in NVIDIA, Apple, Microsoft and Alphabet. Relative strength, participation, source context and a clear alert lifecycle for agents.",
+  description: "S&P 500 stock setups with relative strength, participation, source evidence, explicit expiry and a forward record for agents.",
   alternates: { canonical: "/app/screener" },
 };
 

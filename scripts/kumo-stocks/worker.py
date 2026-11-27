@@ -85,6 +85,7 @@ class StockWorker:
         self.directory.mkdir(parents=True, exist_ok=True)
         self.pulse = Pulse(self.directory, self.origin, args.publish, fetch, clock)
         self.scorer, self.model, self.signature, self.cohort = None, None, None, None
+        self.stop = threading.Event()
         self.fitted_at, self.failures, self.stage = 0, 0, "stock_model_request_failed"
 
     def dataset(self):
@@ -119,7 +120,8 @@ class StockWorker:
                       "minimum_observed": 120, "minimum_trading_dates": 6})
         if not cohorts:
             self.pulse.update("warming_up")
-            self.pulse.beat()
+            if not self.pulse.beat() and self.args.publish:
+                raise WorkerError("stock_publication_failed")
             return {**report, "reason": "Need 120 observed setups, six UTC trading dates and both classes in the purged fitting splits."}
         # Verify the publication connection before spending compute on a fit.
         if self.args.publish and not self.pulse.beat():
@@ -133,6 +135,9 @@ class StockWorker:
             self.pulse.beat()
             scorer, model = self.fit(examples, cohorts, self.directory / ("model-" + str(time.time_ns())))
             self.scorer, self.model, self.signature, self.fitted_at = scorer, model, signature, self.clock()
+        if self.stop.is_set():
+            self.pulse.update("stopped", model_id=self.model["model_id"])
+            return {**report, "status": "stopped"}
         current = data if self.args.dataset else self.dataset()
         if (current["universe_version"], current["feed"]) != cohort:
             raise WorkerError("stock_cohort_changed")
@@ -148,6 +153,9 @@ class StockWorker:
         batch.update(**self.pulse.cohort, predictions=[{"alert_id": row["id"], "probability": scores[row["id"]]} for row in population])
         atomic_json(self.directory / "batch.json", batch)
         report.update(status="shadow", model=self.model, eligible=len(population))
+        if self.stop.is_set():
+            self.pulse.update("stopped", model_id=self.model["model_id"])
+            return {**report, "status": "stopped"}
         self.stage = "stock_publication_failed"
         if self.args.publish and batch["predictions"]:
             report["publication"] = self.fetch(self.origin + "/api/cron/stock-kumo", batch)
@@ -178,7 +186,7 @@ def run_worker(args):
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             raise SystemExit("Another worker already uses this output directory")
-        stop = threading.Event()
+        stop = worker.stop
         for event in (signal.SIGTERM, signal.SIGINT):
             signal.signal(event, lambda *_: stop.set())
         pulse = threading.Thread(target=worker.pulse.watch, daemon=True)

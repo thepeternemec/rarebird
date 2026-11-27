@@ -72,6 +72,7 @@ export default function StockScreener() {
   const workerState = modelWorker?.last_seen_at && now - Date.parse(modelWorker.last_seen_at) > 180000 ? "stale" : modelWorker?.state ?? "not_connected";
   const modelHeadline = loading ? "Checking the prediction worker" : error ? "Model status unavailable"
     : feed?.status === "not_configured" ? "Waiting for the stock feed"
+    : feed?.model?.status === "unavailable" ? "Model measurements unavailable"
     : ({ not_connected: "Prediction worker not connected", stale: "Prediction worker disconnected", unavailable: "Worker status unavailable",
       blocked: "Waiting for usable training data", degraded: "Prediction worker is recovering", stopped: "Prediction worker stopped",
       training: "Training Kumo", scoring: "Scoring experimental setups", warming_up: "Collecting training observations" }[workerState]);

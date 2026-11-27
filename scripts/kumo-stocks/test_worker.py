@@ -114,6 +114,28 @@ class WorkerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "file dataset"):
                 StockWorker(args)
 
+    def test_bad_publication_access_is_a_recoverable_error_during_warmup(self):
+        data = fixture()
+        def fetch(url, body=None):
+            if body:
+                raise OSError("unauthorized with PRIVATE-TOKEN")
+            return data
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"RAREBIRD_STOCK_MODEL_SECRET": "synthetic-only"}):
+            worker = StockWorker(self.args(directory, publish=True), fetch=fetch, clock=lambda: stamp(data["generated_at"]))
+            result = worker.tick()
+            self.assertEqual(result["status"], "degraded")
+            self.assertEqual(result["error_code"], "stock_publication_failed")
+            self.assertNotIn("PRIVATE-TOKEN", json.dumps(result))
+
+    def test_shutdown_during_fit_does_not_score_or_publish(self):
+        data = historical_dataset()
+        with tempfile.TemporaryDirectory() as directory:
+            def fit(*_):
+                worker.stop.set()
+                return lambda *_: self.fail("A stopped worker must not score"), {"model_id": "kumo-stock-0123456789abcdef"}
+            worker = StockWorker(self.args(directory), fetch=lambda *_: data, fit=fit, clock=lambda: stamp(data["generated_at"]))
+            self.assertEqual(worker.tick()["status"], "stopped")
+
     def test_health_requires_recent_liveness_and_successful_heartbeat(self):
         now = stamp("2026-11-27T16:00:00Z")
         good = {"state": "training", "last_seen_at": iso(now), "heartbeat_error_code": None}
