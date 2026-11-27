@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "node --version",
-  "buildCommand": "node --version",
-  "outputDirectory": "deploy/kumo-status",
+  "buildCommand": "node deploy/build-kumo-status.mjs",
+  "outputDirectory": "kumo-status",
   "daemons": {
     "stock-kumo": {
       "root": "scripts/kumo-stocks",
