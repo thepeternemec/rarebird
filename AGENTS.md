@@ -10,6 +10,8 @@ Read `universe_snapshot` for the membership source and version. The snapshot con
 
 Public reads do not start the worker or configure notifications. Signed webhook delivery is an explicitly configured operator feature; deduplicate event IDs, retain the greatest alert version and check current status/expiry before downstream use. The source can be `not_configured` until the operator connects US-share market data. [Stock setup and notification guide](docs/STOCK-SCREENER.md).
 
+Read `model.worker` separately from `model.status`. A recorded prediction can outlive its scoring process. Worker liveness is `not_connected` until an authenticated heartbeat arrives, and becomes `stale` after three minutes. `model.training` reports matured observed setup counts and UTC trading dates against the minimums; these counts do not claim a completed fit. A blocked, stale or degraded worker must not be described as currently scoring. Operators can use the [activation guide](docs/STOCK-OPERATIONS.md) and `npm run stocks:doctor` without generating signals or sending notifications.
+
 ## Catalog discovery
 
 Call `rarebird_discovery` or `GET /api/v2/discovery` to read developments recorded by the scheduled stock and token scan. Optional inputs are `asset` (`equity` or `crypto`), `beat_id` and `limit` (1–20). Link the evidence and keep its timestamps. A press publication timestamp describes the article. A filing acceptance timestamp describes the official disclosure. `first_recorded_at` measures when the discovery worker recorded qualifying evidence. Catalog news checks cover 2,030 assets and direct filing checks cover four pilot issuers.

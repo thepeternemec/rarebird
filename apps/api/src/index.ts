@@ -92,4 +92,4 @@ app.all("/mcp", (c) => mcpResponse(c.req.raw));
 
 export default app;
 
-export { publishStockPredictions } from "./lib/stock-kumo-store.js";
+export { publishStockModelHeartbeat, publishStockPredictions } from "./lib/stock-kumo-store.js";

@@ -3,7 +3,7 @@ import { createHmac } from "node:crypto";
 import { test } from "node:test";
 import postgres from "postgres";
 import { SP500_SNAPSHOT } from "@rarebird/contracts";
-import { readStockModel, publishStockPredictions } from "./stock-kumo-store.js";
+import { readStockModel, publishStockModelHeartbeat, publishStockPredictions } from "./stock-kumo-store.js";
 import type { StockFrame } from "@rarebird/contracts";
 import { stockFixture } from "./stock-screener-fixtures.js";
 import { STOCK_SCREENER_SCHEMA } from "./stock-screener-schema.js";
@@ -15,7 +15,7 @@ if (connection) {
   const url = new URL(connection);
   if (!["localhost", "127.0.0.1"].includes(url.hostname) || url.pathname !== "/rarebird_intelligence_test") throw new Error("Stock tests require the dedicated localhost test database.");
 }
-const reset = "truncate public.rarebird_stock_predictions,public.rarebird_stock_outbox,public.rarebird_stock_events,public.rarebird_stock_alerts,public.rarebird_stock_worker,public.rarebird_stock_bars restart identity";
+const reset = "truncate public.rarebird_stock_model_worker,public.rarebird_stock_predictions,public.rarebird_stock_outbox,public.rarebird_stock_events,public.rarebird_stock_alerts,public.rarebird_stock_worker,public.rarebird_stock_bars restart identity";
 function configure() {
   process.env.ALPACA_API_KEY = "synthetic-test"; process.env.ALPACA_SECRET_KEY = "synthetic-test";
   process.env.RAREBIRD_STOCK_FEED = "iex";
@@ -217,6 +217,38 @@ test("stock Kumo predictions are prospective, immutable and measured on the same
     await sql.unsafe("update public.rarebird_stock_alerts set record=$2::jsonb where id=$1", [alert.id, JSON.parse(JSON.stringify(outcome))]);
     const measured = await readStockModel({ sql, now: now + 1000000 });
     assert.equal(measured.model.observed, 1, "settled matched cohort " + JSON.stringify(measured)); assert.equal(measured.model.brier, null);
+    assert.equal(measured.model.training!.observed, 0, "training waits for the full outcome grace even after observation");
+    const mature = await readStockModel({ sql, now: now + 1020000 });
+    assert.equal(mature.model.training!.observed, 1);
+    assert.equal(mature.model.training!.trading_dates, 1);
+    assert.equal((await readStockModel({ sql, dataset: true, now: now + 1000000 })).setups!.find(row => row.id === alert.id)!.prediction!.probability, .8,
+      "dataset retains the accepted prediction after its validity so workers never rescore an issued episode");
     assert.equal(measured.model.baseline_brier, null, "small samples never become an aggregate performance claim");
+  } finally { await sql.end(); process.env = saved; }
+});
+
+test("stock model liveness is authenticated metadata, expires and never creates an accuracy record", { skip: !connection, timeout: 45000 }, async () => {
+  const saved = { ...process.env }, sql = postgres(connection!, { prepare: false, max: 3, onnotice: () => {} });
+  configure();
+  const now = Date.parse("2026-11-27T16:00:00Z");
+  const heartbeat = { kind: "heartbeat", feed: "iex", universe_version: SP500_SNAPSHOT.id, state: "training" };
+  try {
+    await sql.unsafe(STOCK_SCREENER_SCHEMA); await sql.unsafe(reset);
+    assert.equal((await readStockModel({ sql, now })).model.worker!.state, "not_connected");
+    assert.equal((await publishStockModelHeartbeat(heartbeat, { sql, now })).last_seen_at, new Date(now).toISOString());
+    const fresh = await readStockModel({ sql, now: now + 30000 });
+    assert.equal(fresh.model.worker!.state, "training");
+    assert.equal(fresh.model.issued, 0); assert.equal(fresh.model.status, "warming_up");
+    assert.equal((await readStockModel({ sql, now: now + 180001 })).model.worker!.state, "stale");
+    await publishStockModelHeartbeat({ ...heartbeat, state: "degraded", error_code: "stock_model_fit_failed" }, { sql, now: now + 190000 });
+    const recovering = await readStockModel({ sql, now: now + 190001 });
+    assert.equal(recovering.model.worker!.state, "degraded");
+    assert.equal(recovering.model.worker!.error_code, "stock_model_fit_failed");
+    assert.equal(recovering.model.brier, null);
+    await assert.rejects(publishStockModelHeartbeat({ ...heartbeat, error_code: "secret-in-exception" }, { sql, now }));
+    await assert.rejects(publishStockModelHeartbeat({ ...heartbeat, feed: "sip" }, { sql, now }), /cohort/);
+    await assert.rejects(publishStockModelHeartbeat({ ...heartbeat, universe_version: "other" }, { sql, now }));
+    await assert.rejects(publishStockModelHeartbeat({ ...heartbeat, last_seen_at: new Date(now + 86400000).toISOString() }, { sql, now }),
+      "worker cannot extend liveness with its own clock");
   } finally { await sql.end(); process.env = saved; }
 });

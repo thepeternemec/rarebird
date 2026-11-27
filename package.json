@@ -25,7 +25,8 @@
     "db:retain": "node db/retain.mjs",
     "balance:grant": "node db/grant.mjs",
     "db:dedupe": "node db/dedupe.mjs",
-    "stocks:worker": "node scripts/stock-screener-worker.mjs"
+    "stocks:worker": "node scripts/stock-screener-worker.mjs",
+    "stocks:doctor": "node scripts/stock-activation.mjs"
   },
   "allowScripts": {
     "esbuild@0.28.2": true
