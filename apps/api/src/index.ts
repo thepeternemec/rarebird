@@ -76,7 +76,7 @@ app.get("/", (c) =>
     service: "Rarebird",
     docs: "https://www.rarebird.network/docs",
     repo: "https://github.com/thepeternemec/rarebird",
-    routes: ["/v2/stock-screener", "/v2/agent", "/v2/discovery", "/v2/research", "/v2/investment", "/v2/briefing", "/v2/forecasts", "/v2/btc-pilot", "/v2/kumo-feeds", "/v2/tokens", "/v2/catalysts", "/v2/collection", "/v2/topics", "/v2/news", "/v2/changes", "/v2/watch", "/v2/brief", "/v2/stories", "/v2/summary", "/v2/intelligence", "/v2/opportunities", "/v2/tools", "/mcp", "/health", "/status", "/status/feed", "/keys/authorize"],
+    routes: ["/v2/stock-quotes", "/v2/stock-screener", "/v2/agent", "/v2/discovery", "/v2/research", "/v2/investment", "/v2/briefing", "/v2/forecasts", "/v2/btc-pilot", "/v2/kumo-feeds", "/v2/tokens", "/v2/catalysts", "/v2/collection", "/v2/topics", "/v2/news", "/v2/changes", "/v2/watch", "/v2/brief", "/v2/stories", "/v2/summary", "/v2/intelligence", "/v2/opportunities", "/v2/tools", "/mcp", "/health", "/status", "/status/feed", "/keys/authorize"],
     rate_limits: rateLimits,
   }),
 );
@@ -93,3 +93,5 @@ app.all("/mcp", (c) => mcpResponse(c.req.raw));
 export default app;
 
 export { publishStockModelHeartbeat, publishStockPredictions } from "./lib/stock-kumo-store.js";
+
+export type { ResearchStockQuotes, ResearchStockQuote } from "./lib/stock-research-quotes.js";
