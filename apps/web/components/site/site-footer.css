@@ -121,9 +121,9 @@ footer.site.rb-site-footer-landing {
   padding-inline: 48px;
 }
 .rb-footer-banner {
-  --footer-cell: #444444;
-  --footer-mark-base: #aaaaaa;
-  --footer-mark-highlight: #ffffff;
+  --footer-cell: #354f15;
+  --footer-mark-base: #76b900;
+  --footer-mark-highlight: #b1e65a;
   display: grid;
   grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
   align-items: center;
@@ -134,9 +134,9 @@ footer.site.rb-site-footer-landing {
   scroll-margin-top: 80px;
 }
 [data-theme="light"] .rb-footer-banner {
-  --footer-cell: #dddddd;
-  --footer-mark-base: #333333;
-  --footer-mark-highlight: #777777;
+  --footer-cell: #ccdfa9;
+  --footer-mark-base: #639900;
+  --footer-mark-highlight: #76b900;
 }
 .rb-footer-banner h2 {
   margin: 0;

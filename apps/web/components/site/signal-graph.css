@@ -1,21 +1,21 @@
 .rb-signal-field {
-  --signal-empty: #171717;
-  --signal-low: #333333;
-  --signal-mid: #666666;
-  --signal-high: #aaaaaa;
-  --signal-strong: #e4e4e4;
-  --signal-pulse: #ffffff;
+  --signal-empty: #151b0e;
+  --signal-low: #283b12;
+  --signal-mid: #466414;
+  --signal-high: #638f0a;
+  --signal-strong: #76b900;
+  --signal-pulse: #b1e65a;
   --signal-gap: clamp(3px, .38vw, 6px);
   margin: 38px 0 0;
 }
 
 :root[data-theme="light"] .rb-signal-field {
-  --signal-empty: #eeeeee;
-  --signal-low: #cccccc;
-  --signal-mid: #aaaaaa;
-  --signal-high: #777777;
-  --signal-strong: #333333;
-  --signal-pulse: #222222;
+  --signal-empty: #eff5e5;
+  --signal-low: #d6e8b7;
+  --signal-mid: #b1d47a;
+  --signal-high: #92c447;
+  --signal-strong: #76b900;
+  --signal-pulse: #4f7d00;
 }
 
 .rb-signal-phases {

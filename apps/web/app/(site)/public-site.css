@@ -7,15 +7,15 @@ body:has(> :is(.nav-site, .rb-app)) {
   --site-action-ink: #141414;
   --site-panel: #101010;
   --site-wash: #1b1b1b;
-  --site-cell-0: #191919;
-  --site-cell-1: #333333;
-  --site-cell-2: #555555;
-  --site-cell-3: #999999;
-  --site-cell-4: #ededed;
+  --site-cell-0: #18200f;
+  --site-cell-1: #2c3e18;
+  --site-cell-2: #496619;
+  --site-cell-3: #638f0a;
+  --site-cell-4: #76b900;
   --site-line: color-mix(in srgb, var(--site-green) 24%, var(--border-default));
-  --footer-cell: #444444;
-  --footer-mark-base: #aaaaaa;
-  --footer-mark-highlight: #ffffff;
+  --footer-cell: #354f15;
+  --footer-mark-base: #76b900;
+  --footer-mark-highlight: #b1e65a;
 }
 [data-theme="light"] body:has(> :is(.nav-site, .rb-app)) {
   --site-green: #292929;
@@ -24,14 +24,14 @@ body:has(> :is(.nav-site, .rb-app)) {
   --site-action-ink: #fff;
   --site-panel: #f7f7f7;
   --site-wash: #ededed;
-  --site-cell-0: #e8e8e8;
-  --site-cell-1: #d0d0d0;
-  --site-cell-2: #aaaaaa;
-  --site-cell-3: #777777;
-  --site-cell-4: #333333;
-  --footer-cell: #cccccc;
-  --footer-mark-base: #444444;
-  --footer-mark-highlight: #777777;
+  --site-cell-0: #edf3e5;
+  --site-cell-1: #d4e5ba;
+  --site-cell-2: #b2d47d;
+  --site-cell-3: #94c44e;
+  --site-cell-4: #76b900;
+  --footer-cell: #ccdfa9;
+  --footer-mark-base: #639900;
+  --footer-mark-highlight: #76b900;
 }
 body:has(> :is(.nav-site, .rb-app)) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: none; }
 
