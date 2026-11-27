@@ -1,4 +1,4 @@
-import { readStockModel } from "./stock-kumo-store.js";
+import { emptyStockModelStatus, readStockModel } from "./stock-kumo-store.js";
 import { randomUUID } from "node:crypto";
 import { db, hasDatabaseEnv, type Sql } from "@rarebird/db";
 import { STOCK_SCREENER_POLICY, STOCK_SCREENER_UNIVERSE, SP500_SNAPSHOT, StockScreenerQuerySchema,
@@ -33,7 +33,7 @@ function emptyFeed(now: number): StockScreenerFeed {
   const config = stockFeedConfig();
   return { generated_at: iso(now), policy: STOCK_SCREENER_POLICY, status: config.configured ? "warming_up" : "not_configured",
     message: config.configured ? "The stock feed is configured. Waiting for the first successful scan." : "Stock price feed is not connected yet. No stock setups have been measured.",
-    benchmark: "SPY", universe_snapshot: SP500_SNAPSHOT, source: { provider: "alpaca", feed: config.feed, coverage: config.coverage, mode: "scheduled", last_scan_at: null },
+    benchmark: "SPY", universe_snapshot: SP500_SNAPSHOT, model: emptyStockModelStatus(), source: { provider: "alpaca", feed: config.feed, coverage: config.coverage, mode: "scheduled", last_scan_at: null },
     delivery: { configured: stockWebhookConfig().configured, pending: 0, delivered: 0, failed: 0 }, universe: STOCK_SCREENER_UNIVERSE,
     coverage: coverageHold(config.configured ? "Waiting for the stock worker." : "Stock feed not connected."), active: [], recent: [], events: [], next_cursor: "0", has_more: false,
     event_delivery: [],

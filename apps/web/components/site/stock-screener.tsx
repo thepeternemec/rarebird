@@ -68,6 +68,14 @@ export default function StockScreener() {
   const recent = (feed?.recent ?? []).map(a => currentAlert(a, now));
   const selected = recent.find(alert => alert.id === selectedId);
   const universe = feed?.universe ?? STOCK_SCREENER_UNIVERSE;
+  const modelWorker = feed?.model?.worker;
+  const workerState = modelWorker?.last_seen_at && now - Date.parse(modelWorker.last_seen_at) > 180000 ? "stale" : modelWorker?.state ?? "not_connected";
+  const modelHeadline = loading ? "Checking the prediction worker" : error ? "Model status unavailable"
+    : feed?.status === "not_configured" ? "Waiting for the stock feed"
+    : feed?.model?.status === "unavailable" ? "Model measurements unavailable"
+    : ({ not_connected: "Prediction worker not connected", stale: "Prediction worker disconnected", unavailable: "Worker status unavailable",
+      blocked: "Waiting for usable training data", degraded: "Prediction worker is recovering", stopped: "Prediction worker stopped",
+      training: "Training Kumo", scoring: "Scoring experimental setups", warming_up: "Collecting training observations" }[workerState]);
   async function copyConnection() {
     try { await navigator.clipboard.writeText(RAREBIRD_MCP_URL); setCopied(true); setTimeout(() => setCopied(false), 2000); }
     catch { setCopied(false); }
@@ -81,7 +89,7 @@ export default function StockScreener() {
     <div className="rb-screen-readiness" aria-label="Service readiness">
       <div><span className="rb-screen-eyebrow">Detection</span><strong>{loading ? "Checking the stock feed" : error ? "Feed status unavailable" : feed?.status === "not_configured" ? "Stock feed needs connecting" : status}</strong><p>Rule-based checks run on closed one-minute bars, independently of generated explanations.</p><Link href="/docs/connect#stock-screener">Feed and screening guide <ArrowUpRight size={14} /></Link></div>
       <div><span className="rb-screen-eyebrow">Agent delivery</span><strong>{loading ? "Checking delivery" : error ? "Delivery status unavailable" : feed?.delivery.configured ? "Webhook destination configured" : "Webhook needs configuring"}</strong><p>{feed?.delivery.configured ? `${feed.delivery.pending} pending · ${feed.delivery.delivered} acknowledged · ${feed.delivery.failed} failed · ${feed.delivery.skipped ?? 0} skipped.` : "MCP lets an agent read setups. Automatic delivery requires the operator to configure a signed webhook."}</p><Link href="/docs/connect#stock-screener">Agent connection and delivery <ArrowUpRight size={14} /></Link></div>
-      <div><span className="rb-screen-eyebrow">Kumo prediction engine</span><strong>{feed?.model?.status === "shadow" ? "Experimental predictions recorded" : feed?.model?.status === "unavailable" ? "Model measurements unavailable" : "Collecting training observations"}</strong><p>Predicts a positive 15-minute relative move after the cost scenario, conditional on a detected setup. {feed?.model?.observed ?? 0} forward predictions measured.</p><Link href="/docs/connect#stock-screener">Prediction target and model status <ArrowUpRight size={14} /></Link></div>
+      <div><span className="rb-screen-eyebrow">Kumo prediction engine</span><strong>{modelHeadline}</strong><p>Estimates a positive 15-minute relative move after the cost scenario, conditional on a detected setup.</p><p className="rb-screen-small">Training minimums · {feed?.model?.training?.observed ?? 0} / 120 observed setups · {feed?.model?.training?.trading_dates ?? 0} / 6 trading dates. Both outcome classes are required.</p><p className="rb-screen-small">{modelWorker?.last_seen_at ? `Worker last seen ${time(modelWorker.last_seen_at)}.` : "No prediction worker heartbeat recorded."} {feed?.model?.observed ?? 0} forward predictions measured.</p><Link href="/docs/connect#stock-screener">Prediction target and model status <ArrowUpRight size={14} /></Link></div>
     </div>
     <details className="rb-screen-coverage"><summary>Screen coverage <span>{universe.length} stocks · SPY benchmark</span></summary>
     <p className="rb-screen-small">Constituent snapshot observed {feed?.universe_snapshot?.observed_at.slice(0, 10) ?? "2026-11-26"}. Current membership is used from this snapshot onward.</p>

@@ -33,4 +33,10 @@ create table if not exists public.rarebird_stock_predictions (
   alert_id text primary key references public.rarebird_stock_alerts(id) on delete cascade,
   prediction jsonb not null
 );
+create table if not exists public.rarebird_stock_model_worker (
+  feed text not null, universe_version text not null,
+  last_seen_at timestamptz not null, state text not null,
+  model_id text, error_code text,
+  primary key(feed,universe_version)
+);
 `;

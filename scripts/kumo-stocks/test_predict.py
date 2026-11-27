@@ -10,7 +10,7 @@ def fixture():
              "created_at": iso(issued), "reference": reference, "evidence": [], "state": "active",
              "closed_at": None, "valid_until": iso(issued+120), "expires_at": iso(issued+900),
              "outcomes": [{"minutes": 15, "due_at": iso(issued+900), "status": "pending", "measured_at": None, "cost_scenario_bps": None}]}
-    return {"schema_version": "sp500-kumo-v1", "generated_at": iso(issued+30), "universe_version": "version", "feed": "iex", "setups": [alert]}
+    return {"schema_version": "sp500-kumo-v1", "data_status": "available", "generated_at": iso(issued+30), "universe_version": "version", "feed": "iex", "setups": [alert]}
 
 class PreparationTests(unittest.TestCase):
     def test_no_future_features_or_labels(self):

@@ -98,4 +98,11 @@ export interface StockModelStatus {
   target: StockPrediction["target"];
   issued: number; observed: number; missing: number;
   brier: number | null; baseline_brier: number | null;
+  training?: { observed: number; trading_dates: number; minimum_observed: number; minimum_trading_dates: number };
+  worker?: {
+    state: "not_connected" | "warming_up" | "training" | "scoring" | "blocked" | "degraded" | "stopped" | "stale" | "unavailable";
+    last_seen_at: string | null;
+    model_id: string | null;
+    error_code: string | null;
+  };
 }

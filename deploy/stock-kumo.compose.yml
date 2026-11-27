@@ -1,0 +1,21 @@
+# Run from a persistent Linux x86-64 Docker host. This file creates no cloud resources.
+services:
+  stock-kumo:
+    build:
+      context: ../scripts/kumo-stocks
+    platform: linux/amd64
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 150s
+    environment:
+      RAREBIRD_STOCK_MODEL_SECRET: ${RAREBIRD_STOCK_MODEL_SECRET:?Set the matching stock-model secret on the host and Vercel}
+      RAREBIRD_STOCK_ORIGIN: ${RAREBIRD_STOCK_ORIGIN:-https://www.rarebird.network}
+    volumes:
+      - stock-model:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+volumes:
+  stock-model:

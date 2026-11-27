@@ -7,6 +7,7 @@ import math
 import os
 import time
 import urllib.request
+import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -23,7 +24,7 @@ def iso(value):
     return datetime.fromtimestamp(value, timezone.utc).isoformat().replace("+00:00", "Z")
 
 def prepare(data):
-    if data.get("schema_version") != "sp500-kumo-v1" or data.get("truncated"):
+    if data.get("schema_version") != "sp500-kumo-v1" or data.get("truncated") or not isinstance(data.get("setups"), list):
         raise ValueError("Incomplete stock dataset")
     now = stamp(data["generated_at"])
     examples, seen = [], set()
@@ -55,6 +56,7 @@ def prepare(data):
                 label = int(cost > 0)
         examples.append({"id": alert["id"], "symbol": alert["symbol"], "issued": issued, "known": known,
                          "features": features, "news": context, "label": label,
+                         "has_prediction": bool(alert.get("prediction")),
                          "active": alert["state"] == "active" and not alert["closed_at"] and now < min(stamp(alert["valid_until"]), stamp(alert["expires_at"]))})
     return examples
 
@@ -152,52 +154,25 @@ def fit_model(examples, cohorts, directory, epochs=3):
                    "trained_at": iso(time.time()), "baseline_probability": baseline, "plan": plan.as_json(),
                    "bundle": str(fitted.bundle_dir), "holdout": metrics(cohorts[3], scores, baseline)}
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(req.full_url, code, "Redirect refused", headers, fp)
+
 def request(url, body=None):
     headers = {"User-Agent": "Rarebird-SP500-Kumo/1"}
     if body is not None:
-        headers.update({"Authorization": "Bearer " + os.environ["CRON_SECRET"], "Content-Type": "application/json"})
-    with urllib.request.urlopen(urllib.request.Request(url, data=None if body is None else json.dumps(body).encode(), headers=headers), timeout=60) as response:
+        secret = os.environ.get("RAREBIRD_STOCK_MODEL_SECRET") or os.environ["CRON_SECRET"]
+        headers.update({"Authorization": "Bearer " + secret, "Content-Type": "application/json"})
+    with urllib.request.build_opener(NoRedirect()).open(urllib.request.Request(url, data=None if body is None else json.dumps(body).encode(), headers=headers), timeout=60) as response:
         return json.load(response)
 
 def run(args):
-    origin, directory = args.origin.rstrip("/"), Path(args.output)
-    if not origin.startswith("https://") or (args.dataset and args.publish):
-        raise ValueError("Publication requires HTTPS and a current server dataset")
-    directory.mkdir(parents=True, exist_ok=True)
-    scorer, model, fitted_at = None, None, 0
-    while True:
-        data = json.loads(Path(args.dataset).read_text()) if args.dataset else request(origin + "/api/v2/stock-model?dataset=1")
-        examples = prepare(data)
-        cohorts = split(examples)
-        report = {"target": TARGET, "universe_version": data["universe_version"], "feed": data["feed"], "examples": len(examples), "status": "warming_up"}
-        if cohorts:
-            if scorer is None or time.time() - fitted_at >= 3600:
-                scorer, model = fit_model(examples, cohorts, directory / ("model-" + str(int(time.time()))))
-                fitted_at = time.time()
-            # Refresh after fitting so scoring uses current episodes, not expired pre-fit rows.
-            current = data if args.dataset else request(origin + "/api/v2/stock-model?dataset=1")
-            if (current["universe_version"], current["feed"]) != (data["universe_version"], data["feed"]):
-                raise ValueError("Universe or feed changed while fitting")
-            population = [row for row in prepare(current) if row["active"] and row["issued"] > stamp(model["training_cutoff"])]
-            scores = scorer(population)
-            batch = {key: model[key] for key in ("model_id", "training_cutoff", "trained_at", "baseline_probability")}
-            batch.update(universe_version=data["universe_version"], feed=data["feed"],
-                         predictions=[{"alert_id": row["id"], "probability": scores[row["id"]]} for row in population])
-            (directory / "batch.json").write_text(json.dumps(batch, indent=2, allow_nan=False))
-            report.update(status="shadow", model=model)
-            if args.publish and batch["predictions"]:
-                report["publication"] = request(origin + "/api/cron/stock-kumo", batch)
-        else:
-            report["reason"] = "Need 120 observed setups, six UTC trading dates and both classes in the purged fitting splits."
-        (directory / "report.json").write_text(json.dumps(report, indent=2, allow_nan=False))
-        print(json.dumps(report, allow_nan=False), flush=True)
-        if not args.watch:
-            return
-        time.sleep(30 if scorer else 60)
+    from worker import run_worker
+    return run_worker(args)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--origin", default="https://www.rarebird.network")
+    parser.add_argument("--origin", default=os.environ.get("RAREBIRD_STOCK_ORIGIN", "https://www.rarebird.network"))
     parser.add_argument("--dataset")
     parser.add_argument("--output", required=True)
     parser.add_argument("--publish", action="store_true")
