@@ -1,94 +1,19 @@
-# Rarebird project status
+# Capability boundaries
 
-Updated **2026-11-25** with the first US-share screener implementation. Counts describe the bundled catalog, and live coverage is reported by each endpoint.
+Updated 27 November 2026. This describes implementation scope; deployment readiness is reported by the live API.
 
-## Product direction
+The bundled news catalog contains **2,030 topics**: 1,528 US-listed equities and 502 crypto assets. News-catalog coverage is separate from the 503-security stock-screening universe.
 
-Rarebird is building meaningful signals for AI agents. The source-linked news foundation is live; a first general signal-construction pilot is implemented for six assets. Task-specific relevance, broader context and stronger verification remain planned. Stocks and crypto describe coverage. [Read the product direction](INTELLIGENCE.md).
+| Component | Implemented behavior | Boundary |
+| --- | --- | --- |
+| Stock screener | Versioned S&P 500 snapshot of 503 securities versus SPY; Alpaca bars/quotes; deterministic relative-strength and participation checks | Regular session, 66 aligned-minute baseline; IEX or entitled SIP coverage |
+| Setup lifecycle | Stable IDs, updates, holds, invalidation, expiry and frozen 15/60-minute observations | Reference observations, not executed trades |
+| Agent integration | MCP, REST, cursor replay and optional signed webhook outbox | Webhook delivery needs a configured receiver and actual acknowledgements |
+| Stock Kumo worker | Separate CPU fitting/scoring process, authenticated heartbeats, immutable probabilities and paired forward evaluation | At least 120 observed outcomes across six UTC trading dates before fitting eligibility; no established stock predictive advantage |
+| Shared feed graph | Fourteen time-aware feed kinds with source and availability metadata | Source-dependent gaps, retention and sampling; not all feeds are stock-model inputs |
+| BTC Kumo experiment | Separate next-hour 1% move target, chronological comparisons and prospective journal | Its measurements do not validate the stock model |
+| News and research | Stock/crypto catalog, source-linked reporting, grouping, question research and supporting market utilities | Headline metadata and explicit per-source freshness/coverage limits |
 
-## First stock screener
+Check `/api/v2/stock-screener` and `/api/v2/stock-model`, or run `npm run stocks:doctor -- --json`. Model worker liveness, training eligibility, source readiness and performance are separate checks. A warming-up worker has not produced a fitted stock model.
 
-A dedicated four-stock screen now follows actual NVDA, AAPL, MSFT and GOOGL shares against SPY. The implementation includes an Alpaca adapter, past-only intraday relative-strength policy, persistent episode lifecycle, 15/60-minute forward observations, cursor-readable events, optional signed webhook delivery, one-minute scheduled fallback and a separate streaming runner. The app is at `/app/screener`; the existing MCP exposes `rarebird_stock_screener`.
-
-**Code availability is separate from activation.** US-share credentials, market-data entitlement, database and optional webhook destination must be configured. The API explicitly reports `not_configured` or held states until measurements exist. The streaming runner requires a long-lived host; deploying Vercel alone provides scheduled mode. No stock model edge or profitability has been established. [Setup and limits](STOCK-SCREENER.md).
-
-## Kumo coverage and direction
-
-BTC is the first measured Kumo pilot, targeting a close-to-close move of at least 1% over the next hour. A shared graph connects 14 feed types, including headline text, interpreted events, filings and market context. The hourly workflow compares the expanded model with the original metadata variant on identical held-out hours. New snapshot feeds accumulate history from first capture, with per-feed coverage and missing data reported.
-
-We are building toward coverage across all asset classes and data types, connecting market observations, reporting, filings, events and outcomes. Broader Kumo coverage is planned and will be measured as each dataset is integrated.
-
-## Current main branch
-
-| Capability | Status |
-| --- | --- |
-| NVIDIA Kumo Engine integration | Experimental BTC models using a shared public-feed graph, explicit headline and interpretation text features, immutable snapshot collection, hourly CPU runs and paired metadata-only versus expanded-context measurements. [Method and results](BTC-KUMO.md) |
-| Independent discovery | Past-only 15/30/60-minute market scans, descriptive historical rarity, volatility context and frozen episode outcomes; no headline thesis required |
-| Intelligence pilot | Persistent thesis revisions, measured information deltas, pre-information beta/residuals, participation/liquidity gates and prospective outcomes for NVIDIA, Apple, Microsoft, Alphabet, Bitcoin and Ethereum |
-| Asset catalog | **2,030 topics**: 1,528 US-listed equities and 502 crypto assets |
-| Headline reads | Source-linked articles with freshness, bounded pages and history cursors |
-| Change monitoring | Signed, asset-bound cursors; clients poll for newly indexed items |
-| Briefs | Up to three distinct ranked recent headlines verbatim, with source and UTC time |
-| Stories | Approximate headline grouping, ranked by relevance, with original reports and source links |
-| Question research | Evidence-led answers, conditional reasoning, unknowns and next checks across the catalog; missing market data explicit |
-| Batched watch | Up to 50 assets per request; each result can succeed or fail independently |
-| REST and function calling | Research, stock screening and reference operations, explicit collection control and schemas at `/api/v2/tools` |
-| Hosted MCP | One Streamable HTTP server at `/api/mcp`; live schemas at `/api/v2/tools`, including stock screening and explicit collection control |
-| Supporting reference utilities | Sourced crypto prices, sentiment, chain readings, contract prices and positioning, retained through REST and MCP |
-| Intelligence workbench | Full-width measured market path, context selection, thesis/evidence inspector, timing reasons and forward observation cohorts. The former `/crypto` page redirects here. |
-| Web news explorer | Asset search, grouped stories, source expansion, Show more controls and on-demand research questions |
-| Self-serve keys | GitHub sign-in; signing in again rotates the existing key |
-| Account billing | Keyed REST usage is metered; anonymous reads are free and rate limited |
-| Ingestion | Google News RSS by default; Vercel cron configured every 10 minutes |
-| Retention | 30-day API window; maintenance retains 35 days by default |
-
-The scheduled worker uses a time budget and prioritizes overdue assets. A schedule is not proof that every fetch succeeded: inspect `status`, `last_success_at`, article counts and the cron’s deferred/error counts. Empty coverage can be legitimate for quiet assets.
-
-## Question research and ranked coverage
-
-Use `rarebird_research` or `POST /api/v2/research` with the actual question. Identity resolution, relevant reporting and available market checks feed a direct answer, cited conditional reasoning, unknowns and next checks. The news catalog is available on demand; measured quantitative coverage stays at six assets. Ambiguous identities return candidates, and missing measurements cannot establish timing or a price reaction.
-
-Generation uses the existing gateway with an 18-second timeout, a 1,600-token output cap, a five-minute per-instance cache and bounded per-instance concurrency. Invalid, unavailable or failed model output returns evidence_only, never an invented successful answer. Existing GET intelligence reads remain stored reads. No collection session, schedule, notification or trade is created. [Details](RESEARCH.md).
-
-Generated headline summarization is retired. The legacy summary route and tool remain deprecated compatibility reads returning verbatim headlines only.
-
-REST story snapshots scan 200 reports by default (`limit` 1–500). MCP returns up to 40 ranked groups from 200 reports. Grouping retains every report in the returned snapshot and can still miss paraphrases or combine unrelated coverage. Source counts describe coverage, not independent corroboration. Use article-level cursors for follow-up arrivals; group IDs can change as the snapshot rolls.
-
-## Brand and domain
-
-**Rarebird** is live at **https://www.rarebird.network**. The public mission is meaningful signals for AI agents. The live news foundation covers stocks and crypto. Pilot xStock exchange pairs are verified against the venue directory; onchain contract, redemption and consolidated underlying-stock verification remain planned. Use `https://www.rarebird.network/api` for REST and `https://www.rarebird.network/api/mcp` for MCP. The app and connected agent are free through December 31, 2026. Rarebird Pro is planned at $8.99 USD per month for both. Public reads require no API key or credit card. Account keys have a **seven-day evaluation** from the first metered REST call, with up to **$6 in trial credit**. The start is recorded per account in the usage ledger, so rotating a key does not reset it. Existing accounts keep their balances and start their seven-day window on their next metered call after this release. `GET /api/keys/trial` reports the deadline and spendable credit. When the trial ends, unused trial credit becomes unavailable and keyed reads return `402 trial_expired`; public anonymous reads continue. Stripe checkout is not live.
-
-New discovery uses `rarebird_*` tool names. Old tool names, deployed environment-variable names and existing signed cursors retain compatibility. Workspace package names use `@rarebird/*` and `rarebird-*`.
-
-## Planned connector expansion
-
-[PR #11](https://github.com/thepeternemec/rarebird/pull/11) implements eight shared MCP/REST operations, general news search and source-record lookup, named independent keys, atomic account metering, OAuth resource-server verification, saved watches and signed webhooks. It also includes Telegram/Discord relay and Grok API examples.
-
-PR #11 was closed without merging. Its implementation remains a reference for future work and is not available on main. Shipping those capabilities requires additive database migration, environment configuration and end-to-end activation. An external OAuth authorization server and platform-specific consent/client registration must be configured separately.
-
-## Remaining limits
-
-- Main-branch MCP calls do not yet share the full REST billing boundary; PR #11 addresses this.
-- General event interpretation is a limited headline-based model pilot, not verified causal analysis. Task-aware relevance and broad signal intelligence remain planned.
-- Summaries are based only on headlines. Output checks reduce some errors but do not establish truth, read full articles or verify market impact.
-- No full article bodies, article ledes, trade execution, prediction-market prices or Polymarket account integration.
-- No general-news query search or server-scheduled notifications on main yet; the existing watch endpoint is client polling.
-- Stripe checkout is not implemented here. Trial credit and operator balance grants are separate from payment collection.
-- No claim of approval in ChatGPT, Claude, Muse or Grok consumer directories.
-- Source/article totals vary over time. Historical measurements are not current coverage guarantees.
-
-## Verify
-
-```bash
-npm ci
-npm run build
-npm test
-```
-
-Check `/api/health`, `/api/v2/topics?limit=5`, `/api/v2/news?beat_id=b_bb964843350e`, and `/api/v2/summary?beat_id=b_bb964843350e` on the target deployment. Confirm the summary’s method, source links, freshness and coverage limit. Use the connection screen for a live MCP round-trip check. Never test billing or destructive maintenance against production accounts merely to validate a preview.
-
-Update this file and the README whenever capabilities change.
-
-## Contextual signal construction
-
-The six-asset pilot adds three decision contexts, market-channel hypotheses, observable trigger evidence, invalidation and explicit reasons to wait. Deterministic checks gate review alerts; an idempotent journal records qualifying versions and closes earlier alerts when a premise is revised. REST and the existing MCP intelligence tool expose constructions and review-alert records. Kraken xStock and crypto venue data add measured timing checks and frozen prospective outcome records. Threshold calibration, expectation changes, custom contexts and notification delivery remain planned. See [quantitative methodology](QUANTITATIVE.md).
+[Stock methodology](STOCK-SCREENER.md) · [Activation](STOCK-OPERATIONS.md) · [Feed catalog](DATA-FEEDS.md)

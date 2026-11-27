@@ -1,101 +1,92 @@
-<p align="center">
-  <a href="https://www.rarebird.network/">
-    <img src="brand/rarebird-github.svg" width="100%" alt="Rarebird — Find what changed. Know what to check next.">
-  </a>
-</p>
+# Rarebird
 
-# Your agent's eyes on the stock market
+Open-source stock screening and experimental predictions for AI agents.
 
-Rarebird screens for developing stock setups, records the evidence and expiry, and gives connected agents a lifecycle they can follow. Every setup keeps its original measurements and forward outcomes. The app shows which data and delivery services are actually connected.
+[![CI](https://github.com/thepeternemec/rarebird/actions/workflows/ci.yml/badge.svg)](https://github.com/thepeternemec/rarebird/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**[Open the app ↗](https://www.rarebird.network/app)** &nbsp;·&nbsp; **[Connect your agent ↗](https://www.rarebird.network/for-agents)**
+[Documentation](docs/README.md) · [Stock screener](https://www.rarebird.network/app/screener) · [Agent integration](AGENTS.md) · [Contributing](CONTRIBUTING.md)
 
-**Free through December 31, 2026.** Both are included in the planned Rarebird Pro membership at **$8.99 USD/month**. [See pricing](https://www.rarebird.network/pricing).
+Rarebird detects developing stock setups, preserves the measurements behind them, and records updates, expiry and forward outcomes. Agents can read the same records through MCP or REST. An optional signed webhook delivers lifecycle events to a configured receiver.
 
-## S&P 500 stock setups for agents
+## Stock screening
 
-The [stock screener](https://www.rarebird.network/app/screener) covers an observed **S&P 500 snapshot of 503 securities versus SPY**. It flags developing relative strength with unusual volume, records one setup per episode, follows holds/invalidation/expiry, and freezes 15/60-minute forward observations. Optional signed webhooks deliver lifecycle changes to an operator-configured agent.
+The stock universe is an observed **S&P 500 snapshot of 503 securities**, compared with **SPY**. Membership is versioned; it is not a historical constituent dataset.
 
-Read it through the existing MCP connection with `rarebird_stock_screener`, or `GET /api/v2/stock-screener`. This screen uses a dedicated US-share feed; tokenized share prices are not substituted. **Feed connection and notification delivery must be configured before live operation.** Every response states coverage and readiness. [Feed, worker and agent setup](docs/STOCK-SCREENER.md).
+- Screen closed one-minute bars for five-minute relative strength, unusual participation and acceptable spreads.
+- Keep detection independent of predictive models and generated explanations.
+- Preserve a stable setup ID through detection, holds, invalidation and expiry.
+- Freeze reference measurements and record 15- and 60-minute forward outcomes.
+- Report missing data, source coverage, timestamps and readiness explicitly.
 
-A separate Kumo Engine worker estimates a positive 15-minute beta-adjusted relative move after the stated cost scenario, conditional on a detected setup. It freezes each prospective prediction and compares its forward Brier score with a training-only base rate on the same observations. Immediate detection does not wait for fitting or a generated explanation. Training and live-worker status are visible separately from the performance record.
+Alpaca supplies US-share identities, market clock, bars and quotes. IEX covers a single exchange; consolidated SIP data requires the relevant entitlement. Screening needs 66 aligned regular-session minutes to establish its daily baseline.
 
-[Activate the service](docs/STOCK-OPERATIONS.md) · [Deploy the persistent CPU worker](deploy/stock-kumo.compose.yml) · `npm run stocks:doctor` for a read-only activation check. CI builds the deployment image, fits actual Kumo on isolated synthetic rows and verifies the lifecycle and prediction journal against disposable PostgreSQL. These checks do not establish live profitability or predictive advantage.
+[Screening policy and lifecycle](docs/STOCK-SCREENER.md) · [Deploy and operate](docs/STOCK-OPERATIONS.md)
 
-## NVIDIA Kumo Engine integration
+## NVIDIA Kumo Engine predictions
 
-**Kumo Engine is an accelerator for context generation over structured data.** It stores related tables as a graph on disk and assembles connected records as context for predictive models. [Explore NVIDIA Kumo Engine](https://github.com/NVIDIA/kumo-engine).
+Rarebird integrates [NVIDIA Kumo Engine](https://github.com/NVIDIA/kumo-engine) to train relational models from structured data and its relationships. The stock worker pins `kumo-engine[text]==1.0.0` and runs separately from the web process.
 
-The S&P 500 model uses frozen screening measurements and publisher/age relationships for reporting already attached at detection. It requires at least 120 observed setups across six UTC trading dates and time-separated fitting partitions. [Stock target, evaluation and runtime](docs/STOCK-SCREENER.md#stock-kumo-target-runtime-and-evaluation).
-
-### Separate BTC feed-graph experiment
-
-Rarebird has integrated Kumo Engine with a shared feed graph for experimental BTC predictions. Fourteen feed types cover headlines, interpreted news events, discoveries, SEC filings and reported financials, crypto and tokenized-equity market observations, funding, liquidity, sentiment and chain readings. Each record keeps its source, entity identity and first availability. Headline and interpretation text contributes explicit word-vector features.
-
-The hourly job compares the expanded graph with the original market-and-news-metadata model on the same next-hour 1% move target. It reports Brier score, log loss, calibration and per-feed coverage, with a separate prospective prediction journal. Newly journaled feeds accumulate history from first capture; gaps and sampling caps remain visible.
-
-**BTC was the first measured pilot.** The stock model has its own target, forward cohort and runtime. We are building this approach across asset classes and data types, keeping each model's source coverage and measured outcomes explicit.
-
-[BTC experiment and methodology](docs/BTC-KUMO.md) · [Measurement runs](https://github.com/thepeternemec/rarebird/actions/workflows/btc-kumo.yml) · [Integration code](scripts/kumo-btc)
-
-## What you can do today
-
-| | What Rarebird gives you |
+| Property | Stock model |
 | --- | --- |
-| **Find what moved** | Follow market developments across 2,030 stock and crypto topics. Open the original source and see when it was published and recorded. [News signals](https://www.rarebird.network/app) |
-| **Investigate the risk** | Look up a ticker and get a brief with supporting evidence, downside risks and what to check next. A six-asset pilot measures unusual moves, volume and liquidity. [Ticker research](https://www.rarebird.network/ask) |
-| **Check the track record** | Inspect experimental hourly BTC and ETH forecasts and compare their outcomes with a historical baseline. [Forecast scorecard](https://www.rarebird.network/app/forecasts) |
+| Target | Positive 15-minute beta-adjusted relative return after the stated cost scenario |
+| Population | Detected stock setups; not an unconditional forecast for every constituent |
+| Inputs | Frozen screening measurements and publisher/age relationships for news attached at detection |
+| Training eligibility | At least 120 observed setup outcomes across six UTC trading dates, with both outcome classes in the fitting partitions |
+| Validation | Chronological, purged partitions; frozen training-only base-rate comparison |
+| Forward record | First accepted probability is immutable; paired Brier scores require 20 matching observations |
+| Runtime | Persistent CPU worker with authenticated heartbeats and bounded retries |
 
-**In development:** portfolio-aware risk monitoring and position sizing using your loss budget, liquidity and existing exposure. Today’s research shows the timestamps, uncertainties and coverage behind each result.
+The stock model does **not** consume every available feed. The shared feed graph and BTC experiment have separate mappings and targets. Feed availability, worker liveness, training eligibility and predictive performance are separate states. No stock predictive advantage or profitability has been established.
 
-## Use the app or connect an agent
+[Stock model methodology](docs/STOCK-SCREENER.md#stock-kumo-target-runtime-and-evaluation) · [Worker deployment](docs/STOCK-OPERATIONS.md) · [BTC experiment](docs/BTC-KUMO.md)
 
-**In the app:** [Open the workspace](https://www.rarebird.network/app). Switch between stocks and crypto, research a ticker, or explore crypto prices and your watchlist.
+## Connect an agent
 
-**In your assistant:** Add Rarebird as a remote MCP server using Streamable HTTP. A compatible client can discover tools such as `rarebird_discovery` and `rarebird_research`.
+Add this remote MCP server in a client that supports Streamable HTTP:
 
 ```text
 https://www.rarebird.network/api/mcp
 ```
 
-Try asking: *What changed with NVIDIA? Which sources support it, and what should I watch next?*
+Call `rarebird_stock_screener` to read setups, coverage and lifecycle events. Save `next_cursor`, pass it as `after`, and continue while `has_more`. Deduplicate event IDs and check the latest version, status and expiry before downstream use. Connecting MCP does not subscribe an agent to notifications.
 
-**With REST:** Look up an asset or ask a research question directly.
+The equivalent public REST reads are:
 
 ```bash
-curl 'https://www.rarebird.network/api/v2/topics?q=nvidia&limit=5'
-
-curl -X POST 'https://www.rarebird.network/api/v2/research' \
-  -H 'Content-Type: application/json' \
-  -d '{"question":"What could change the outlook for NVIDIA?"}'
+curl 'https://www.rarebird.network/api/v2/stock-screener'
+curl 'https://www.rarebird.network/api/v2/stock-model'
 ```
 
-[Connection guide](https://www.rarebird.network/docs/quickstart) · [API and MCP reference](AGENTS.md) · [Examples](examples/README.md) · [Service status](https://www.rarebird.network/status)
+For webhooks, configure a receiver and signing secret using the [delivery guide](docs/STOCK-SCREENER.md#receive-signed-lifecycle-notifications).
 
-## Read the evidence
+[Agent reference](AGENTS.md) · [Integration examples](examples/README.md) · [Connection guide](https://www.rarebird.network/docs/connect#stock-screener)
 
-Rarebird records when it first sees a development and links the reporting behind it. Where market measurements exist, it checks for confirmation and flags stale or missing inputs. A review can identify reasons to wait or specify what would invalidate a view.
+## Data feeds
 
-Catalog news collection runs on a ten-minute schedule. Priority assets support fifteen-minute sessions of one-minute news collection on request. Market checks and forecasts use separate schedules and report their own freshness.
+All existing feed integrations remain available: headlines, interpreted events, discoveries, filings, financial statements, market bars, order books, quotes, funding, DEX volume, stablecoin supply, sentiment, TVL and chain observations.
 
-[Research coverage](docs/RESEARCH.md) · [Market and forecast methodology](docs/QUANTITATIVE.md) · [Current capabilities](docs/STATUS.md)
+The catalog includes stock and crypto research alongside the S&P 500 screener. Coverage and freshness vary by source. Each feed record retains provenance and an availability window; a feed being present does not establish that a model uses it.
 
-## Built in the open
+[Feed catalog and contracts](docs/DATA-FEEDS.md) · [News collection](docs/COLLECTION.md) · [Research](docs/RESEARCH.md) · [Market methodology](docs/QUANTITATIVE.md)
 
-| What shipped | Implementation |
+## Architecture
+
+| Location | Responsibility |
 | --- | --- |
-| Source-linked ticker research and Telegram briefs | [#121](https://github.com/thepeternemec/rarebird/pull/121) |
-| Catalog-wide market discovery with source and observation times | [#131](https://github.com/thepeternemec/rarebird/pull/131) |
-| Token identity and pool evidence by chain and contract | [#125](https://github.com/thepeternemec/rarebird/pull/125) |
-| NVIDIA Kumo Engine integration and BTC model measurements | [#162](https://github.com/thepeternemec/rarebird/pull/162) · [#163](https://github.com/thepeternemec/rarebird/pull/163) |
-| Hourly BTC and ETH forecasts and forward evaluation | [#130](https://github.com/thepeternemec/rarebird/pull/130) |
-| Direct filing evidence for four pilot issuers | [#119](https://github.com/thepeternemec/rarebird/pull/119) |
+| `apps/web` | Next.js app, API mount and scheduled routes |
+| `apps/api` | REST/MCP handlers, detection, lifecycle storage and model publication |
+| `apps/worker` | Collection, matching and ingestion |
+| `packages/contracts` | Schemas, catalogs, tool definitions and universe snapshot |
+| `packages/db`, `db` | PostgreSQL access, schema and migrations |
+| `scripts/kumo-stocks` | Stock Kumo fitting, scoring and heartbeat process |
+| `scripts/kumo-btc` | Separate BTC relational-model experiment |
 
-[Changelog](CHANGELOG.md) · [Commit history](https://github.com/thepeternemec/rarebird/commits/main/) · [Build checks](https://github.com/thepeternemec/rarebird/actions)
+[Architecture](docs/ARCHITECTURE.md) · [Capability boundaries](docs/STATUS.md)
 
-## Develop locally
+## Development
 
-Use Node.js 22 or 24 with npm.
+Use Node.js 22 or 24 and npm. The Kumo container uses Python 3.12 and CPU PyTorch.
 
 ```bash
 git clone https://github.com/thepeternemec/rarebird.git
@@ -106,6 +97,20 @@ npm test
 npm run dev
 ```
 
-Open <http://localhost:3000>. You can build the interface and run most tests without credentials. For ingestion and persistence, see the [development guide](docs/DEVELOPMENT.md).
+Open <http://localhost:3000>. The interface and standard tests can run without provider credentials. Populated data and operational workers require configuration.
 
-[Architecture](docs/ARCHITECTURE.md) · [Contribute](CONTRIBUTING.md) · [Security](SECURITY.md) · [MIT license](LICENSE) · [Brand assets](brand/README.md)
+For stock activation, configure Alpaca and PostgreSQL, deploy the worker with a matching `RAREBIRD_STOCK_MODEL_SECRET`, then run:
+
+```bash
+npm run stocks:doctor -- --json
+```
+
+This check reads status only. It does not create setups or send test notifications. An unconfigured delivery receiver or disconnected worker produces an unfinished check.
+
+[Local setup](docs/DEVELOPMENT.md) · [Operations](docs/STOCK-OPERATIONS.md) · [Docker Compose](deploy/stock-kumo.compose.yml)
+
+## Contribute
+
+Contributions are welcome in data quality, point-in-time evaluation, provider adapters, agent interoperability, accessibility and documentation. Start with a reproducible issue or a focused pull request.
+
+[Contribution guide](CONTRIBUTING.md) · [Report an issue](https://github.com/thepeternemec/rarebird/issues) · [Security](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md) · [MIT license](LICENSE)

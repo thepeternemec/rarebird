@@ -1,37 +1,33 @@
-# Rarebird documentation
+# Documentation
 
-Start with the guide that matches what you want to do.
+## Start here
 
-## Use Rarebird
-
-| Goal | Guide |
+| Task | Guide |
 | --- | --- |
-| Try company or crypto news | [Homepage search](https://www.rarebird.network/#company-news) |
-| See what a signal adds | [News signals](https://www.rarebird.network/app) |
-| Connect an AI assistant | [MCP quickstart](https://www.rarebird.network/docs/quickstart) |
-| Make an API request | [Integration examples](../examples/README.md) |
-| Request one-minute news collection | [Collection frequency and opt-in sessions](COLLECTION.md) |
-| Choose tools and handle responses | [Agent and API reference](../AGENTS.md) |
-| Check the service | [Live status](https://www.rarebird.network/status) |
+| Understand stock detection, expiry and outcomes | [Stock screener](STOCK-SCREENER.md) |
+| Configure the stock feed and Kumo worker | [Stock operations](STOCK-OPERATIONS.md) |
+| Connect an agent through MCP or REST | [Agent reference](../AGENTS.md) and [examples](../examples/README.md) |
+| Understand available data and model inputs | [Data feeds](DATA-FEEDS.md) |
+| Run the project locally | [Development](DEVELOPMENT.md) |
+| Understand components and runtime boundaries | [Architecture](ARCHITECTURE.md) |
+| Check implementation scope | [Status](STATUS.md) |
 
-## Build and contribute
+## Data and research
 
-| Guide | What you will find |
-| --- | --- |
-| [Local development](DEVELOPMENT.md) | Installation, PostgreSQL, environment files, ingestion and checks |
-| [Contributing](../CONTRIBUTING.md) | A first contribution, pull requests and project conventions |
-| [Architecture](ARCHITECTURE.md) | How the application, workers and storage fit together |
-| [Brand](../brand/README.md) | Rarebird assets, palette and voice |
-| [Security](../SECURITY.md) | Private vulnerability reporting |
+- [Stock model and forward evaluation](STOCK-SCREENER.md#stock-kumo-target-runtime-and-evaluation)
+- [BTC Kumo experiment](BTC-KUMO.md)
+- [News collection and priority sessions](COLLECTION.md)
+- [Question-driven research](RESEARCH.md)
+- [Market methodology](QUANTITATIVE.md)
+- [Stored interpretations](INTELLIGENCE.md)
 
-## Understand the research
+## Maintain the project
 
-| Guide | What you will find |
-| --- | --- |
-| [Product direction](INTELLIGENCE.md) | The problem Rarebird is solving and the intelligence direction |
-| [Current capabilities](STATUS.md) | What is available, experimental and planned |
-| [Quantitative methodology](QUANTITATIVE.md) | Market sources, information deltas, timing gates and prospective evaluation |
-| [Build history](../README.md#build-history) | User needs, shipped capabilities and original pull requests |
-| [Changelog](../CHANGELOG.md) | Implementation changes and project decisions |
+- [General operations](OPERATIONS.md)
+- [Telegram integration](TELEGRAM.md)
+- [Marketplace receiver](GITHUB-MARKETPLACE.md)
+- [Contributing](../CONTRIBUTING.md)
+- [Security](../SECURITY.md)
+- [Changelog](../CHANGELOG.md)
 
-The six-asset intelligence pilot is in development. Headline interpretations, observed venue movements and review alerts are different kinds of evidence; keep their timestamps and uncertainty when presenting them.
+Live coverage comes from the API, not from static documentation. Read source timestamps, per-stock holds, worker heartbeats and model observation counts before presenting a result as current.
