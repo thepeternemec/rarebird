@@ -2,6 +2,8 @@
 
 Updated 27 November 2026. This describes implementation scope; deployment readiness is reported by the live API.
 
+The bundled news catalog contains **2,030 topics**: 1,528 US-listed equities and 502 crypto assets. News-catalog coverage is separate from the 503-security stock-screening universe.
+
 | Component | Implemented behavior | Boundary |
 | --- | --- | --- |
 | Stock screener | Versioned S&P 500 snapshot of 503 securities versus SPY; Alpaca bars/quotes; deterministic relative-strength and participation checks | Regular session, 66 aligned-minute baseline; IEX or entitled SIP coverage |

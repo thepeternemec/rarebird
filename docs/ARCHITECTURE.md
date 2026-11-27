@@ -2,6 +2,8 @@
 
 Rarebird separates collection, immediate detection, model scoring and agent reads. PostgreSQL is the durable record for source observations, setup lifecycle events, accepted predictions and measured outcomes.
 
+The website, REST API and MCP endpoint share one Next.js deployment. REST is mounted at `/api/v2/*` and MCP at `/api/mcp`. Scheduled routes update stored records; public reads do not start collection. The base database schema is `db/schema.sql`, with stock-worker tables initialized by the authenticated stock workers. The persistent Python model worker is a separate runtime.
+
 ## Runtime boundaries
 
 | Component | Responsibility |
