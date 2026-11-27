@@ -67,7 +67,7 @@ export default function ForAgents() {
             <td role="cell"><span className="rb-agent-mobile-label" aria-hidden="true">REST</span>{row.rest.map(route => <code key={route}>{route}</code>)}</td>
           </tr>)}</tbody>
         </table>
-        <p className="rb-agent-coverage-note">App stock quote widgets use TradingView. Agent calls return Rarebird reference quotes where available. Use REST <code>/v2/markets</code> for rankings and seven-day crypto price series when supplied.</p>
+        <p className="rb-agent-coverage-note">Research stock quotes come from Alpaca. Read bid, ask, quote time and feed coverage through REST /v2/stock-quotes; the displayed midpoint is not a last-trade price. Use REST <code>/v2/markets</code> for rankings and seven-day crypto price series when supplied.</p>
       </section>
 
       <section className="rb-agent-section" aria-labelledby="agent-connect-heading">

@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import type { CryptoMarketRow, CryptoMarketsPayload, Sourced } from "@rarebird/contracts";
+import type { ResearchStockQuotes, ResearchStockQuote } from "@rarebird/api";
 import type { LookupAsset } from "./landing-lookup-data";
 import { API_BASE } from "./content";
 import "./market-discovery.css";
 
-const supportedSymbol = /^(NASDAQ|NYSE):[A-Z0-9.]{1,12}$/;
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumSignificantDigits: 7 });
 const percent = new Intl.NumberFormat("en-US", { style: "percent", signDisplay: "exceptZero", maximumFractionDigits: 2 });
 const time = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
@@ -16,22 +16,33 @@ const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, "
 export function useSignalPrices(assets: LookupAsset[]) {
   const ids = [...new Set(assets.filter(asset => asset.asset === "equity").map(asset => asset.beat_id))].sort().slice(0, 20).join(",");
   const needsCrypto = assets.some(asset => asset.asset === "crypto");
-  const [stocks, setStocks] = useState<{ ids: string; symbols: Record<string, string> }>();
+  const [stocks, setStocks] = useState<{ ids: string; data: ResearchStockQuotes | null; failed: boolean }>();
   const [crypto, setCrypto] = useState<Sourced<CryptoMarketsPayload> | null>();
   const [now, setNow] = useState(0);
 
   useEffect(() => {
     if (!ids) return;
-    const controller = new AbortController();
-    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(8_000)]);
-    void fetch("/api/quote-symbols?beats=" + encodeURIComponent(ids), { signal })
-      .then(response => {
-        if (!response.ok) throw new Error("Stock listings unavailable");
-        return response.json() as Promise<{ symbols: Record<string, string> }>;
-      })
-      .then(result => { if (!controller.signal.aborted) setStocks({ ids, symbols: result.symbols }); })
-      .catch(() => { if (!controller.signal.aborted) setStocks({ ids, symbols: {} }); });
-    return () => controller.abort();
+    let current: AbortController | undefined;
+    let stopped = false;
+    async function refresh() {
+      if (document.hidden || current) return;
+      const request = new AbortController();
+      current = request;
+      try {
+        const response = await fetch(API_BASE + "/v2/stock-quotes?beats=" + encodeURIComponent(ids), {
+          signal: AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]),
+        });
+        if (!response.ok) throw new Error("Stock quotes unavailable");
+        const data = await response.json() as ResearchStockQuotes;
+        if (!stopped) setStocks({ ids, data, failed: false });
+      } catch {
+        if (!stopped) setStocks(previous => ({ ids, data: previous?.ids === ids ? previous.data : null, failed: true }));
+      } finally { current = undefined; }
+    }
+    void refresh();
+    const timer = window.setInterval(refresh, 15_000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => { stopped = true; current?.abort(); window.clearInterval(timer); document.removeEventListener("visibilitychange", refresh); };
   }, [ids]);
 
   useEffect(() => {
@@ -64,26 +75,22 @@ export function useSignalPrices(assets: LookupAsset[]) {
     };
   }, [needsCrypto]);
 
-  return { stocks: stocks?.ids === ids ? stocks.symbols : undefined, crypto, now };
+  useEffect(() => {
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), 5000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return { stocks: stocks?.ids === ids ? stocks : undefined, crypto, now };
 }
 
-function StockQuote({ asset, symbol }: { asset: LookupAsset; symbol: string }) {
-  const [theme, setTheme] = useState("dark");
-  useEffect(() => {
-    const root = document.documentElement;
-    function sync() { setTheme(root.dataset.theme === "light" ? "light" : "dark"); }
-    sync();
-    const observer = new MutationObserver(sync);
-    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => observer.disconnect();
-  }, []);
-  const href = "https://www.tradingview.com/symbols/" + symbol.replace(":", "-") + "/";
-  const config = JSON.stringify({ symbol, width: "100%", colorTheme: theme, isTransparent: true, locale: "en" });
-  const widget = "https://s.tradingview.com/embed-widget/single-quote/?locale=en#" + encodeURIComponent(config);
-  return <div className="rb-signal-quote">
-    <iframe key={theme} title={asset.ticker + " share price and daily change"} src={widget} loading="lazy"
-      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerPolicy="strict-origin-when-cross-origin" />
-    <a href={href} target="_blank" rel="noreferrer">TradingView · Delayed stock quote <ArrowUpRight size={12} aria-hidden="true" /></a>
+function StockQuote({ quote, data, now, failed }: { quote: ResearchStockQuote; data: ResearchStockQuotes; now: number; failed: boolean }) {
+  const stale = failed || now - Date.parse(quote.observed_at) > 90_000;
+  return <div className="rb-signal-quote rb-signal-crypto rb-signal-stock">
+    <div><strong>{money.format(quote.midpoint)}</strong><small>Bid–ask midpoint</small></div>
+    <p>Bid {money.format(quote.bid)} · Ask {money.format(quote.ask)}</p>
+    <p>Alpaca · {data.feed.toUpperCase()} · {stale ? "Last available quote" : "Latest quote"}<br />
+      <time dateTime={quote.observed_at}>{new Date(quote.observed_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}</time></p>
+    <p>{data.coverage}</p>
   </div>;
 }
 
@@ -95,10 +102,11 @@ function findCryptoQuote(asset: LookupAsset, rows: CryptoMarketRow[]) {
 
 export function SignalPrice({ asset, prices }: { asset: LookupAsset; prices: ReturnType<typeof useSignalPrices> }) {
   if (asset.asset === "equity") {
-    const symbol = prices.stocks?.[asset.beat_id];
-    if (symbol && supportedSymbol.test(symbol)) return <StockQuote asset={asset} symbol={symbol} />;
-    if (!prices.stocks) return <p className="rb-signal-price-note">Checking stock quote…</p>;
-    return <p className="rb-signal-price-note">Stock quote unavailable <a href={"https://www.tradingview.com/symbols/?search=" + encodeURIComponent(asset.ticker)} target="_blank" rel="noreferrer">Find {asset.ticker} on TradingView <ArrowUpRight size={12} aria-hidden="true" /></a></p>;
+    if (!prices.stocks) return <p className="rb-signal-price-note">Checking Alpaca stock quote…</p>;
+    const data = prices.stocks.data;
+    const quote = data?.quotes[asset.beat_id];
+    if (data && quote) return <StockQuote quote={quote} data={data} now={prices.now} failed={prices.stocks.failed} />;
+    return <p className="rb-signal-price-note">Alpaca quote unavailable for {asset.ticker}. No substitute price is shown.</p>;
   }
   if (!prices.crypto) return <p className="rb-signal-price-note">{prices.crypto === null ? "Crypto price unavailable" : "Checking crypto price…"}</p>;
   const quote = findCryptoQuote(asset, prices.crypto.data.assets);

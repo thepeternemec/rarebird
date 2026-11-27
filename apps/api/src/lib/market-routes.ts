@@ -6,6 +6,7 @@
  * learning anything new.
  */
 
+import { researchQuoteIds, researchStockQuotes } from "./stock-research-quotes.js";
 import { Hono } from "hono";
 import { chainTvl, cryptoMarkets, DEFAULT_PRICE_IDS, fearGreed, overview, prices } from "./market.js";
 import { chainPulse, contractToken } from "./chain.js";
@@ -113,4 +114,18 @@ marketRoutes.get("/signals", async (c) => {
     .map((part) => part.source);
   attributed(c, [...new Set(sources)].join(","), new Date().toISOString(), 60);
   return c.json(payload);
+});
+
+marketRoutes.get("/stock-quotes", async c => {
+  let ids: string[];
+  try { ids = researchQuoteIds(c.req.query("beats") ?? ""); }
+  catch { return c.json({ error: { code: "invalid_selection", message: "Choose 1–20 stock catalog IDs." } }, 400); }
+  try {
+    const payload = await researchStockQuotes(ids);
+    c.header("Cache-Control", "public, max-age=1, s-maxage=10");
+    return c.json(payload);
+  } catch {
+    c.header("Cache-Control", "no-store");
+    return c.json({ error: { code: "stock_quotes_unavailable", message: "Alpaca stock quotes are temporarily unavailable." } }, 503);
+  }
 });
