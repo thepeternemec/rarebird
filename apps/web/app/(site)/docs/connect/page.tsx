@@ -220,5 +220,10 @@ export default function DocsConnect() {
       <p><a href="https://github.com/thepeternemec/rarebird/blob/main/docs/BTC-KUMO.md">Read the experiment method and measurement limits</a>.</p>
       </div></details>
     </section>
+    <section className="docs-section" aria-labelledby="stock-quotes">
+      <h2 id="stock-quotes">Alpaca stock quotes</h2>
+      <p>Research uses <code>GET /v2/stock-quotes?beats=b_bb964843350e</code>. Pass 1–20 stock catalog IDs separated by commas. Each available quote includes <code>bid</code>, <code>ask</code>, <code>midpoint</code> and <code>observed_at</code>, with the configured feed and coverage. The midpoint is not a last-trade price or an execution guarantee.</p>
+      <p>IEX covers a single exchange. Quotes older than 90 seconds, or retained after a failed refresh, display as last available in the app. Missing or invalid quotes are omitted. This REST read is independent of screener warmup and does not run Kumo or place trades.</p>
+    </section>
   </div>;
 }
