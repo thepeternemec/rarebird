@@ -41,8 +41,8 @@ const links = [
   },
 ] as const;
 
-export default function SiteFooter({ landing = false, compact = false }: { landing?: boolean; compact?: boolean }) {
-  return <footer className={`site rb-site-footer${landing ? " rb-site-footer-landing" : ""}`}>
+export default function SiteFooter({ landing = false, compact = false, workspace = false }: { landing?: boolean; compact?: boolean; workspace?: boolean }) {
+  return <footer className={`site rb-site-footer${landing ? " rb-site-footer-landing" : ""}${workspace ? " rb-site-footer-workspace" : ""}`}>
     <div className="wrap">
       {landing && (
         <section className="rb-footer-banner" id="community" aria-labelledby="closing-title">
@@ -55,13 +55,21 @@ export default function SiteFooter({ landing = false, compact = false }: { landi
           <FooterSignalMark />
         </section>
       )}
+      {workspace && <section className="rb-footer-workspace-banner" aria-labelledby="workspace-footer-title">
+        <div>
+          <span className="rb-footer-workspace-label">MADE FOR YOUR AGENT</span>
+          <h2 id="workspace-footer-title">Bring the setup.<br /><span>Keep the evidence.</span></h2>
+          <a className="rb-footer-banner-cta" href="/docs/connect#stock-screener">Connect your agent <ArrowUpRight size={15} aria-hidden="true" /></a>
+        </div>
+        <FooterSignalMark />
+      </section>}
       <div className="rb-footer-grid">
-        <div className={compact ? "rb-footer-brand" : "rb-footer-brand rb-footer-brand-stacked"}>
+        <div className={compact && !workspace ? "rb-footer-brand" : "rb-footer-brand rb-footer-brand-stacked"}>
           <a className="rb-footer-home" href="/" aria-label="Rarebird home">
-            <BrandMark className="rb-footer-emblem" size={compact ? 38 : 44} />
-            {compact ? <span>Rarebird</span> : <BrandWordmark width={116} />}
+            <BrandMark className="rb-footer-emblem" size={compact && !workspace ? 38 : 44} />
+            {compact && !workspace ? <span>Rarebird</span> : <BrandWordmark width={116} />}
           </a>
-          <p>{compact ? "Stock setups. Agent alerts." : "Your agent’s eyes on the stock market."}</p>
+          <p>{compact && !workspace ? "Stock setups. Agent alerts." : "Your agent’s eyes on the stock market."}</p>
         </div>
         <div className="rb-footer-links">
           {links.map(group => <nav key={group.title} aria-label={"Footer " + group.title}>

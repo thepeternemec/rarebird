@@ -1,6 +1,6 @@
-/* The public navigation marks the marketing and documentation pages.
-   The workspace has its own header and keeps its existing theme. */
-body:has(> .nav-site) {
+/* Marketing, documentation and the app share one Rarebird palette.
+   Each surface keeps its own layout and navigation. */
+body:has(> :is(.nav-site, .rb-app)) {
   --site-green: #8cdda3;
   --site-action: #91dca5;
   --site-action-hover: #b5ebbf;
@@ -17,7 +17,7 @@ body:has(> .nav-site) {
   --footer-mark-base: #379453;
   --footer-mark-highlight: #b0f7bd;
 }
-[data-theme="light"] body:has(> .nav-site) {
+[data-theme="light"] body:has(> :is(.nav-site, .rb-app)) {
   --site-green: #226b3b;
   --site-action: #236840;
   --site-action-hover: #194e30;
@@ -33,7 +33,7 @@ body:has(> .nav-site) {
   --footer-mark-base: #237340;
   --footer-mark-highlight: #53b971;
 }
-body:has(> .nav-site) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: none; }
+body:has(> :is(.nav-site, .rb-app)) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: none; }
 
 body:has(> .nav-site) :is(.nav.nav-site .nav-cta, .interior-page .btn-primary, .rb-agent-primary, .rb-home-button, .try-guide .try-next) {
   background: var(--site-action);

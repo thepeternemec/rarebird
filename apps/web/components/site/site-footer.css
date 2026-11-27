@@ -85,6 +85,31 @@ footer.site.rb-site-footer {
 .rb-footer-meta p { margin: 0; font-size: 12px; line-height: 1.6; }
 .rb-footer-meta a { font-size: 12px; }
 
+footer.site.rb-site-footer-workspace { padding-top: 0; background: var(--bg-base); border-color: var(--site-line); }
+.rb-site-footer-workspace > .wrap { max-width: 1280px; padding-inline: 48px; }
+.rb-footer-workspace-banner { display: grid; grid-template-columns: minmax(0,1fr) 280px; align-items: center; gap: 32px; margin-bottom: 36px; padding: 34px 0; border-bottom: 1px solid var(--site-line); }
+.rb-footer-workspace-label { color: var(--site-green); font: 10px/1.6 var(--font-mono); letter-spacing: .07em; }
+.rb-footer-workspace-banner h2 { margin: 12px 0 0; font-size: clamp(25px, 3vw, 34px); font-weight: 500; letter-spacing: -.045em; line-height: 1.18; color: var(--text-primary); }
+.rb-footer-workspace-banner h2 span { color: var(--text-secondary); }
+.rb-site-footer-workspace .rb-footer-banner-cta { min-height: 40px; margin-top: 18px; border-color: var(--site-line); background: var(--site-panel); color: var(--site-green); font-size: 12px; text-decoration: none; transition: background .2s, border-color .2s; }
+.rb-site-footer-workspace .rb-footer-banner-cta:hover { background: var(--site-wash); border-color: var(--site-green); }
+.rb-site-footer-workspace .rb-footer-art { opacity: .8; }
+.rb-site-footer-workspace .rb-footer-links a:hover { color: var(--site-green); }
+.rb-site-footer-workspace .rb-footer-meta { border-color: var(--site-line); }
+.rb-site-footer-workspace :is(a, button):focus-visible { outline-color: var(--site-green); }
+
+@media (max-width: 1080px) { .rb-site-footer-workspace > .wrap { padding-inline: 32px; } }
+@media (max-width: 760px) {
+  .rb-site-footer-workspace > .wrap { padding-inline: max(20px, env(safe-area-inset-left)) max(20px, env(safe-area-inset-right)); }
+  .rb-footer-workspace-banner { grid-template-columns: minmax(0,1fr) 180px; gap: 16px; }
+}
+@media (max-width: 540px) {
+  .rb-footer-workspace-banner { grid-template-columns: minmax(0,1fr); padding-block: 28px; margin-bottom: 28px; }
+  .rb-footer-workspace-banner .rb-footer-art { display: none; }
+  .rb-site-footer-workspace .rb-footer-brand-stacked .rb-footer-home { gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .rb-site-footer-workspace .rb-footer-banner-cta { transition: none; } }
+
 footer.site.rb-site-footer-landing {
   padding-top: clamp(22px, 5vw, 70px);
   border-top: 0;

@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ArrowUpRight, ChevronDown } from "lucide-react";
 import SiteFooter from "./site-footer";
-import { BrandWordmark } from "./brand-mark";
+import BrandMark, { BrandWordmark } from "./brand-mark";
 import ThemeToggle from "./theme-toggle";
 import "./workspace-shell.css";
 
@@ -16,12 +16,17 @@ export default function WorkspaceShell({ active, title, description, children }:
     <div className="rb-app">
       <a className="rb-app-skip" href="#workspace-content">Skip to workspace content</a>
       <header className="rb-workspace-header">
-        <a className="nav-logo" href="/" aria-label="Rarebird home"><BrandWordmark className="brand-wordmark" /></a>
-        <nav className="rb-app-nav" aria-label="Rarebird workspace">
-          <Link href="/app" aria-current={active === "/app/screener" ? "page" : undefined}>Setups</Link>
-          <Link href="/app?market=equity" aria-current={active === "/app" ? "page" : undefined}>Research</Link>
-        </nav>
-        <ThemeToggle />
+        <div className="rb-workspace-header-inner">
+          <a className="rb-workspace-brand" href="/" aria-label="Rarebird home"><BrandMark className="rb-workspace-emblem" size={32} /><BrandWordmark className="brand-wordmark" width={122} /></a>
+          <nav className="rb-app-nav" aria-label="Rarebird workspace">
+            <Link href="/app" aria-current={active === "/app/screener" ? "page" : undefined}>Setups</Link>
+            <Link href="/app?market=equity" aria-current={active === "/app" ? "page" : undefined}>Research</Link>
+          </nav>
+          <div className="rb-workspace-header-actions">
+            <Link className="rb-workspace-guide" href="/docs/connect#stock-screener">Connect your agent <ArrowUpRight size={14} aria-hidden="true" /></Link>
+            <ThemeToggle />
+          </div>
+        </div>
       </header>
       <main className="rb-app-main" id="workspace-content">
         {title && <header className="rb-app-heading">
@@ -31,7 +36,7 @@ export default function WorkspaceShell({ active, title, description, children }:
         {children}
       </main>
     </div>
-    <SiteFooter compact />
+    <SiteFooter workspace />
   </>;
 }
 
