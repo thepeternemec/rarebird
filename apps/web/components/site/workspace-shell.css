@@ -7,7 +7,7 @@
   --bg-raised: var(--site-wash);
   width: min(100%, 1280px);
   margin-inline: auto;
-  padding: 104px 48px 72px;
+  padding: calc(112px + env(safe-area-inset-top)) 48px 72px;
   padding-inline: max(48px, env(safe-area-inset-left)) max(48px, env(safe-area-inset-right));
   color: var(--text-primary);
 }
@@ -32,7 +32,7 @@
   border-bottom: 1px solid var(--site-line);
   backdrop-filter: blur(18px);
 }
-.rb-workspace-header-inner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 24px; min-height: 66px; width: min(100%, 1280px); margin-inline: auto; padding-inline: 48px; }
+.rb-workspace-header-inner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 24px; min-height: 72px; width: min(100%, 1280px); margin-inline: auto; padding-inline: 48px; }
 .rb-workspace-brand { display: inline-flex; align-items: center; gap: 11px; min-height: 44px; color: var(--text-primary); }
 .rb-workspace-brand svg { flex: none; }
 .rb-workspace-emblem { border: 1px solid var(--site-line); border-radius: 7px; }
@@ -53,9 +53,13 @@
   white-space: nowrap;
 }
 .rb-app-nav > a:hover { background: var(--site-panel); color: var(--site-green); }
-.rb-workspace-header-actions { display: flex; align-items: center; gap: 18px; }
-.rb-workspace-guide { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--site-green); font-size: 12px; font-weight: 500; }
-.rb-workspace-guide:hover { text-decoration: underline; text-underline-offset: 4px; }
+.rb-workspace-header-actions { display: flex; align-items: center; gap: 12px; }
+.rb-workspace-docs { display: inline-flex; align-items: center; min-height: 44px; color: var(--text-secondary); font-size: 12px; }
+.rb-workspace-docs:hover { color: var(--site-green); }
+.rb-app-more-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 44px; min-height: 44px; padding: 8px 10px; border: 1px solid var(--site-line); border-radius: 8px; background: var(--site-panel); color: var(--site-green); font-size: 12px; cursor: pointer; }
+.rb-app-more-toggle:hover { background: var(--site-wash); }
+.rb-workspace-guide { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 9px 13px; border-radius: 8px; background: var(--site-action); color: var(--site-action-ink); font-size: 12px; font-weight: 550; white-space: nowrap; }
+.rb-workspace-guide:hover { background: var(--site-action-hover); }
 .rb-workspace-header-actions > .theme-toggle { display: grid; place-items: center; min-width: 36px; min-height: 36px; margin: 0; border: 1px solid var(--site-line); border-radius: 7px; background: var(--site-panel); color: var(--site-green); }
 .rb-app :focus-visible { outline: 2px solid var(--site-green); outline-offset: 4px; }
 .rb-app-main { min-width: 0; scroll-margin-top: 78px; }
@@ -113,7 +117,7 @@
 
 /* The same surfaces continue through research and asset detail views. */
 .rb-app .rb-market-workspace { width: 100%; }
-.rb-app .rb-market-toolbar { top: calc(67px + env(safe-area-inset-top)); padding: 14px 0; border-color: var(--site-line); --catalog-background: var(--site-panel); --catalog-border: var(--site-line); --catalog-radius: 9px; }
+.rb-app .rb-market-toolbar { top: calc(73px + env(safe-area-inset-top)); padding: 14px 0; border-color: var(--site-line); --catalog-background: var(--site-panel); --catalog-border: var(--site-line); --catalog-radius: 9px; }
 .rb-app .rb-market-switch { border-color: var(--site-line); background: var(--site-panel); border-radius: 9px; }
 .rb-app .rb-market-switch a { font-weight: 500; }
 .rb-app .rb-market-switch a[aria-current="page"] { background: var(--site-wash); border-color: var(--site-line); color: var(--site-green); }
@@ -137,25 +141,26 @@
 @media (max-width: 1080px) {
   .rb-app { padding-inline: max(32px, env(safe-area-inset-left)) max(32px, env(safe-area-inset-right)); }
   .rb-workspace-header-inner { padding-inline: 32px; gap: 16px; }
-  .rb-workspace-header-actions { gap: 12px; }
+  .rb-workspace-guide { display: none; }
 }
 @media (max-width: 760px) {
-  .rb-app { padding: calc(88px + env(safe-area-inset-top)) 20px 48px; padding-inline: max(20px, env(safe-area-inset-left)) max(20px, env(safe-area-inset-right)); }
-  .rb-workspace-header-inner { min-height: 64px; padding-inline: 20px; gap: 12px; }
+  .rb-app { padding: calc(148px + env(safe-area-inset-top)) 20px 48px; padding-inline: max(20px, env(safe-area-inset-left)) max(20px, env(safe-area-inset-right)); }
+  .rb-workspace-header-inner { grid-template-columns: minmax(0, 1fr) auto; min-height: 0; padding: 8px 20px; gap: 6px 12px; }
   .rb-workspace-brand { gap: 8px; }
-  .rb-workspace-brand .brand-wordmark { width: 100px; }
+  .rb-workspace-brand .brand-wordmark { width: 110px; }
   .rb-workspace-emblem { width: 28px; height: 28px; }
-  .rb-workspace-guide { display: none; }
-  .rb-app-nav { gap: 2px; padding: 3px; }
-  .rb-app-nav > a { min-height: 44px; padding: 6px 12px; }
+  .rb-workspace-header-actions { grid-column: 2; grid-row: 1; gap: 8px; }
+  .rb-workspace-guide, .rb-workspace-docs { display: none; }
+  .rb-app-more-toggle { width: 44px; padding: 0; }
+  .rb-app-more-toggle > span { display: none; }
+  .rb-app-nav { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; gap: 4px; padding: 3px; }
+  .rb-app-nav > a { flex: 1; justify-content: center; min-height: 44px; padding: 6px 12px; }
   .rb-workspace-header-actions > .theme-toggle { min-width: 44px; min-height: 44px; }
-  .rb-app .rb-market-toolbar { top: calc(65px + env(safe-area-inset-top)); }
+  .rb-app .rb-market-toolbar { top: calc(119px + env(safe-area-inset-top)); }
   .rb-app-heading > p { font-size: 14px; }
 }
-@media (max-width: 440px) {
-  .rb-workspace-header-inner { padding-inline: 16px; gap: 8px; }
-  .rb-workspace-brand .brand-wordmark { width: 90px; }
-  .rb-app-nav > a { font-size: 11px; padding-inline: 9px; }
+@media (max-width: 380px) {
+  .rb-workspace-header-inner { padding-inline: 16px; }
+  .rb-workspace-brand .brand-wordmark { width: 100px; }
 }
-@media (max-width: 360px) { .rb-workspace-brand .brand-wordmark { display: none; } }
 @media (prefers-reduced-motion: reduce) { .rb-app-nav > a { transition: none; } }

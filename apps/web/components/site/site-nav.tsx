@@ -1,43 +1,26 @@
-/**
- * Plain anchors remount each page's scroll and reveal controllers on navigation.
- */
+/** Plain anchors remount page scroll and reveal controllers on navigation. */
 import ThemeToggle from "./theme-toggle";
-import { BrandWordmark } from "./brand-mark";
+import BrandMark, { BrandWordmark } from "./brand-mark";
 import MobileNavigation from "./mobile-navigation";
+import { NAVIGATION_LINKS, SCREENER_HREF, SITE_LINKS } from "@/lib/navigation";
 import "./mobile-navigation.css";
-
-const LINKS = [
-  { href: "/#signal-graph", label: "How it works", description: "See how stock checks become agent alerts" },
-  { href: "/for-agents", label: "For agents", description: "Bring stock setups into your AI agent" },
-  { href: "/pricing", label: "Pricing", description: "See the Rarebird Pro membership" },
-  { href: "/docs", label: "Developers", description: "Connect with MCP and REST" },
-];
-
-const MOBILE_LINKS = [
-  { href: "/app/screener", label: "Stock screener", description: "Developing stock setups, alerts and outcomes" },
-  { href: "/app", label: "News signals", description: "Follow news and price moves for stocks and crypto" },
-  { href: "/ask", label: "Ticker research", description: "Research a stock or crypto asset" },
-  { href: "/app/forecasts", label: "Forecasts", description: "Explore forecasts and recorded outcomes" },
-  ...LINKS,
-];
 
 export default function SiteNav({ active }: { active?: string }) {
   return (
     <nav className="nav nav-site" aria-label="Main navigation">
       <div className="nav-pill">
         <a className="nav-logo" href="/" aria-label="Rarebird home">
-          <BrandWordmark className="brand-wordmark" />
+          <BrandMark className="rb-nav-emblem" size={32} />
+          <BrandWordmark className="brand-wordmark" width={122} />
         </a>
         <span className="nav-links">
-          {LINKS.map(link => (
+          {SITE_LINKS.map(link => (
             <a key={link.href} className="nav-link" href={link.href} aria-current={active === link.href ? "page" : undefined}>{link.label}</a>
           ))}
         </span>
         <span className="nav-desktop-theme"><ThemeToggle /></span>
-        <a className="nav-cta" href="/app/screener" aria-current={active === "/app/screener" ? "page" : undefined}>
-          Stock screener
-        </a>
-        <MobileNavigation links={MOBILE_LINKS} active={active} />
+        <a className="nav-cta" href={SCREENER_HREF} aria-current={active === SCREENER_HREF ? "page" : undefined}><span className="nav-cta-wide">Stock screener</span><span className="nav-cta-compact">Screener</span></a>
+        <MobileNavigation links={NAVIGATION_LINKS} active={active} />
       </div>
     </nav>
   );

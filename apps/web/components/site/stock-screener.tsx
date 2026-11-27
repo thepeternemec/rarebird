@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, ArrowRight, Bell, Check, Copy, Network, Radio, RefreshCw, ScanLine } from "lucide-react";
 import { STOCK_SCREENER_UNIVERSE, type StockAlert, type StockScreenerFeed } from "@rarebird/contracts";
 import { RAREBIRD_MCP_URL } from "./connection-details";
+import { workspaceAssetHref, workspaceSearchHref } from "@/lib/workspace-links";
 import StockSetupRecord from "./stock-setup-record";
 import SignalTiles from "./signal-tiles";
 import "./stock-screener.css";
@@ -33,7 +34,7 @@ function AlertCard({ alert, onInspect }: { alert: StockAlert; onInspect: (id: st
     </dl>
     {alert.evidence.length > 0 && <div className="rb-screen-context"><span>Recent reporting · context, cause unconfirmed</span>{alert.evidence.map(e => <a key={e.url} href={e.url} target="_blank" rel="noopener noreferrer">{e.title}<ArrowUpRight size={14} /><small>{e.source} · {time(e.published_at)}</small></a>)}</div>}
     <div className="rb-screen-alert-validity"><span>Valid until <time dateTime={alert.valid_until}>{time(alert.valid_until)}</time></span><span>Lifetime ends <time dateTime={alert.expires_at}>{time(alert.expires_at)}</time></span></div>
-    <footer><button type="button" className="rb-screen-record-button" onClick={() => onInspect(alert.id)}>Open setup record <ArrowRight size={14} /></button><span>Detected {time(alert.created_at)}</span><span>{alert.closed_at ? `Closed ${time(alert.closed_at)}` : alert.state === "active" ? `Valid until ${time(alert.valid_until)}` : `Lifetime ends ${time(alert.expires_at)}`}</span><Link href={alert.beat_id ? `/app?beat=${alert.beat_id}` : `/app?q=${encodeURIComponent(alert.symbol)}`}>Investigate <ArrowRight size={14} /></Link></footer>
+    <footer><button type="button" className="rb-screen-record-button" onClick={() => onInspect(alert.id)}>Open setup record <ArrowRight size={14} /></button><span>Detected {time(alert.created_at)}</span><span>{alert.closed_at ? `Closed ${time(alert.closed_at)}` : alert.state === "active" ? `Valid until ${time(alert.valid_until)}` : `Lifetime ends ${time(alert.expires_at)}`}</span><Link href={alert.beat_id ? workspaceAssetHref(alert.beat_id) : workspaceSearchHref(alert.symbol)}>Investigate <ArrowRight size={14} /></Link></footer>
   </article>;
 }
 
@@ -99,7 +100,7 @@ export default function StockScreener() {
     <section className="rb-screen-universe" aria-label="Stock coverage">
       {universe.filter(stock => (stock.symbol + " " + stock.label).toLowerCase().includes(coverageSearch.toLowerCase())).map(s => {
         const screen = feed?.coverage.find(c => c.symbol === s.symbol), measured = screen?.metrics && monitoring;
-        return <div key={s.symbol}><div className="rb-screen-stock-name"><Link href={s.beat_id ? `/app?beat=${s.beat_id}` : `/app?q=${encodeURIComponent(s.symbol)}`}>{s.symbol}<ArrowUpRight size={13} /></Link><span>{s.label}</span></div><div className="rb-screen-stock-reading"><strong>{measured ? percent(screen.metrics!.relative_return_bps) : "—"}</strong><span>{measured ? "5m vs. SPY, beta adjusted" : "Awaiting current measurement"}</span></div><span className="rb-screen-stock-state" title={screen?.reason}>{monitoring && screen ? stateLabel[screen.state] : status}</span></div>;
+        return <div key={s.symbol}><div className="rb-screen-stock-name"><Link href={s.beat_id ? workspaceAssetHref(s.beat_id) : workspaceSearchHref(s.symbol)}>{s.symbol}<ArrowUpRight size={13} /></Link><span>{s.label}</span></div><div className="rb-screen-stock-reading"><strong>{measured ? percent(screen.metrics!.relative_return_bps) : "—"}</strong><span>{measured ? "5m vs. SPY, beta adjusted" : "Awaiting current measurement"}</span></div><span className="rb-screen-stock-state" title={screen?.reason}>{monitoring && screen ? stateLabel[screen.state] : status}</span></div>;
       })}
     </section></details>
 

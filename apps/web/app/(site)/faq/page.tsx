@@ -19,7 +19,7 @@ export default function Page() {
             <p className="sec-sub">Ask your AI assistant what is happening with a company. Rarebird brings the latest available headlines and sources into the answer.</p>
             <div className="hero-cta">
               <a className="btn-primary" href="/docs/quickstart">Set up your assistant</a>
-              <a className="btn-ghost" href="/dashboard">Explore news first</a>
+              <a className="btn-ghost" href="/app/research#news">Explore news first</a>
             </div>
             </div>
             <PageVisual kind="faq" />

@@ -45,7 +45,7 @@ export default function Pricing() {
               <div><h3>Rarebird agent</h3><p>Use the same market intelligence in a compatible assistant through MCP. Ask about timing, risk and what could change the outlook.</p></div>
             </article>
             <div className="rb-price-actions">
-              <a className="btn-primary" href="/app">Open the app <ArrowUpRight size={16} aria-hidden="true" /></a>
+              <a className="btn-primary" href="/app/screener">Open the app <ArrowUpRight size={16} aria-hidden="true" /></a>
               <a href="/docs/quickstart">Connect your agent <ArrowRight size={16} aria-hidden="true" /></a>
             </div>
           </div>

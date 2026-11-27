@@ -157,3 +157,21 @@ body:has(> .nav-site) .documentation-page .docs-head > .rb-signal-tiles {
   }
 }
 @keyframes rb-site-tile-trail { from { clip-path: inset(0 92% 0 0); } to { clip-path: inset(0); } }
+
+/* The toolbar carries the same emblem and destinations as the workspace. */
+.rb-nav-emblem { flex: none; border: 1px solid var(--site-line); border-radius: 7px; }
+.rb-nav-emblem rect { fill: var(--site-panel); }
+.rb-nav-emblem path { fill: var(--site-green); }
+body:has(> .nav-site) .nav.nav-site .nav-pill { max-width: 1280px; min-height: 72px; padding-inline: clamp(20px, 4vw, 48px); }
+.mobile-nav-dialog { --accent-primary: var(--site-action); --accent-ink: var(--site-action-ink); }
+.mobile-nav-panel { background: var(--site-panel); border-color: var(--site-line); border-radius: 14px; }
+.mobile-nav-links > a[aria-current="page"] { background: var(--site-wash); }
+.mobile-nav-links > a[aria-current="page"] :is(strong, svg) { color: var(--site-green); }
+.mobile-nav-dialog :focus-visible { outline-color: var(--site-green); }
+@media (max-width: 900px) {
+  body:has(> .nav-site) .nav.nav-site .nav-pill { min-height: 64px; padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
+  html .nav.nav-site .nav-logo { flex: 1; gap: 8px; }
+  html .nav.nav-site .nav-logo .brand-wordmark { width: 104px; }
+  html .nav.nav-site .nav-logo .rb-nav-emblem { width: 28px; height: 28px; }
+}
+@media (max-width: 380px) { html .nav.nav-site .nav-logo .brand-wordmark { width: 88px; } }
