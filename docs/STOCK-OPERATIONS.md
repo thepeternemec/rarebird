@@ -39,7 +39,13 @@ docker compose --env-file /secure/rarebird-stock.env -f deploy/stock-kumo.compos
 
 The named volume keeps model bundles and reports. Creating this manifest does not provision or pay for a host. Run one worker against that volume. An output-directory lock prevents accidental duplicate local processes.
 
-The web project stays rooted at `apps/web` on Vercel. A separate Vercel project rooted at `scripts/kumo-stocks` does not run this continuous worker: Vercel Functions have finite invocation durations. Deploy the Docker service on the persistent host instead. The API endpoints continue to live in the web deployment. See [Vercel's duration documentation](https://vercel.com/docs/functions/configuring-functions/duration).
+### Vercel Daemons deployment
+
+Vercel now supports continuous containers through [Daemons](https://vercel.com/docs/daemons). Keep the Rarebird web project rooted at `apps/web` with its existing configuration. For the separate `kumo-stocks` project, set Root Directory to the repository root (blank), Framework Preset to Other, and remove dashboard build/install/output overrides so the root `vercel.json` applies. Daemons currently require the repository root. The root configuration explicitly disables Python web-framework detection and builds the existing Dockerfile as a daemon. No Python HTTP entrypoint is needed.
+
+The status landing page identifies the deployment and links to the actual model status API; it never claims that the daemon is running. The configuration declares zero instances initially. After setting the same `RAREBIRD_STOCK_MODEL_SECRET` in both projects' production environments and redeploying, scale `stock-kumo` to one instance in `iad1` in the Daemons dashboard. This override survives future deployments. The instance requests 4 GiB and uses Vercel compute and memory billing while running. Leave it at zero until credentials and data access are ready.
+
+Vercel daemon disk is ephemeral. Predictions, outcomes and liveness remain durable in Rarebird's existing database, and replacement workers fit again from retained server observations. Host-local model bundles and reports are temporary on this deployment; use external storage for a durable bundle archive. For persistent local audit bundles, the Docker Compose deployment above remains available. Vercel restarts exited processes; the Dockerfile's local health check is not configured as a Vercel HTTP liveness probe.
 
 The worker retries failed requests, fitting and publication with bounded backoff. It refreshes the active population after fitting, skips already-published episodes and avoids hourly refitting when fitting data is unchanged. It refreshes an unchanged model before the publication age limit. Redirects are refused, including authenticated uploads. Reports and batches are written atomically; public errors use fixed codes rather than exception strings that might contain secrets.
 

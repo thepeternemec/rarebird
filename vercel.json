@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "node --version",
+  "buildCommand": "node --version",
+  "outputDirectory": "deploy/kumo-status",
+  "daemons": {
+    "stock-kumo": {
+      "root": "scripts/kumo-stocks",
+      "entrypoint": "Dockerfile",
+      "instances": { "iad1": 0 },
+      "resources": { "requests": { "memory": "4Gi" } },
+      "terminationGracePeriodSeconds": 150
+    }
+  }
+}
