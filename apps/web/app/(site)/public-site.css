@@ -1,37 +1,37 @@
-/* Marketing, documentation and the app share one Rarebird palette.
+/* Marketing, documentation and the app share one neutral Rarebird palette.
    Each surface keeps its own layout and navigation. */
 body:has(> :is(.nav-site, .rb-app)) {
-  --site-green: #8cdda3;
-  --site-action: #91dca5;
-  --site-action-hover: #b5ebbf;
-  --site-action-ink: #102518;
-  --site-panel: #0e1510;
-  --site-wash: #16221a;
-  --site-cell-0: #17251c;
-  --site-cell-1: #1d3926;
-  --site-cell-2: #275935;
-  --site-cell-3: #39894c;
-  --site-cell-4: #7fda96;
+  --site-green: #f0f0f0;
+  --site-action: #f0f0f0;
+  --site-action-hover: #ffffff;
+  --site-action-ink: #141414;
+  --site-panel: #101010;
+  --site-wash: #1b1b1b;
+  --site-cell-0: #191919;
+  --site-cell-1: #333333;
+  --site-cell-2: #555555;
+  --site-cell-3: #999999;
+  --site-cell-4: #ededed;
   --site-line: color-mix(in srgb, var(--site-green) 24%, var(--border-default));
-  --footer-cell: #295f39;
-  --footer-mark-base: #379453;
-  --footer-mark-highlight: #b0f7bd;
+  --footer-cell: #444444;
+  --footer-mark-base: #aaaaaa;
+  --footer-mark-highlight: #ffffff;
 }
 [data-theme="light"] body:has(> :is(.nav-site, .rb-app)) {
-  --site-green: #226b3b;
-  --site-action: #236840;
-  --site-action-hover: #194e30;
+  --site-green: #292929;
+  --site-action: #222222;
+  --site-action-hover: #000000;
   --site-action-ink: #fff;
-  --site-panel: #f3f8f4;
-  --site-wash: #e6f2e8;
-  --site-cell-0: #e1eee4;
-  --site-cell-1: #c9e7d1;
-  --site-cell-2: #9ad5a9;
-  --site-cell-3: #54ad6b;
-  --site-cell-4: #287246;
-  --footer-cell: #abd9b6;
-  --footer-mark-base: #237340;
-  --footer-mark-highlight: #53b971;
+  --site-panel: #f7f7f7;
+  --site-wash: #ededed;
+  --site-cell-0: #e8e8e8;
+  --site-cell-1: #d0d0d0;
+  --site-cell-2: #aaaaaa;
+  --site-cell-3: #777777;
+  --site-cell-4: #333333;
+  --footer-cell: #cccccc;
+  --footer-mark-base: #444444;
+  --footer-mark-highlight: #777777;
 }
 body:has(> :is(.nav-site, .rb-app)) > :is(.grid-field, .aurora-layer, .noise-overlay) { display: none; }
 
