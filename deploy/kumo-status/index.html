@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rarebird · Kumo worker</title>
+<style>
+  :root{color-scheme:dark;font:16px/1.65 system-ui,sans-serif;background:#080b09;color:#edf2ee}
+  body{max-width:680px;margin:12vh auto;padding:24px}h1{line-height:1.15;font-size:42px;letter-spacing:-.04em}
+  p{color:#b7c5bb}a{color:#a5deb2}code{color:#d2eed8}nav{display:flex;gap:24px;flex-wrap:wrap;margin:32px 0}
+</style>
+<main>
+  <p>RAREBIRD / PREDICTION WORKER</p>
+  <h1>Kumo runs in a background daemon.</h1>
+  <p>This page identifies the worker deployment. It does not report worker liveness, a completed model fit or live stock coverage.</p>
+  <p>The repository configuration starts with zero instances. Configure the matching stock-model secret in both Vercel projects, then scale <code>stock-kumo</code> to one instance in the Daemons dashboard.</p>
+  <nav><a href="https://www.rarebird.network/app/screener">Open the stock screener</a><a href="https://www.rarebird.network/api/v2/stock-model">Read actual model and worker status</a></nav>
+  <p>Forward predictions and measured outcomes stay in Rarebird's database. Container files are temporary on Vercel; a replacement instance fits again from retained observations. Use an external archive for durable model bundles.</p>
+  <a href="https://github.com/thepeternemec/rarebird/blob/main/docs/STOCK-OPERATIONS.md">Activation guide</a>
+</main>
+</html>

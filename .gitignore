@@ -6,6 +6,7 @@ dist/
 .next/
 out/
 *.tsbuildinfo
+/kumo-status/
 
 # env & secrets
 .env
